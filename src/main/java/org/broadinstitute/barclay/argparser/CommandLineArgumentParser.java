@@ -238,6 +238,16 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         }
     }
 
+    /**
+     * @return the list of ArgumentDefinitions seen by the parser
+     */
+    public List<ArgumentDefinition> getArgumentDefinitions() { return argumentDefinitions; }
+
+    /**
+     * @return the Field representing positional any argument definition found by the parser
+     */
+    public Field getPositionalArguments() { return positionalArguments; }
+
     @Override
     public String getVersion() {
         return "Version:" + this.callerArguments.getClass().getPackage().getImplementationVersion();
@@ -935,22 +945,22 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         }
     }
 
-    protected static class ArgumentDefinition {
-        final Field field;
+    public static class ArgumentDefinition {
+        public final Field field;
         final String fieldName;
-        final String fullName;
-        final String shortName;
-        final String doc;
-        final boolean optional;
+        public final String fullName;
+        public final String shortName;
+        public final String doc;
+        public final boolean optional;
         final boolean isCollection;
-        final String defaultValue;
-        final boolean isCommon;
+        public final String defaultValue;
+        public final boolean isCommon;
         boolean hasBeenSet = false;
-        final Set<String> mutuallyExclusive;
-        final Object parent;
+        public final Set<String> mutuallyExclusive;
+        public final Object parent;
         final boolean isSpecial;
         final boolean isSensitive;
-        final CommandLinePluginDescriptor<?> controllingDescriptor;
+        public final CommandLinePluginDescriptor<?> controllingDescriptor;
 
         public ArgumentDefinition(
                 final Field field,
@@ -1016,7 +1026,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         }
 
         /**
-         * Determine if this argument definition is controlled by a plugin descriptor (and thus subject to
+         * Determine if this argument definition is controlled by a plugin (and thus subject to
          * descriptor dependency validation).
          * @return
          */
