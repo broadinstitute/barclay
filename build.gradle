@@ -1,0 +1,172 @@
+
+plugins {
+    id "java"
+    id 'maven'
+    id 'signing'
+    id 'jacoco'
+    id 'com.palantir.git-version' version '0.5.1' //version helper
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+group = 'org.broadinstitute'
+
+final isRelease = Boolean.getBoolean("release")
+version = (isRelease ? gitVersion() : gitVersion() + "-SNAPSHOT").replaceAll(".dirty", "")
+
+repositories {
+    mavenCentral()
+    maven {
+        url "https://artifactory.broadinstitute.org/artifactory/libs-snapshot/" //for Broad snapshots
+    }
+
+    mavenLocal()
+}
+
+jacocoTestReport {
+    dependsOn test
+    group = "Reporting"
+    description = "Generate Jacoco coverage reports after running tests."
+    additionalSourceDirs = files(sourceSets.main.allJava.srcDirs)
+
+    reports {
+        xml.enabled = true // codecov plugin depends on xml format report
+        html.enabled = true
+    }
+}
+
+compileJava {
+    options.compilerArgs = ['-proc:none', '-Xlint:all','-Werror','-Xdiags:verbose']
+}
+compileTestJava {
+    options.compilerArgs = ['-proc:none', '-Xlint:all','-Werror','-Xdiags:verbose']
+}
+
+dependencies {
+    compile 'net.sf.jopt-simple:jopt-simple:5.0.3'
+
+    compile 'org.apache.commons:commons-lang3:3.4'
+    compile 'org.apache.logging.log4j:log4j-api:2.3'
+    compile 'org.apache.logging.log4j:log4j-core:2.3'
+
+    testCompile 'org.testng:testng:6.9.6'
+}
+
+test {
+    useTestNG()
+    outputs.upToDateWhen { false }  //tests will never be "up to date" so you can always rerun them
+
+    // show standard out and standard error of the test JVM(s) on the console
+    testLogging.showStandardStreams = true
+    beforeTest { descriptor ->
+        logger.lifecycle("Running Test: " + descriptor)
+    }
+
+    // listen to standard out and standard error of the test JVM(s)
+    onOutput { descriptor, event ->
+        logger.lifecycle("Test: " + descriptor + " produced standard out/err: " + event.message )
+    }
+
+    testLogging {
+        testLogging {
+            events "skipped", "failed"
+            exceptionFormat = "full"
+        }
+        afterSuite { desc, result ->
+            if (!desc.parent) { // will match the outermost suite
+                println "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
+            }
+        }
+    }
+
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from 'build/docs/javadoc'
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
+
+// This is a hack to disable the java 8 default javadoc lint until we fix the html formatting
+if (JavaVersion.current().isJava8Compatible()) {
+    tasks.withType(Javadoc) {
+        options.addStringOption('Xdoclint:none', '-quiet')
+    }
+}
+
+/**
+ *This specifies what artifacts will be built and uploaded when performing a maven upload.
+ */
+artifacts {
+    archives jar
+    archives javadocJar
+    archives sourcesJar
+}
+
+/**
+ * Sign non-snapshot releases with our secret key.  This should never need to be invoked directly.
+ */
+signing {
+    required { isRelease && gradle.taskGraph.hasTask("uploadArchives") }
+    sign configurations.archives
+}
+
+/**
+ * Upload a release to sonatype.  You must be an authorized uploader and have your sonatype
+ * username and password information in your gradle properties file.  See the readme for more info.
+ *
+ * For releasing to your local maven repo, use gradle install
+ */
+uploadArchives {
+    doFirst {
+        println "Attempting to upload version:$version"
+    }
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: project.findProperty("sonatypeUsername"), password: project.findProperty("sonatypePassword"))
+            }
+
+            snapshotRepository(url: "https://artifactory.broadinstitute.org/artifactory/libs-snapshot-local/") {
+                authentication(userName: System.env.ARTIFACTORY_USERNAME, password: System.env.ARTIFACTORY_PASSWORD)
+            }
+
+            pom.project {
+                name 'Barclay'
+                packaging 'jar'
+                description 'Development on Barclay command line parsing and documentation utilities'
+                url 'http://github.com/broadinstitute/barclay'
+
+                scm {
+                    url 'scm:git@github.com:broadinstitute/barclay.git'
+                    connection 'scm:git@github.com:broadinstitute/barclay.git'
+                    developerConnection 'scm:git@github.com:broadinstitute/barclay.git'
+                }
+
+                developers {
+                    developer {
+                        id = "gatkdev"
+                        name = "GATK Development Team"
+                        email = "gatk-dev-public@broadinstitute.org"
+                    }
+                }
+
+                licenses {
+                    license {
+                        name 'BSD 3-Clause'
+                        url 'https://github.com/broadinstitute/barclay/blob/master/LICENSE.TXT'
+                        distribution 'repo'
+                    }
+                }
+            }
+        }
+    }
+}
+
