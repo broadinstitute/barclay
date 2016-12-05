@@ -519,7 +519,7 @@ public final class CommandLineArgumentParserTest {
     class CollectionWithDefaultValuesArguments {
 
         @Argument
-        public List<String> LIST = new ArrayList<>();
+        public List<String> LIST = makeList("foo", "bar");
 
         public List<String> makeList(final String... list) {
             final List<String> result = new ArrayList<>();
@@ -529,36 +529,32 @@ public final class CommandLineArgumentParserTest {
 
     }
 
-    @Test
-    public void testClearDefaultValuesFromListArgument() {
-        final CollectionWithDefaultValuesArguments o = new CollectionWithDefaultValuesArguments();
-        o.LIST = o.makeList("foo", "bar");
-        final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
-        final String[] args = {"--LIST","null"};
-        Assert.assertTrue(clp.parseArguments(System.err, args));
-        Assert.assertEquals(o.LIST.size(), 0);
-    }
-
-    @Test
+    @Test(expectedExceptions = CommandLineException.class)
     public void testClearDefaultValuesFromListArgumentAndAddNew() {
         final CollectionWithDefaultValuesArguments o = new CollectionWithDefaultValuesArguments();
-        o.LIST = o.makeList("foo", "bar");
-        final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
+        final CommandLineParser clp = new CommandLineArgumentParser(o);
         final String[] args = {"--LIST","null", "--LIST","baz", "--LIST","frob"};
         Assert.assertTrue(clp.parseArguments(System.err, args));
         Assert.assertEquals(o.LIST, o.makeList("baz", "frob"));
     }
 
     @Test
-    public void testDefaultValuesListArgument() {
+    public void testReplaceListArgument() {
         final CollectionWithDefaultValuesArguments o = new CollectionWithDefaultValuesArguments();
-        o.LIST = o.makeList("foo", "bar");
-        final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
+        final CommandLineParser clp = new CommandLineArgumentParser(o);
         final String[] args = {"--LIST","baz", "--LIST","frob"};
         Assert.assertTrue(clp.parseArguments(System.err, args));
-        Assert.assertEquals(o.LIST, o.makeList("foo", "bar", "baz", "frob"));
+        Assert.assertEquals(o.LIST, o.makeList("baz", "frob"));
     }
 
+    @Test
+    public void testRetainDefaultListArgument() {
+        final CollectionWithDefaultValuesArguments o = new CollectionWithDefaultValuesArguments();
+        final CommandLineParser clp = new CommandLineArgumentParser(o);
+        final String[] args = {};
+        Assert.assertTrue(clp.parseArguments(System.err, args));
+        Assert.assertEquals(o.LIST, o.makeList("foo", "bar"));
+    }
 
     @Test
        public void testFlagNoArgument(){
