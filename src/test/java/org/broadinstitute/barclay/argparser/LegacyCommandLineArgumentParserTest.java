@@ -809,4 +809,27 @@ public class LegacyCommandLineArgumentParserTest {
 
         }
     }
+
+    @CommandLineProgramProperties(
+            summary = "Tool with max/min boundaries",
+            oneLineSummary = "Tool with max/min boundaries",
+            programGroup = TestProgramGroup.class
+    )
+    private static final class WithBoundaries {
+        @Argument(minValue = -10, minRecommendedValue = -2, maxValue = 2, maxRecommendedValue = 10)
+        public int INTEGER_VALUE;
+    }
+
+    @DataProvider
+    public Object[][] valuesForWithBoundaries() {
+        return new Object[][] {{-15}, {-5}, {-2}, {1}, {0}, {2}, {5}, {10}};
+    }
+
+    @Test(dataProvider = "valuesForWithBoundaries")
+    public void testIgnoringBoundaries(final int value) {
+        final WithBoundaries withBoundaries = new WithBoundaries();
+        final LegacyCommandLineArgumentParser clp = new LegacyCommandLineArgumentParser(withBoundaries);
+        clp.parseArguments(System.err, new String[]{"INTEGER_VALUE=" + Integer.toString(value)});
+        Assert.assertEquals(withBoundaries.INTEGER_VALUE, value);
+    }
 }

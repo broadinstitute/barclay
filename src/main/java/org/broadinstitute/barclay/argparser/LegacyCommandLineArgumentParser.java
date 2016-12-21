@@ -24,6 +24,8 @@
 package org.broadinstitute.barclay.argparser;
 
 import org.apache.commons.lang3.text.WordUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -98,6 +100,8 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
     };
 
     private final Set<String> optionsThatCannotBeOverridden = new HashSet<String>();
+
+    private final static Logger logger = LogManager.getLogger();
 
     /**
      * A typical command line program will call this to get the beginning of the usage message,
@@ -548,7 +552,6 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
             } else {
                 value = constructFromString(getUnderlyingType(optionDefinition.field), stringValue);
             }
-
         } catch (final CommandLineException e) {
             messageStream.println("ERROR: " + e.getMessage());
             return false;
@@ -806,7 +809,6 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
                 printOrder = fieldPosition * 1000;
             }
 
-
             final OptionDefinition optionDefinition = new OptionDefinition(field,
                     field.getName(),
                     optionAnnotation.shortName(),
@@ -815,6 +817,20 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
                     optionAnnotation.maxElements(), field.get(callerOptions), optionAnnotation.common(),
                     optionAnnotation.mutex(),
                     printOrder);
+
+            // log a warning if boundaries are set
+            if (optionAnnotation.maxValue() != Double.POSITIVE_INFINITY) {
+                logger.warn("Maximum allowed value for argument --{} is not enforced", optionDefinition.name);
+            }
+            if (optionAnnotation.minValue() != Double.NEGATIVE_INFINITY) {
+                logger.warn("Minimum allowed value for argument --{} is not enforced", optionDefinition.name);
+            }
+            if (optionAnnotation.maxRecommendedValue() != Double.POSITIVE_INFINITY) {
+                logger.warn("Maximum recommended value for argument --{} is not checked", optionDefinition.name);
+            }
+            if (optionAnnotation.minRecommendedValue() != Double.NEGATIVE_INFINITY) {
+                logger.warn("Minimum recommended value for argument --{} is not checked", optionDefinition.name);
+            }
 
             for (final String option : optionAnnotation.mutex()) {
                 final OptionDefinition mutextOptionDef = optionMap.get(option);
