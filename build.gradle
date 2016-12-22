@@ -45,10 +45,14 @@ compileTestJava {
 
 dependencies {
     compile 'net.sf.jopt-simple:jopt-simple:5.0.3'
-
     compile 'org.apache.commons:commons-lang3:3.4'
     compile 'org.apache.logging.log4j:log4j-api:2.3'
     compile 'org.apache.logging.log4j:log4j-core:2.3'
+
+    // javadoc utilities and docgen dependencies
+    compile files("${System.properties['java.home']}/../lib/tools.jar")
+    compile 'org.freemarker:freemarker:2.3.18'
+    compile 'com.google.code.gson:gson:2.2.2'
 
     testCompile 'org.testng:testng:6.9.6'
 }

@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Collection;
 
 /**
- * Interface for command line argument parsers.
+ * Interface implemented by Barclay command line argument parsers.
  */
 public interface CommandLineParser {
 
