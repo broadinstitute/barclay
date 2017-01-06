@@ -8,9 +8,9 @@ import java.util.Comparator;
  */
 public interface CommandLineProgramGroup {
 
-    /** Gets the name of this program. **/
+    /** Gets the name of this group. **/
     public String getName();
-    /** Gets the description of this program. **/
+    /** Gets the description of this group. **/
     public String getDescription();
     /** Compares two program groups by name. **/
     public static Comparator<CommandLineProgramGroup> comparator = (a, b) -> a.getName().compareTo(b.getName());

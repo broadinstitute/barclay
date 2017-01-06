@@ -1,110 +1,190 @@
-/*
-* Copyright 2012-2016 Broad Institute, Inc.
-* 
-* Permission is hereby granted, free of charge, to any person
-* obtaining a copy of this software and associated documentation
-* files (the "Software"), to deal in the Software without
-* restriction, including without limitation the rights to use,
-* copy, modify, merge, publish, distribute, sublicense, and/or sell
-* copies of the Software, and to permit persons to whom the
-* Software is furnished to do so, subject to the following
-* conditions:
-* 
-* The above copyright notice and this permission notice shall be
-* included in all copies or substantial portions of the Software.
-* 
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-* OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-* NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-* HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-* WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-* FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
-* THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-
 package org.broadinstitute.barclay.help;
 
 import com.sun.javadoc.ClassDoc;
 import com.sun.javadoc.FieldDoc;
-import com.sun.javadoc.Tag;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.broadinstitute.barclay.argparser.*;
-import org.broadinstitute.barclay.utils.JVMUtils;
 
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
- * Base implementation of the DocumentedFeatureHandler. Most consumers will subclass this to provide a custom
- * FreeMarker Template.
+ * Default implementation of DocWorkUnitHandler. The DocWorkUnitHandler determines the template that will be
+ * used for a given work unit, and populates the Freemarker property map used for a single feature/work-unit.
+ * *
+ * Most consumers will subclass this to provide at least provide a custom FreeMarker Template, and possibly
+ * other custom behavior.
  */
-public class DefaultDocumentedFeatureHandler extends DocumentedFeatureHandler {
-    private static Logger logger = LogManager.getLogger(DefaultDocumentedFeatureHandler.class);
+public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
+    final protected static Logger logger = LogManager.getLogger(DefaultDocWorkUnitHandler.class);
 
     private static final String NAME_FOR_POSITIONAL_ARGS = "[NA - Positional]";
     private static final String DEFAULT_FREEMARKER_TEMPLATE_NAME = "generic.template.html";
 
-    private DocWorkUnit currentWorkUnit;
-
     /**
-     * Determine if a particular class should be included in the output.
-     * @param clazz class that is being considered for inclusion in the docs
-     * @param classDoc classDoc for the class being considered
-     * @return true if the doc should be included, otheerwise false
+     * @param doclet for this documentation run. May not be null.
      */
-    @Override
-    public boolean includeInDocs(final Class<?> clazz, final ClassDoc classDoc) {
-        boolean hidden = !getDoclet().showHiddenFeatures() && clazz.isAnnotationPresent(Hidden.class);
-        return !hidden && JVMUtils.isConcrete(clazz);
+    public DefaultDocWorkUnitHandler(final HelpDoclet doclet) {
+        super(doclet);
     }
 
     /**
-     * Return the template to be used for the particular classDoc object. Must be present in the location
+     * Return the template to be used for the particular workUnit. Must be present in the location
      * specified is the -settings-dir doclet parameter.
-     * @param classDoc
+     *
+     * @param workUnit workUnit for which a template ie being requested
      * @return name of the template file to use, relative to -settings-dir
      */
     @Override
-    public String getTemplateName(final ClassDoc classDoc) {
+    public String getTemplateName(final DocWorkUnit workUnit) {
         return DEFAULT_FREEMARKER_TEMPLATE_NAME;
+    }
+
+    /**
+     * Get the summary string to be used for a given work unit, applying any fallback policy. This is
+     * called by the work unit handler after the work unit has been populated, and may be overridden by
+     * subclasses to provide custom behavior.
+     *
+     * @param workUnit
+     * @return the summary string to be used for this work unit
+     */
+    @Override
+    public String getSummaryForWorkUnit(final DocWorkUnit workUnit) {
+        String summary = workUnit.getDocumentedFeature().summary();
+        if (summary == null || summary.isEmpty()) {
+            final CommandLineProgramProperties commandLineProperties = workUnit.getCommandLineProperties();
+            if (commandLineProperties != null) {
+                summary = commandLineProperties.oneLineSummary();
+            }
+            if (summary == null || summary.isEmpty()) {
+                // If no summary was found from annotations, use the javadoc if there is any
+                summary = Arrays.stream(workUnit.getClassDoc().firstSentenceTags())
+                        .map(tag -> tag.text())
+                        .collect(Collectors.joining());
+            }
+        }
+
+        return summary == null ? "" : summary;
+    }
+
+    /**
+     * Get the group name string to be used for a given work unit, applying any fallback policy. This is
+     * called by the work unit handler after the work unit has been populated, and may be overridden by
+     * subclasses to provide custom behavior.
+     *
+     * @param workUnit
+     * @return the group name to be used for this work unit
+     */
+    @Override
+    public String getGroupNameForWorkUnit(final DocWorkUnit workUnit) {
+        String groupName = workUnit.getDocumentedFeature().groupName();
+        if (groupName == null || groupName.isEmpty()) {
+            final CommandLineProgramGroup clpGroup = workUnit.getCommandLineProgramGroup();
+            if (clpGroup != null) {
+                groupName = clpGroup.getName();
+            }
+            if (groupName == null || groupName.isEmpty()) {
+                logger.warn("No group name declared for: " + workUnit.getClazz().getCanonicalName());
+                groupName = "";
+            }
+        }
+        return groupName;
+    }
+
+    /**
+     * Get the group summary string to be used for a given work unit's group, applying any fallback policy.
+     * This is called by the work unit handler after the work unit has been populated, and may be overridden by
+     * subclasses to provide custom behavior.
+     *
+     * @param workUnit
+     * @return the group summary to be used for this work unit's group
+     */
+    @Override
+    public String getGroupSummaryForWorkUnit( final DocWorkUnit workUnit){
+        String groupSummary = workUnit.getDocumentedFeature().groupSummary();
+        final CommandLineProgramGroup clpGroup = workUnit.getCommandLineProgramGroup();
+        if (groupSummary == null || groupSummary.isEmpty()) {
+            if (clpGroup != null) {
+                groupSummary = clpGroup.getDescription();
+            }
+            if (groupSummary == null || groupSummary.isEmpty()) {
+                logger.warn("No group summary declared for: " + workUnit.getClazz().getCanonicalName());
+                groupSummary = "";
+            }
+        }
+        return groupSummary;
+    }
+
+    /**
+     * Return the description to be used for the work unit. We need to manually strip
+     * out any inline custom javadoc tags since we don't those in the summary.
+     *
+     * @param currentWorkUnit
+     * @return Description to be used or the work unit.
+     */
+    protected String getDescription(final DocWorkUnit currentWorkUnit) {
+        return Arrays.stream(currentWorkUnit.getClassDoc().inlineTags())
+                .filter(t -> getTagPrefix() == null || !t.name().startsWith(getTagPrefix()))
+                .map(t -> t.text())
+                .collect(Collectors.joining());
     }
 
     /**
      * Create the Freemarker Template Map, with the following top-level structure:
      *
+     * The overall default key/value structure of featureMaps looks like this:
+     *
      * name -> String
      * group -> String
-     * summary -> String
-     * description -> String
      * version -> String
      * timestamp -> String
+     * summary -> String
+     * description -> String
      * extraDocs -> List
-     * arguments -> List
-     * gson-arguments -> List
      * plugin1 ->
      *      name -> String
      *      filename -> String (link)
-     * .
-     * .
+     *   .
+     *   .
      * pluginN -> ...
+     * arguments -> List
+     * gson-arguments -> List
+     * groups -> list of maps, one per group
+     *      name -> ..
+     *      id -> ..
+     *      summary ->..
+     * data -> list of maps, one per documented feature
+     *      name ->..
+     *      summary -> ..
+     *      group -> ..
+     *      filename -> ..
      *
-     * @param workUnit
+     *
+     * Key/value structure of groupMaps:
+     *      name -> ..
+     *      id -> ..
+     *      summary ->..
+     *
+     * @param workUnit work unit to process
+     * @param featureMaps list of feature maps, one per documented feature, as defined above
+     * @param groupMaps list of group maps, one per group, as defined above
      */
-    @SuppressWarnings("unchecked")
     @Override
-    public void processWorkUnit(final DocWorkUnit workUnit) {
-        this.currentWorkUnit = workUnit;
+    public void processWorkUnit(
+            final DocWorkUnit workUnit,
+            final List<Map<String, String>> featureMaps,
+            final List<Map<String, String>> groupMaps) {
 
-        // Docgen needs to use the new CommandLineArgumentParser since it needs to interrogate plugins
         CommandLineArgumentParser clp;
         List<? extends CommandLinePluginDescriptor<?>> pluginDescriptors = new ArrayList<>();
+
         try {
-            final Object argumentContainer = currentWorkUnit.clazz.newInstance();
+            final Object argumentContainer = workUnit.getClazz().newInstance();
             if (argumentContainer instanceof CommandLinePluginProvider ) {
                 pluginDescriptors = ((CommandLinePluginProvider) argumentContainer).getPluginDescriptors();
                 clp = new CommandLineArgumentParser(argumentContainer, pluginDescriptors);
@@ -115,53 +195,44 @@ public class DefaultDocumentedFeatureHandler extends DocumentedFeatureHandler {
             throw new RuntimeException(e);
         }
 
-        final Map<String, Object> root = new HashMap<>();
+        workUnit.setProperty("groups", groupMaps);
+        workUnit.setProperty("data", featureMaps);
 
-        addHighLevelBindings(clp, pluginDescriptors, root);
-        addCommandLineArgumentBindings(clp, pluginDescriptors, root);
-        addExtraDocsBindings(clp, pluginDescriptors, root);
-        addCustomBindings(currentWorkUnit.clazz, currentWorkUnit.classDoc, root);
-
-        root.put("group", currentWorkUnit.group);
-        currentWorkUnit.setHandlerContent((String) root.get("summary"), root);
+        addHighLevelBindings(workUnit);
+        addCommandLineArgumentBindings(workUnit, clp);
+        addDefaultPlugins(workUnit, pluginDescriptors);
+        addExtraDocsBindings(workUnit);
+        addCustomBindings(workUnit);
     }
 
     /**
-     * Add high-level summary information about toProcess to root, such as its
-     * name, summary, description, version, etc.
+     * Add high-level summary information, such as name, summary, description, version, etc.
      *
-     * @param root
+     * @param workUnit
      */
-    protected void addHighLevelBindings(
-            final CommandLineArgumentParser clp,
-            final List<? extends CommandLinePluginDescriptor<?>> pluginDescriptors,
-            final Map<String, Object> root)
+    protected void addHighLevelBindings(final DocWorkUnit workUnit)
     {
-        root.put("name", currentWorkUnit.classDoc.name());
-        root.put("timestamp", currentWorkUnit.buildTimestamp);
-        root.put("version", currentWorkUnit.absoluteVersion);
+        workUnit.setProperty("name", workUnit.getName());
+        workUnit.setProperty("group", workUnit.getGroupName());
+        workUnit.setProperty("summary", workUnit.getSummary());
 
-        addSummary(root);
-        addDescription(root);
-        addDefaultPlugins(root, pluginDescriptors);
+        workUnit.setProperty("description", getDescription(workUnit));
+
+        workUnit.setProperty("version", getDoclet().getBuildVersion());
+        workUnit.setProperty("timestamp", getDoclet().getBuildTimeStamp());
     }
 
     /**
      * Add any custom freemarker bindings discovered via custom javadoc tags. Subclasses can override this to
      * provide additional custom bindings.
      *
-     * @param classToProcess the class for the feature being documented
-     * @param classDoc javadoc ClassDoc for the feature being documented
-     * @param rootMap the root of the document handler, to which we'll store collected annotations
+     * @param currentWorkUnit the work unit for the feature being documented
      */
-    protected void addCustomBindings(
-            final Class<?> classToProcess,
-            final ClassDoc classDoc,
-            final Map<String, Object> rootMap) {
+    protected void addCustomBindings(final DocWorkUnit currentWorkUnit) {
         final String tagFilterPrefix = getTagPrefix();
-        Arrays.stream(currentWorkUnit.classDoc.inlineTags())
+        Arrays.stream(currentWorkUnit.getClassDoc().inlineTags())
                 .filter(t -> t.name().startsWith(tagFilterPrefix))
-                .forEach(t -> rootMap.put(t.name().substring(tagFilterPrefix.length()), t.text()));
+                .forEach(t -> currentWorkUnit.setProperty(t.name().substring(tagFilterPrefix.length()), t.text()));
     }
 
     /**
@@ -171,28 +242,21 @@ public class DefaultDocumentedFeatureHandler extends DocumentedFeatureHandler {
     protected String getTagFilterPrefix(){ return ""; }
 
     /**
-     * Add bindings describing related capabilities to toProcess
-     *
-     * @param clp
-     * @param pluginDescriptors
-     * @param root
+     * Add bindings describing related capabilities to currentWorkUnit
      */
-    protected void addExtraDocsBindings(
-            final CommandLineArgumentParser clp,
-            final List<? extends CommandLinePluginDescriptor<?>> pluginDescriptors,
-            final Map<String, Object> root)
+    protected void addExtraDocsBindings(final DocWorkUnit currentWorkUnit)
     {
         final List<Map<String, Object>> extraDocsData = new ArrayList<Map<String, Object>>();
 
         // add in all of the explicitly related extradocs items
-        for (final Class<?> extraDocClass : currentWorkUnit.documentedFeatureObject.extraDocs()) {
+        for (final Class<?> extraDocClass : currentWorkUnit.getDocumentedFeature().extraDocs()) {
             final DocWorkUnit otherUnit = getDoclet().findWorkUnitForClass(extraDocClass);
             if (otherUnit != null) {
                 extraDocsData.add(
                         new HashMap<String, Object>() {
                             static final long serialVersionUID = 0L;
                             {
-                                put("name", otherUnit.name);
+                                put("name", otherUnit.getName());
                                 put("filename", otherUnit.getTargetFileName());
                             }
                         });
@@ -201,31 +265,26 @@ public class DefaultDocumentedFeatureHandler extends DocumentedFeatureHandler {
                         "An \"extradocs\" value (%s) was specified for (%s), but the target was not included in the " +
                         "source list for this javadoc run, or the target has no documentation.",
                         extraDocClass,
-                        currentWorkUnit.name
+                        currentWorkUnit.getName()
                 );
                 throw new DocException(msg);
             }
         }
-        root.put("extradocs", extraDocsData);
+        currentWorkUnit.setProperty("extradocs", extraDocsData);
     }
 
     @SuppressWarnings("unchecked")
     /**
      * Add information about all of the arguments available to toProcess root
-     *
-     * @param root
      */
-    protected void addCommandLineArgumentBindings(
-            final CommandLineArgumentParser clp,
-            final List<? extends CommandLinePluginDescriptor<?>> pluginDescriptors,
-            final Map<String, Object> root)
+    protected void addCommandLineArgumentBindings(final DocWorkUnit currentWorkUnit, final CommandLineArgumentParser clp)
     {
         final Map<String, List<Map<String, Object>>> argMap = createArgumentMap();
-        root.put("arguments", argMap);
+        currentWorkUnit.setProperty("arguments", argMap);
 
         // do positional arguments, followed by named arguments
         processPositionalArguments(clp, argMap);
-        clp.getArgumentDefinitions().stream().forEach(argDef -> processNamedArgument(argMap, argDef));
+        clp.getArgumentDefinitions().stream().forEach(argDef -> processNamedArgument(currentWorkUnit, argMap, argDef));
 
         // sort the resulting args
         argMap.entrySet().stream().forEach( entry -> entry.setValue(sortArguments(entry.getValue())));
@@ -252,29 +311,7 @@ public class DefaultDocumentedFeatureHandler extends DocumentedFeatureHandler {
             );
             allGSONArgs.add(itemGSONArg);
         }
-        root.put("gson-arguments", allGSONArgs);
-    }
-
-    private void addSummary(final Map<String, Object> root) {
-        final StringBuilder summaryBuilder = new StringBuilder();
-        for (final Tag tag : currentWorkUnit.classDoc.firstSentenceTags()) {
-            summaryBuilder.append(tag.text());
-        }
-        root.put("summary", summaryBuilder.toString());
-    }
-
-    /**
-     * When processing the description, we need to manually strip out any inline custom javdoc tags
-     * since we don't those in the summary.
-     * @param rootMap
-     */
-    private void addDescription(final Map<String, Object> rootMap) {
-        final String tagFilterPrefix = getTagPrefix();
-        final StringBuilder descBuilder = new StringBuilder();
-        Arrays.stream(currentWorkUnit.classDoc.inlineTags())
-                .filter(t -> tagFilterPrefix == null ? true : !t.name().startsWith(tagFilterPrefix))
-                .forEach(t -> descBuilder.append(t.text()));
-        rootMap.put("description", descBuilder.toString());
+        currentWorkUnit.setProperty("gson-arguments", allGSONArgs);
     }
 
     private String getTagPrefix() {
@@ -285,38 +322,39 @@ public class DefaultDocumentedFeatureHandler extends DocumentedFeatureHandler {
     }
 
     // Add top level bindings for the default instances for each plugin descriptor
-    // NOTE: The default freemarker template provided by Barlcay has no references to plugins, since they're
+    // NOTE: The default Freemarker template provided by Barclay has no references to plugins, since they're
     // defined by the consumer. However, if a custom freemarker template is being used that DOES contain references
     // to plugins, the corresponding custom doclet class or documentation handler should ensure that the root
     // map is populated with proper values. Otherwise, when the template is run on any documentable instance
     // that happens to not have any plugin instances present, freemarker will throw when it finds the undefined
     // reference.
-    private void addDefaultPlugins(
-            final Map<String, Object> root,
+    protected void addDefaultPlugins(
+            final DocWorkUnit currentWorkUnit,
             final List<? extends CommandLinePluginDescriptor<?>> pluginDescriptors)
     {
         for (final CommandLinePluginDescriptor<?> descriptor :  pluginDescriptors) {
             final String descriptorName = descriptor.getDisplayName();  // key/name at the root of the freemarker map
             final HashSet<HashMap<String, Object>> defaultsForPlugins = new HashSet<>();
-            root.put(descriptorName, defaultsForPlugins);
+            currentWorkUnit.setProperty(descriptorName, defaultsForPlugins);
 
             for (final Object plugin : descriptor.getDefaultInstances()) {
                 final HashMap<String, Object> pluginDetails = new HashMap<>();
                 pluginDetails.put("name", plugin.getClass().getSimpleName());
-                pluginDetails.put("filename", DocUtils.phpFilenameForClass(plugin.getClass(), getDoclet().getOutputFileExtension()));
+                pluginDetails.put("filename", DocletUtils.phpFilenameForClass(plugin.getClass(), getDoclet().getOutputFileExtension()));
                 defaultsForPlugins.add(pluginDetails);
             }
         }
     }
 
     private void processNamedArgument(
+            final DocWorkUnit currentWorkUnit,
             final Map<String, List<Map<String, Object>>> args,
             final CommandLineArgumentParser.ArgumentDefinition argDef)
     {
         if (!argDef.isControlledByPlugin() &&
                 (argDef.field.getAnnotation(Hidden.class) == null || getDoclet().showHiddenFeatures())) {
             // first find the fielddoc for the target
-            FieldDoc fieldDoc = getFieldDocForCommandLineArgument(argDef);
+            FieldDoc fieldDoc = getFieldDocForCommandLineArgument(currentWorkUnit, argDef);
             final Map<String, Object> argBindings = docForArgument(fieldDoc, argDef);
             final String kind = docKindOfArg(argDef);
             argBindings.put("kind", kind);
@@ -356,10 +394,12 @@ public class DefaultDocumentedFeatureHandler extends DocumentedFeatureHandler {
         }
     }
 
-    private FieldDoc getFieldDocForCommandLineArgument(final CommandLineArgumentParser.ArgumentDefinition argDef) {
-        FieldDoc fieldDoc = getFieldDoc(currentWorkUnit.classDoc, argDef.field.getName());
+    private FieldDoc getFieldDocForCommandLineArgument(
+            final DocWorkUnit currentWorkUnit,
+            final CommandLineArgumentParser.ArgumentDefinition argDef) {
+        FieldDoc fieldDoc = getFieldDoc(currentWorkUnit.getClassDoc(), argDef.field.getName());
         if (fieldDoc == null) {
-            for (final ClassDoc classDoc : getRootDoc().classes()) {
+            for (final ClassDoc classDoc : getDoclet().getRootDoc().classes()) {
                 fieldDoc = getFieldDoc(classDoc, argDef.field.getName());
                 if (fieldDoc != null) {
                     break;
@@ -367,8 +407,12 @@ public class DefaultDocumentedFeatureHandler extends DocumentedFeatureHandler {
             }
         }
         if (fieldDoc == null) {
-            throw new DocException(argDef.field.getClass().getName() +
-                    " was referenced by, but not included in the list of javadoc targets");
+            throw new DocException(
+                 String.format(
+                         "The class \"%s\" is referenced by \"%s\", and must be included in the list of target documentation classes.",
+                         argDef.field.getDeclaringClass().getCanonicalName(),
+                         currentWorkUnit.getClassDoc().qualifiedTypeName())
+            );
         }
         return fieldDoc;
     }
@@ -426,6 +470,7 @@ public class DefaultDocumentedFeatureHandler extends DocumentedFeatureHandler {
         // common optional
         // advanced
         // hidden
+        // deprecated
 
         // Required first (after positional, which are separate), regardless of what else it might be
         if (argumentDefinition.isControlledByPlugin()) {
@@ -559,7 +604,7 @@ public class DefaultDocumentedFeatureHandler extends DocumentedFeatureHandler {
                 throw new RuntimeException("Could not find the field corresponding to " + fieldDoc +
                         ", presumably because the field is inaccessible");
             if (field.isAnnotationPresent(ArgumentCollection.class)) {
-                final ClassDoc typeDoc = getRootDoc().classNamed(fieldDoc.type().qualifiedTypeName());
+                final ClassDoc typeDoc = getDoclet().getRootDoc().classNamed(fieldDoc.type().qualifiedTypeName());
                 if (typeDoc == null)
                     throw new DocException("Tried to get javadocs for ArgumentCollection field " +
                             fieldDoc + " but couldn't find the class in the RootDoc");
@@ -617,7 +662,7 @@ public class DefaultDocumentedFeatureHandler extends DocumentedFeatureHandler {
      * just Set in the docs.
      *
      * @param type
-     * @return
+     * @return String representing the argument type
      */
     protected String argumentTypeString(final Type type) {
         if (type instanceof ParameterizedType) {

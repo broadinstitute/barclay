@@ -10,7 +10,7 @@ import java.util.*;
 
 /**
  * Argument container class for testing documentation generation. Contains an argument
- * for each @Argument, @ArgumentCollection, and @DocumentedFeature proeprty that should
+ * for each @Argument, @ArgumentCollection, and @DocumentedFeature property that should
  * be tested.
  *
  * Test custom tag:
