@@ -8,6 +8,8 @@ import joptsimple.OptionSpecBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.WordUtils;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.broadinstitute.barclay.utils.Utils;
 
 import java.io.BufferedReader;
@@ -27,6 +29,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.DoubleFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -69,6 +72,8 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     private static final String NULL_STRING = "null";
     public static final String COMMENT = "#";
     public static final String POSITIONAL_ARGUMENTS_NAME = "Positional Argument";
+
+    private static final Logger logger = LogManager.getLogger();
 
     // Map from (full class) name of each CommandLinePluginDescriptor requested and
     // found to the actual descriptor instance
@@ -508,6 +513,52 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         // finally, give each plugin a chance to trim down any unseen instances from it's own list
         pluginDescriptors.entrySet().forEach(e -> e.getValue().validateArguments());
     }
+    /**
+     * Check the provided value against any range constraints specified in the Argument annotation
+     * for the corresponding field. Throw an exception if limits are violated.
+     *
+     * - Only checks numeric types (int, double, etc.)
+     */
+    private void checkArgumentRange(final ArgumentDefinition argumentDefinition, final Object argumentValue) {
+        // Only validate numeric types because we have already ensured at constructor time that only numeric types have bounds
+        if (!Number.class.isAssignableFrom(argumentDefinition.type)) {
+            return;
+        }
+
+        final Double argumentDoubleValue = (argumentValue == null) ? null : ((Number)argumentValue).doubleValue();
+
+        // Check hard limits first, if specified
+        if (isOutOfRange(argumentDefinition.minValue, argumentDefinition.maxValue, argumentDoubleValue)) {
+            throw new CommandLineException.OutOfRangeArgumentValue(argumentDefinition.getLongName(), argumentDefinition.minValue, argumentDefinition.maxValue, argumentValue);
+        }
+        // Check recommended values
+        if (isOutOfRange(argumentDefinition.minRecommendedValue, argumentDefinition.maxRecommendedValue, argumentDoubleValue)) {
+            final boolean outMinValue = argumentDefinition.minRecommendedValue != Double.NEGATIVE_INFINITY;
+            final boolean outMaxValue = argumentDefinition.maxRecommendedValue != Double.POSITIVE_INFINITY;
+            if (outMinValue && outMaxValue) {
+                logger.warn("Argument --{} has value {}, but recommended within range ({},{})",
+                        argumentDefinition.getLongName(), argumentDoubleValue, argumentDefinition.minRecommendedValue, argumentDefinition.maxRecommendedValue);
+            } else if (outMinValue) {
+                logger.warn("Argument --{} has value {}, but minimum recommended is {}",
+                        argumentDefinition.getLongName(), argumentDoubleValue, argumentDefinition.minRecommendedValue);
+            } else if (outMaxValue) {
+                logger.warn("Argument --{} has value {}, but maximum recommended is {}",
+                        argumentDefinition.getLongName(), argumentDoubleValue, argumentDefinition.maxRecommendedValue);
+            }
+        }
+    }
+
+    // null values are always out of range
+    private static boolean isOutOfRange(final double minValue, final double maxValue, final Double value) {
+        return value == null || minValue != Double.NEGATIVE_INFINITY && value < minValue
+                || maxValue != Double.POSITIVE_INFINITY && value > maxValue;
+    }
+
+    // check if the value is infinity or a mathematical integer
+    private static boolean isInfinityOrMathematicalInteger(final double value) {
+        return Double.isInfinite(value) || value == Math.rint(value);
+    }
+
 
     @SuppressWarnings("unchecked")
     private void setPositionalArgument(final String stringValue) {
@@ -566,6 +617,9 @@ public final class CommandLineArgumentParser implements CommandLineParser {
             } else {
                 value = constructFromString(CommandLineParser.getUnderlyingType(argumentDefinition.field), stringValue, argumentDefinition.getLongName());
             }
+
+            // check the argument range
+            checkArgumentRange(argumentDefinition, value);
 
             if (argumentDefinition.isCollection) {
                 @SuppressWarnings("rawtypes")
@@ -947,6 +1001,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
 
     public static class ArgumentDefinition {
         public final Field field;
+        public final Class<?> type;
         final String fieldName;
         public final String fullName;
         public final String shortName;
@@ -961,6 +1016,10 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         final boolean isSpecial;
         final boolean isSensitive;
         public final CommandLinePluginDescriptor<?> controllingDescriptor;
+        final Double maxValue;
+        final Double minValue;
+        final Double maxRecommendedValue;
+        final Double minRecommendedValue;
 
         public ArgumentDefinition(
                 final Field field,
@@ -998,8 +1057,30 @@ public final class CommandLineArgumentParser implements CommandLineParser {
             //null collections have been initialized by createCollection which is called in handleArgumentAnnotation
             //this is optional if it's specified as being optional or if there is a default value specified
             this.optional = annotation.optional() || ! this.defaultValue.equals(NULL_STRING);
+            this.maxValue = annotation.maxValue();
+            this.minValue = annotation.minValue();
+            this.maxRecommendedValue = annotation.maxRecommendedValue();
+            this.minRecommendedValue = annotation.minRecommendedValue();
+            // bounds should be only set for numeric arguments and if the type is integer it should
+            // be set to an integer
+            this.type = CommandLineParser.getUnderlyingType(this.field);
+            if (! Number.class.isAssignableFrom(this.type)) {
+                if (this.maxValue != Double.POSITIVE_INFINITY
+                        || this.minValue != Double.NEGATIVE_INFINITY
+                        || this.maxRecommendedValue != Double.POSITIVE_INFINITY
+                        || this.minRecommendedValue != Double.NEGATIVE_INFINITY) {
+                    throw new CommandLineException.CommandLineParserInternalException(String.format("Min/max value ranges can only be set for numeric arguments. Argument --%s has a minimum or maximum value but has a non-numeric type.", this.getLongName()));
+                }
+            }
+            if (Integer.class.isAssignableFrom(this.type)) {
+                if (!isInfinityOrMathematicalInteger(this.maxValue)
+                        || !isInfinityOrMathematicalInteger(this.minValue)
+                        || !isInfinityOrMathematicalInteger(this.maxRecommendedValue)
+                        || !isInfinityOrMathematicalInteger(this.minRecommendedValue)) {
+                    throw new CommandLineException.CommandLineParserInternalException(String.format("Integer argument --%s has a minimum or maximum attribute with a non-integral value.", this.getLongName()));
+                }
+            }
         }
-
 
         public Object getFieldValue(){
             try {

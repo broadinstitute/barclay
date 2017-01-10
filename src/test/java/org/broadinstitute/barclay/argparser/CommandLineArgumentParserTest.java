@@ -749,6 +749,88 @@ public final class CommandLineArgumentParserTest {
         return out.toString();
     }
 
+    @Test(expectedExceptions = CommandLineException.CommandLineParserInternalException.class)
+    public void testWithBoundariesArgumentsForNoNumeric() {
+        @CommandLineProgramProperties(summary = "broken tool",
+                oneLineSummary = "broken tool",
+                programGroup = TestProgramGroup.class)
+        class WithBoundariesArgumentsForString {
+            @Argument(doc = "String argument", optional = true, minValue = 0, maxValue = 30)
+            public String stringArg = "string";
+        }
+        final CommandLineArgumentParser clp = new CommandLineArgumentParser(new WithBoundariesArgumentsForString());
+    }
+
+    @Test(expectedExceptions = CommandLineException.CommandLineParserInternalException.class)
+    public void testWithDoubleBoundariesArgumentsForInteger() {
+        @CommandLineProgramProperties(summary = "broken tool",
+                oneLineSummary = "broken tool",
+                programGroup = TestProgramGroup.class)
+        class WithDoubleBoundariesArgumentsForInteger {
+            @Argument(doc = "Integer argument", minValue = 0.1, maxValue = 0.5)
+            public Integer integerArg;
+        }
+        final CommandLineArgumentParser clp = new CommandLineArgumentParser(new WithDoubleBoundariesArgumentsForInteger());
+    }
+
+    @CommandLineProgramProperties(
+            summary = "tool with boundaries",
+            oneLineSummary = "tools with boundaries",
+            programGroup = TestProgramGroup.class
+    )
+    public class WithBoundariesArguments {
+        // recommended values are not explicitly verified by the tests, but do force the code through the warning code paths
+        @Argument(doc = "Double argument in the range [10, 20]", optional = true, minValue = 10, minRecommendedValue = 16, maxRecommendedValue = 17, maxValue = 20)
+        public Double doubleArg = 15d;
+        // recommended values are not explicitly verified by the tests, but do force the code through the warning code paths
+        @Argument(doc = "Integer in the range [0, 30]", optional = true, minValue = 0, minRecommendedValue = 10, maxRecommendedValue = 15, maxValue = 30)
+        public int integerArg = 20;
+    }
+
+    @DataProvider
+    public Object[][] withinBoundariesArgs() {
+        return new Object[][]{
+            {new String[]{"--integerArg", "0"}, 15, 0},
+            {new String[]{"--integerArg", "10"}, 15, 10},
+            {new String[]{"--integerArg", "30"}, 15, 30},
+            {new String[]{"--doubleArg", "10"}, 10, 20},
+            {new String[]{"--doubleArg", "12"}, 12, 20},
+            {new String[]{"--doubleArg", "16"}, 16, 20},
+            {new String[]{"--doubleArg", "18"}, 18, 20},
+            {new String[]{"--doubleArg", "20"}, 20, 20}
+        };
+    }
+
+    @Test(dataProvider = "withinBoundariesArgs")
+    public void testWithinBoundariesArguments(final String[] argv, final double expectedDouble, final int expectedInteger) throws Exception {
+        final WithBoundariesArguments o = new WithBoundariesArguments();
+        final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
+        Assert.assertTrue(clp.parseArguments(System.err, argv));
+        Assert.assertEquals(o.doubleArg, expectedDouble);
+        Assert.assertEquals(o.integerArg, expectedInteger);
+    }
+
+    @DataProvider
+    public Object[][] outOfRangeArgs() {
+        return new Object[][]{
+                {new String[]{"--integerArg", "-45"}},
+                {new String[]{"--integerArg", "-1"}},
+                {new String[]{"--integerArg", "31"}},
+                {new String[]{"--integerArg", "106"}},
+                {new String[]{"--integerArg", "null"}},
+                {new String[]{"--doubleArg", "-1"}},
+                {new String[]{"--doubleArg", "0"}},
+                {new String[]{"--doubleArg", "21"}}
+        };
+    }
+
+    @Test(dataProvider = "outOfRangeArgs", expectedExceptions = CommandLineException.OutOfRangeArgumentValue.class)
+    public void testOutOfRangesArguments(final String[] argv) throws Exception {
+        final WithBoundariesArguments o = new WithBoundariesArguments();
+        final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
+        clp.parseArguments(System.err, argv);
+    }
+
     /***************************************************************************************
      * Start of tests and helper classes for CommandLineParser.gatherArgumentValuesOfType()
      ***************************************************************************************/

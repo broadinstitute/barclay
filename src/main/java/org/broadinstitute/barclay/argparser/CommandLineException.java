@@ -1,5 +1,7 @@
 package org.broadinstitute.barclay.argparser;
 
+import java.util.function.DoubleFunction;
+
 /**
  * Exceptions thrown by CommandLineParser implementations.
  */
@@ -37,6 +39,36 @@ public class CommandLineException extends RuntimeException {
         public BadArgumentValue(String message) {
             super(String.format("Illegal argument value: %s", message));
         }
+    }
+
+    public static class OutOfRangeArgumentValue extends BadArgumentValue {
+        private static final long serialVersionUID = 0L;
+
+        public OutOfRangeArgumentValue(final String argName, final double minValue, final double maxValue, final Object value) {
+            super(argName, getValueString(value), getMessage(minValue, maxValue, value instanceof Integer));
+        }
+
+        // to handle null values
+        private static String getValueString(final Object value) {
+            return (value == null) ? "null" : value.toString();
+        }
+
+        // get the message for the values, correctly formatted
+        private static String getMessage(final double minValue, final double maxValue, final boolean asInt) {
+            final boolean outMinValue = minValue != Double.NEGATIVE_INFINITY;
+            final boolean outMaxValue = maxValue != Double.POSITIVE_INFINITY;
+            final DoubleFunction<String> toString = (asInt) ? Double::toString : v -> Integer.toString((int) Math.rint(v));
+            if (outMinValue && outMaxValue) {
+                return String.format("allowed range [%s, %s].", toString.apply(minValue), toString.apply(maxValue));
+            } else if (outMinValue) {
+                return String.format("minimum allowed value %s", toString.apply(minValue));
+            } else if (outMaxValue) {
+                return String.format("maximum allowed value %s", toString.apply(maxValue));
+            }
+            // this should never be reached
+            throw new IllegalArgumentException("Unbounded range should not thrown this exception");
+        }
+
     }
 
     /**
