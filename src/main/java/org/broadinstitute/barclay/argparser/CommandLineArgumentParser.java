@@ -22,6 +22,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -29,7 +30,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.DoubleFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -280,6 +280,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
             final Map<Boolean, List<ArgumentDefinition>> unconditionalArgsMap = nonPluginArgs.stream()
                     .collect(Collectors.partitioningBy(a -> a.optional));
 
+            // Group all required args together
             final List<ArgumentDefinition> reqArgs = unconditionalArgsMap.get(false); // required args
             if (reqArgs != null && !reqArgs.isEmpty()) {
                 stream.println("\n\nRequired Arguments:\n");
@@ -287,11 +288,26 @@ public final class CommandLineArgumentParser implements CommandLineParser {
                 reqArgs.stream().forEach(argumentDefinition -> printArgumentUsage(stream, argumentDefinition));
             }
 
-            final List<ArgumentDefinition> optArgs = unconditionalArgsMap.get(true); // optional args
-            if (optArgs != null && !optArgs.isEmpty()) {
-                stream.println("\nOptional Arguments:\n");
-                optArgs.sort(ArgumentDefinition.sortByLongName);
-                optArgs.stream().forEach(argumentDefinition -> printArgumentUsage(stream, argumentDefinition));
+            // Group the optional tool-specific args together, but separate from the optional common args
+            List<ArgumentDefinition> optToolArgs =
+                    unconditionalArgsMap.getOrDefault(true, Collections.emptyList()).stream()
+                            .filter(argumentDefinition -> !argumentDefinition.isCommon)
+                            .collect(Collectors.toList());
+            if (!optToolArgs.isEmpty()) {
+                stream.println("\nOptional Tool Arguments:\n");
+                optToolArgs.sort(ArgumentDefinition.sortByLongName);
+                optToolArgs.forEach(argumentDefinition -> printArgumentUsage(stream, argumentDefinition));
+            }
+
+            // Optional common args
+            final List<ArgumentDefinition> optCommonArgs =
+                    unconditionalArgsMap.getOrDefault(true, Collections.emptyList()).stream()
+                    .filter(argumentDefinition -> argumentDefinition.isCommon)
+                    .collect(Collectors.toList());
+            if (!optCommonArgs.isEmpty()) {
+                stream.println("\nOptional Common Arguments:\n");
+                optCommonArgs.sort(ArgumentDefinition.sortByLongName);
+                optCommonArgs.forEach(argumentDefinition -> printArgumentUsage(stream, argumentDefinition));
             }
         }
 

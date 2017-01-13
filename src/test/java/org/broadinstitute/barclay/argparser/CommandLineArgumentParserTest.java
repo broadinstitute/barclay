@@ -132,10 +132,12 @@ public final class CommandLineArgumentParserTest {
         final OptionalOnlyArguments oo = new OptionalOnlyArguments();
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(oo);
         final String out = captureStderr(() -> clp.usage(System.err, false)); // without common args
-        final int reqIndex = out.indexOf("Required Arguments:");
-        Assert.assertTrue(reqIndex < 0);
-        Assert.assertTrue(out.indexOf("Optional Arguments:", reqIndex) > 0);
-        Assert.assertEquals(out.indexOf("Conditional Arguments:", reqIndex), -1);
+
+        Assert.assertTrue(out.indexOf("Required Arguments:") < 0, "Required arguments should not be included");
+        final int index = out.indexOf("Optional Tool Arguments:");
+        Assert.assertTrue(index > 0, "Optional arguments are missing");
+        Assert.assertEquals(out.indexOf("Optional Common Arguments:", index), -1, "Common arguments should not be included");
+        Assert.assertEquals(out.indexOf("Conditional Arguments:", index), -1, "Coditional arguments should not be included");
     }
 
     /**
@@ -147,8 +149,36 @@ public final class CommandLineArgumentParserTest {
         // Required arguments should appear before optional ones
         final int reqIndex = out.indexOf("Required Arguments:");
         Assert.assertTrue(reqIndex > 0);
-        Assert.assertTrue(out.indexOf("Optional Arguments:", reqIndex) > 0);
+        Assert.assertTrue(out.indexOf("Optional Tool Arguments:", reqIndex) > 0);
+        Assert.assertEquals(out.indexOf("Optional Common Arguments:", reqIndex), -1);
         Assert.assertEquals(out.indexOf("Conditional Arguments:", reqIndex), -1);
+    }
+
+    @CommandLineProgramProperties(
+            summary = "Optional with common arguments \n",
+            oneLineSummary = "On line: Optional with common arguments \n",
+            programGroup = TestProgramGroup.class
+    )
+    public class OptionalWithCommonArguments {
+        @Argument(doc="Oscillation frequency.", optional = true)
+        public String OSCILLATION_FREQUENCY = "20";
+
+        @Argument(doc="Common argument", optional = true, common=true)
+        public String COMMON_ARGUMENT = "20";
+    }
+
+    @Test
+    public void OptionalWithCommonArguments() {
+        final OptionalWithCommonArguments oo = new OptionalWithCommonArguments();
+        final CommandLineArgumentParser clp = new CommandLineArgumentParser(oo);
+        final String out = captureStderr(() -> clp.usage(System.err, true)); // include common args
+
+        Assert.assertEquals(out.indexOf("Required Arguments:"), -1, "Required args should not be present");
+        int index = out.indexOf("Optional Tool Arguments:");
+        Assert.assertTrue(index > 0, "Optional tool arguments are missing");
+        index = out.indexOf("Optional Common Arguments:", index);
+        Assert.assertTrue(index > 0, "Optional commonarguments are missing");
+        Assert.assertEquals(out.indexOf("Conditional Arguments:", index), -1, "Conditional arguments should not be present");
     }
 
     @Test
