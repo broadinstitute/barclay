@@ -136,28 +136,28 @@ public class LegacyCommandLineArgumentParserTest {
     public void testUsage() {
         final FrobnicateOptions fo = new FrobnicateOptions();
         final LegacyCommandLineArgumentParser clp = new LegacyCommandLineArgumentParser(fo);
-        clp.usage(false);
+        clp.usage(false, true);
     }
 
     @Test
     public void testUsageWithDefault() {
         final FrobnicateOptions fo = new FrobnicateOptions();
         final LegacyCommandLineArgumentParser clp = new LegacyCommandLineArgumentParser(fo);
-        clp.usage(true);
+        clp.usage(true, true);
     }
 
     @Test
     public void testUsageWithoutPositional() {
         final OptionsWithoutPositional fo = new OptionsWithoutPositional();
         final LegacyCommandLineArgumentParser clp = new LegacyCommandLineArgumentParser(fo);
-        clp.usage(false);
+        clp.usage(false, true);
     }
 
     @Test
     public void testUsageWithoutPositionalWithDefault() {
         final OptionsWithoutPositional fo = new OptionsWithoutPositional();
         final LegacyCommandLineArgumentParser clp = new LegacyCommandLineArgumentParser(fo);
-        clp.usage(true);
+        clp.usage(true, true);
     }
 
     /**
@@ -765,7 +765,7 @@ public class LegacyCommandLineArgumentParserTest {
 
         PrintStream stream = new PrintStream(new NullOutputStream());
         clp.parseArguments(stream, new String[]{});
-        clp.usage(true);
+        clp.usage(true, true);
     }
 
     @Test
@@ -775,7 +775,7 @@ public class LegacyCommandLineArgumentParserTest {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         PrintStream stream = new PrintStream(byteArrayOutputStream);
         clp.parseArguments(stream, new String[]{});
-        stream.append(clp.usage(true));
+        stream.append(clp.usage(true, true));
 
         String expected = "USAGE: TestParserSucceed [options]\n" +
                 "\n" +
