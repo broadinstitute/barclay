@@ -1,3 +1,4 @@
+import javax.tools.ToolProvider
 
 plugins {
     id "java"
@@ -42,15 +43,18 @@ compileJava {
 compileTestJava {
     options.compilerArgs = ['-proc:none', '-Xlint:all','-Werror','-Xdiags:verbose']
 }
-
 dependencies {
     compile 'net.sf.jopt-simple:jopt-simple:5.0.3'
     compile 'org.apache.commons:commons-lang3:3.4'
     compile 'org.apache.logging.log4j:log4j-api:2.3'
     compile 'org.apache.logging.log4j:log4j-core:2.3'
 
-    // javadoc utilities and docgen dependencies
-    compile files("${System.properties['java.home']}/../lib/tools.jar")
+    // Get the jdk files we need to run javaDoc. We need to use these during compile, testCompile,
+    // test execution, and gatkDoc generation, but we don't want them as part of the runtime
+    // classpath and we don't want to redistribute them in the uber jar.
+    final javadocJDKFiles = files(((URLClassLoader) ToolProvider.getSystemToolClassLoader()).getURLs())
+    compileOnly(javadocJDKFiles)
+    testCompile(javadocJDKFiles)
     compile 'org.freemarker:freemarker:2.3.18'
     compile 'com.google.code.gson:gson:2.2.2'
 
@@ -97,10 +101,8 @@ task sourcesJar(type: Jar) {
 }
 
 // This is a hack to disable the java 8 default javadoc lint until we fix the html formatting
-if (JavaVersion.current().isJava8Compatible()) {
-    tasks.withType(Javadoc) {
-        options.addStringOption('Xdoclint:none', '-quiet')
-    }
+tasks.withType(Javadoc) {
+    options.addStringOption('Xdoclint:none', '-quiet')
 }
 
 /**
