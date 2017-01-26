@@ -8,6 +8,7 @@ import org.testng.annotations.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
@@ -521,11 +522,8 @@ public final class CommandLineArgumentParserTest {
         @Argument
         public List<String> LIST = makeList("foo", "bar");
 
-        public List<String> makeList(final String... list) {
-            final List<String> result = new ArrayList<>();
-            Collections.addAll(result, list);
-            return result;
-        }
+        @Argument
+        public List<String> LIST_2 = makeList("foo", "bar");
 
     }
 
@@ -535,7 +533,7 @@ public final class CommandLineArgumentParserTest {
         final CommandLineParser clp = new CommandLineArgumentParser(o);
         final String[] args = {"--LIST","null", "--LIST","baz", "--LIST","frob"};
         Assert.assertTrue(clp.parseArguments(System.err, args));
-        Assert.assertEquals(o.LIST, o.makeList("baz", "frob"));
+        Assert.assertEquals(o.LIST, makeList("baz", "frob"));
     }
 
     @Test
@@ -544,7 +542,7 @@ public final class CommandLineArgumentParserTest {
         final CommandLineParser clp = new CommandLineArgumentParser(o);
         final String[] args = {"--LIST","baz", "--LIST","frob"};
         Assert.assertTrue(clp.parseArguments(System.err, args));
-        Assert.assertEquals(o.LIST, o.makeList("baz", "frob"));
+        Assert.assertEquals(o.LIST, makeList("baz", "frob"));
     }
 
     @Test
@@ -553,7 +551,65 @@ public final class CommandLineArgumentParserTest {
         final CommandLineParser clp = new CommandLineArgumentParser(o);
         final String[] args = {};
         Assert.assertTrue(clp.parseArguments(System.err, args));
-        Assert.assertEquals(o.LIST, o.makeList("foo", "bar"));
+        Assert.assertEquals(o.LIST, makeList("foo", "bar"));
+    }
+
+    class CollectionForListFileArguments {
+        @Argument
+        public List<String> LIST = makeList("foo", "bar");
+
+        @Argument
+        public List<String> LIST2 = makeList("baz");
+    }
+
+    private File createListArgumentFile(final String fileName, final String[] argList) throws IOException {
+        final File listFile = File.createTempFile(fileName, ".list");
+        listFile.deleteOnExit();
+        try (final PrintWriter writer = new PrintWriter(listFile)) {
+            Arrays.stream(argList).forEach(arg -> writer.println(arg));
+        }
+        return listFile;
+    }
+
+    @Test
+    public void testCollectionFromListFile() throws IOException {
+        String[] argList = {"shmiggle0", "shmiggle1", "shmiggle2"};
+        final File argListFile = createListArgumentFile("argListFile", argList);
+
+        // use a single file argument
+        final CollectionForListFileArguments o = new CollectionForListFileArguments();
+        final CommandLineParser clp = new CommandLineArgumentParser(o);
+        final String[] args = {"--LIST", argListFile.getAbsolutePath()};
+        Assert.assertTrue(clp.parseArguments(System.err, args));
+        Assert.assertEquals(o.LIST, makeList(argList));
+    }
+
+     @Test
+     public void testCollectionFromListFileMixed() throws IOException {
+         // use two file arguments
+         String[] argList1 = {"shmiggle0", "shmiggle1", "shmiggle2"};
+         String[] argList2 = { "test2_shmiggle0", "test2_shmiggle1", "test2_shmiggle2" };
+
+         File listFile = createListArgumentFile("testFile1", argList1);
+         File listFile2 = createListArgumentFile("testFile2", argList2);
+         final CollectionForListFileArguments o = new CollectionForListFileArguments();
+         final CommandLineParser clp = new CommandLineArgumentParser(o);
+
+         // mix command line values and file values
+         final String[] args = new String[]{
+                 "--LIST2", "commandLineValue",
+                 "--LIST", listFile.getAbsolutePath(),
+                 "--LIST2", listFile2.getAbsolutePath(),
+                 "--LIST2", "anotherCommandLineValue"};
+
+         List<String> expectedList2 = new ArrayList<>();
+         expectedList2.add("commandLineValue");
+         expectedList2.addAll(Arrays.asList(argList2));
+         expectedList2.add("anotherCommandLineValue");
+
+         Assert.assertTrue(clp.parseArguments(System.err, args));
+         Assert.assertEquals(o.LIST, makeList(argList1));
+         Assert.assertEquals(o.LIST2, expectedList2);
     }
 
     @Test
@@ -829,6 +885,12 @@ public final class CommandLineArgumentParserTest {
         final WithBoundariesArguments o = new WithBoundariesArguments();
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
         clp.parseArguments(System.err, argv);
+    }
+
+    public static List<String> makeList(final String... list) {
+        final List<String> result = new ArrayList<>();
+        Collections.addAll(result, list);
+        return result;
     }
 
     /***************************************************************************************
