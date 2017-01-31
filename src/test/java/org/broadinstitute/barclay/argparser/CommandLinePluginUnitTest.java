@@ -136,8 +136,8 @@ public class CommandLinePluginUnitTest {
          * Get the list of default plugins that were passed to this instance.
          * @return
          */
-        public List<Object> getDefaultInstances() {
-            ArrayList<Object> defaultList = new ArrayList<>(defaultPlugins.size());
+        public List<TestPluginBase> getDefaultInstances() {
+            ArrayList<TestPluginBase> defaultList = new ArrayList<>(defaultPlugins.size());
             defaultList.addAll(defaultPlugins);
             return defaultList;
         }
@@ -382,7 +382,7 @@ public class CommandLinePluginUnitTest {
         }
 
         @Override
-        public Object getInstance(Class<?> pluggableClass) throws IllegalAccessException, InstantiationException {
+        public TestPluginArgCollisionBase getInstance(Class<?> pluggableClass) throws IllegalAccessException, InstantiationException {
             final TestPluginArgCollisionBase plugin = (TestPluginArgCollisionBase) pluggableClass.newInstance();
             pluginInstances.put(pluggableClass.getSimpleName(), plugin);
             return plugin;
@@ -425,7 +425,7 @@ public class CommandLinePluginUnitTest {
          * @return
          */
         @Override
-        public List<Object> getDefaultInstances() { return null; }
+        public List<TestPluginArgCollisionBase> getDefaultInstances() { return null; }
 
         @Override
         public List<TestPluginArgCollisionBase> getAllInstances() {
