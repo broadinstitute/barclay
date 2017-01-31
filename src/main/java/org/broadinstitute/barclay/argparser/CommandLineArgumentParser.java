@@ -8,6 +8,7 @@ import joptsimple.OptionSpecBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.WordUtils;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.broadinstitute.barclay.utils.Utils;
@@ -29,7 +30,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.DoubleFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -77,6 +77,9 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     // Map from (full class) name of each CommandLinePluginDescriptor requested and
     // found to the actual descriptor instance
     private Map<String, CommandLinePluginDescriptor<?>> pluginDescriptors = new HashMap<>();
+
+    // Keeps a map of tagged arguments for just-in-time retrieval at field population time
+    private TaggedArgumentParser tagParser = new TaggedArgumentParser();
 
     // Return the plugin instance corresponding to the targetDescriptor class
     @Override
@@ -129,10 +132,6 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     // Maps long name, and short name, if present, to an argument definition that is
     // also in the argumentDefinitions list.
     private final Map<String, ArgumentDefinition> argumentMap = new LinkedHashMap<>();
-
-    // In case implementation wants to get at arg for some reason.
-    private String[] argv;
-
 
     // The associated program properties using the CommandLineProgramProperties annotation
     private final CommandLineProgramProperties programProperties;
@@ -345,8 +344,13 @@ public final class CommandLineArgumentParser implements CommandLineParser {
      */
     @SuppressWarnings("unchecked")
     @Override
-    public boolean parseArguments(final PrintStream messageStream, final String[] args) {
-        this.argv = args;
+    public boolean parseArguments(final PrintStream messageStream, String[] args) {
+
+        // Preprocess the arguments before the parser sees them, replacing any tagged options
+        // and their values with raw option names and surrogate key values, so that tagged
+        // options can be recognized by the parser. The actual values will be retrieved using
+        // the key when the fields's values are set.
+        args = tagParser.preprocessTaggedOptions(args);
 
         OptionParser parser = new OptionParser(false);
 
@@ -619,7 +623,40 @@ public final class CommandLineArgumentParser implements CommandLineParser {
                     throw new CommandLineException("Non \"null\" value must be provided for '" + argumentDefinition.getNames() + "'.");
                 }
             } else {
-                value = constructFromString(CommandLineParser.getUnderlyingType(argumentDefinition.field), stringValue, argumentDefinition.getLongName());
+                // See if the value is a surrogate key in the tag parser's map that was placed there during preprocessing,
+                // and if so, unpack the values retrieved via the key and use those to populate the field
+                Pair<String, String> taggedOptionPair = tagParser.getTaggedOptionForSurrogate(stringValue);
+                if (TaggedArgument.class.isAssignableFrom(argumentDefinition.type)) {
+                    value = constructFromString(
+                            CommandLineParser.getUnderlyingType(argumentDefinition.field),
+                            taggedOptionPair == null ?
+                                    stringValue :
+                                    taggedOptionPair.getRight(),        // argument value
+                            argumentDefinition.getLongName());
+                    // NOTE: this propagates the tag name/attributes to the field BEFORE the value is set
+                    TaggedArgument taggedArgument = (TaggedArgument) value;
+                    tagParser.populateArgumentTags(
+                            taggedArgument,
+                            argumentDefinition.getLongName(),
+                            taggedOptionPair == null ?
+                                    argumentDefinition.getLongName() :
+                                    taggedOptionPair.getLeft());
+                }
+                else {
+                    if (taggedOptionPair == null) {
+                        value = constructFromString(
+                                CommandLineParser.getUnderlyingType(argumentDefinition.field),
+                                stringValue,
+                                argumentDefinition.getLongName());
+                    } else {
+                        // a tag was found for a non-taggable argument
+                        throw new CommandLineException(
+                                String.format("The argument: \"%s/%s\" does not accept tags: \"%s\"",
+                                        argumentDefinition.shortName,
+                                        argumentDefinition.fullName,
+                                        taggedOptionPair.getLeft()));
+                    }
+                }
             }
 
             // check the argument range
@@ -1193,7 +1230,12 @@ public final class CommandLineArgumentParser implements CommandLineParser {
                 if (isSensitive){
                     return String.format("--%s ***********", getLongName());
                 } else {
-                    return String.format("--%s %s", getLongName(), value);
+                    if (value instanceof TaggedArgument) {
+                        TaggedArgument taggedArg = (TaggedArgument) value;
+                        return String.format("--%s %s", TaggedArgumentParser.getDisplayString(getLongName(), taggedArg), value);
+                    } else {
+                        return String.format("--%s %s", getLongName(), value);
+                    }
                 }
             }
             return "";
