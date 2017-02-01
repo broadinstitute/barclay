@@ -76,9 +76,8 @@ public class CommandLineException extends RuntimeException {
      * Class CommandLineParserInternalException
      * <p/>
      * For internal errors in the command line parser not related to syntax errors in the command line itself.
-     * Package protected to restrict usage to the arg parsers.
      */
-    static class CommandLineParserInternalException extends RuntimeException {
+    public static class CommandLineParserInternalException extends RuntimeException {
         private static final long serialVersionUID = 0L;
         public CommandLineParserInternalException( final String s ) {
             super(s);
@@ -93,7 +92,7 @@ public class CommandLineException extends RuntimeException {
      * For wrapping errors that are believed to never be reachable
      * Package protected to restrict usage to the arg parsers.
      */
-    static class ShouldNeverReachHereException extends RuntimeException {
+    static class ShouldNeverReachHereException extends CommandLineParserInternalException {
         private static final long serialVersionUID = 0L;
         public ShouldNeverReachHereException( final String s ) {
             super(s);
