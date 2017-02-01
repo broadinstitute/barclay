@@ -47,7 +47,7 @@ public class CommandLinePluginUnitTest {
     public static class TestPluginDescriptor extends CommandLinePluginDescriptor<TestPluginBase> {
 
         private static final String pluginPackageName = "org.broadinstitute.barclay.argparser";
-        private final Class<?> pluginBaseClass = TestPluginBase.class;
+        private final Class<TestPluginBase> pluginBaseClass = TestPluginBase.class;
 
         public static final String testPluginArgumentName = "testPlugin";
 
@@ -80,7 +80,7 @@ public class CommandLinePluginUnitTest {
          * @return the class object for the base class of all plugins managed by this descriptor
          */
         @Override
-        public Class<?> getPluginClass() {return pluginBaseClass;}
+        public Class<TestPluginBase> getPluginClass() {return pluginBaseClass;}
 
         /**
          * A list of package names which will be searched for plugins managed by the descriptor.
@@ -98,7 +98,7 @@ public class CommandLinePluginUnitTest {
 
         // Instantiate a new ReadFilter derived object and save it in the list
         @Override
-        public Object getInstance(final Class<?> pluggableClass) throws IllegalAccessException, InstantiationException {
+        public TestPluginBase getInstance(final Class<?> pluggableClass) throws IllegalAccessException, InstantiationException {
             TestPluginBase testPluginBase = null;
             final String simpleName = pluggableClass.getSimpleName();
 
@@ -364,7 +364,7 @@ public class CommandLinePluginUnitTest {
         public TestPluginArgCollisionDescriptor() {}
 
         @Override
-        public Class<?> getPluginClass() {
+        public Class<TestPluginArgCollisionBase> getPluginClass() {
             return TestPluginArgCollisionBase.class;
         }
 

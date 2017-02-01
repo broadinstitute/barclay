@@ -65,7 +65,7 @@ public abstract class CommandLinePluginDescriptor<T> {
      * this class in any of the packages returned by {@link #getPackageNames} will be command line
      * accessible.
      */
-    public abstract Class<?> getPluginClass();
+    public abstract Class<? super T> getPluginClass();
 
     /**
      * List of package names from which to load command line plugin classes.
@@ -80,6 +80,7 @@ public abstract class CommandLinePluginDescriptor<T> {
      * dynamically discoverable.
      * @return false if the class shouldn't be used; otherwise true
      */
+    // TODO: I don't think that this should be bounded, but I think that the default value should return c -> c instanceof getPluginClass()
     public Predicate<Class<?>> getClassFilter() { return c -> true;}
 
     /**
@@ -102,7 +103,7 @@ public abstract class CommandLinePluginDescriptor<T> {
      * @throws IllegalAccessException
      * @throws InstantiationException
      */
-    public abstract Object getInstance(Class<?> pluggableClass)
+    public abstract T getInstance(Class<?> pluggableClass)
             throws IllegalAccessException, InstantiationException;
 
     /**
@@ -135,6 +136,7 @@ public abstract class CommandLinePluginDescriptor<T> {
      * @return true if the plugin for this class was specified on the command line, or the
      * values in this class may be set byt he user, otherwise false
      */
+    // TODO: I don't think that this should be bounded
     public abstract boolean isDependentArgumentAllowed(Class<?> dependentClass);
 
     /**
@@ -173,6 +175,7 @@ public abstract class CommandLinePluginDescriptor<T> {
      * @param pluginName Name of the plugin requested
      * @return Class object for the plugin instance requested
      */
+    // TODO: this method is unused in Barclay and GATK -> it is something needed?
     public abstract Class<?> getClassForInstance(final String pluginName);
 
 }
