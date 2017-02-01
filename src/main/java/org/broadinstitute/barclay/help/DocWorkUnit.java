@@ -1,131 +1,186 @@
-/*
-* Copyright 2012-2016 Broad Institute, Inc.
-* 
-* Permission is hereby granted, free of charge, to any person
-* obtaining a copy of this software and associated documentation
-* files (the "Software"), to deal in the Software without
-* restriction, including without limitation the rights to use,
-* copy, modify, merge, publish, distribute, sublicense, and/or sell
-* copies of the Software, and to permit persons to whom the
-* Software is furnished to do so, subject to the following
-* conditions:
-* 
-* The above copyright notice and this permission notice shall be
-* included in all copies or substantial portions of the Software.
-* 
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-* OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-* NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-* HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-* WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-* FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
-* THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-
 package org.broadinstitute.barclay.help;
 
 import com.sun.javadoc.ClassDoc;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.broadinstitute.barclay.argparser.CommandLineProgramGroup;
+import org.broadinstitute.barclay.argparser.CommandLineProgramProperties;
+import org.broadinstitute.barclay.utils.Utils;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
- * Simple collection of all relevant information about something the HelpDoclet can document
- *
- * Created by IntelliJ IDEA.
- * User: depristo
- * Date: 7/24/11
- * Time: 7:59 PM
+ * Collection of all relevant information about a single feature the HelpDoclet can document
  */
 public class DocWorkUnit implements Comparable<DocWorkUnit> {
+    final protected static Logger logger = LogManager.getLogger(DocWorkUnit.class);
+
+    private final String name;                          // name of the this work unit/feature
+
+    private final Class<?> clazz;                       // class that's being documented
+    private final ClassDoc classDoc;                    // javadoc documentation for clazz
+    private final DocWorkUnitHandler workUnitHandler;   // handler for this work unit
+
+    // Annotations attached to the feature class being documented by this work unit
+    private final DocumentedFeature documentedFeature;
+    private final CommandLineProgramProperties commandLineProperties;
+
+    private Map<String, Object> propertyMap = new HashMap<>(); // propertyMap for this unit's template
+
+    // Cached values derived by fallback policies that are implemented by the work unit handler.
+    protected String summary;         // summary description of this feature
+    protected String groupName;       // name of the feature group to which this feature belongs
+    protected String groupSummary;    // summary description of this feature's feature group
+
     /**
-     * The class that's being documented
+     * @param workUnitHandler
+     * @param documentedFeatureAnnotation
+     * @param commandLinePropertiesAnnotation may be null
+     * @param classDoc
+     * @param clazz
      */
-    protected final Class<?> clazz;
+    public DocWorkUnit(
+            final DocWorkUnitHandler workUnitHandler,
+            final DocumentedFeature documentedFeatureAnnotation,
+            final CommandLineProgramProperties commandLinePropertiesAnnotation,
+            final ClassDoc classDoc,
+            final Class<?> clazz)
+    {
+        Utils.nonNull(workUnitHandler, "workUnitHandler cannot be null");
+        Utils.nonNull(documentedFeatureAnnotation, "DocumentedFeature annotation cannot be null");
+        Utils.nonNull(classDoc, "classDoc cannot be null");
+        Utils.nonNull(clazz, "class cannot be null");
+
+        this.name = clazz.getSimpleName();
+
+        this.documentedFeature = documentedFeatureAnnotation;
+        this.commandLineProperties = commandLinePropertiesAnnotation;
+        this.workUnitHandler = workUnitHandler;
+        this.classDoc = classDoc;
+        this.clazz = clazz;
+
+        // summary, groupName and groupSummary can each be determined via fallback policies dictated
+        // by the feature handler, so delegate back to the handler to allow it to do the initialization
+        // once, and then cache the results so that all consumers see consistent values.
+        summary = workUnitHandler.getSummaryForWorkUnit(this);
+        groupName = workUnitHandler.getGroupNameForWorkUnit(this);
+        groupSummary = workUnitHandler.getGroupSummaryForWorkUnit(this);
+    }
+
     /**
-     * The name of the thing we are documenting
+     * Get the root property map used for this work unit.
+     * @return Root property map for this work unit.
      */
-    protected final String name;
+    public Map<String, Object> getRootMap() {
+        return (this.propertyMap);
+    }
+
+    /**
+     * Set a property on the root property map for this work unit.
+     * @param key
+     * @param value
+     */
+    public void setProperty(final String key, final Object value) {
+        propertyMap.put(key, value);
+    }
+
+    /**
+     * Get a property from the root property map for this work unit
+     * @param key
+     * @return Object value for the given property, or null if property not found.
+     */
+    public Object getProperty(final String key) {
+        return propertyMap.get(key);
+    }
+
+    /**
+     * Get the DocumentedFeature annotation object for this class.
+     * @return DocumentedFeature object. Will not be null.
+     */
+    public DocumentedFeature getDocumentedFeature() { return documentedFeature; }
+
+    /**
+     * Get the JavDoc ClassDoc for this work unit.
+     * @return ClassDoc for this work unit. Will not be null.
+     */
+    public ClassDoc getClassDoc() { return classDoc; }
+
+    /**
+     * The name of this documentation unit
+     */
+    public String getName() {
+        return name;
+    }
+
     /**
      * The name of the documentation group (e.g., walkers, read filters) class belongs to
      */
-    protected final String group;
-    /**
-     * The documentation handler for this class
-     */
-    protected final DocumentedFeatureHandler handler;
-    /**
-     * The javadoc documentation for clazz
-     */
-    protected final ClassDoc classDoc;
-    /**
-     * The documentedFeatureObject that lead to this Class being in Doc
-     */
-    protected final DocumentedFeatureObject documentedFeatureObject;
-    /**
-     * When was this walker built, and what's the absolute version number
-     */
-    protected final String buildTimestamp;
-    protected final String absoluteVersion;
-
-    // set by the handler
-    protected String summary;
-
-    // needs to be accessible from DocWorkUnits in specialized doc subclasses
-    public Map<String, Object> rootMap; // this is where the actual doc content gets stored
-
-    public DocWorkUnit(
-            final String name,
-            final String group,
-            final DocumentedFeatureObject annotation,
-            final DocumentedFeatureHandler handler,
-            final ClassDoc classDoc,
-            final Class<?> clazz,
-            final String buildTimestamp,
-            final String absoluteVersion) {
-        this.documentedFeatureObject = annotation;
-        this.name = name;
-        this.group = group;
-        this.handler = handler;
-        this.classDoc = classDoc;
-        this.clazz = clazz;
-        this.buildTimestamp = buildTimestamp;
-        this.absoluteVersion = absoluteVersion;
+    public String getGroupName() {
+        return groupName;
     }
 
     /**
-     * Called by the Doclet to set handler provided context for this work unit
-     *
-     * @param summary
-     * @param rootMap
+     * The group summary for the group for this object
      */
-    public void setHandlerContent(final String summary, final Map<String, Object> rootMap) {
-        this.summary = summary;
-        this.rootMap = rootMap;
+    public String getGroupSummary() {
+        return groupSummary;
     }
 
     /**
-     * Return a String -> String map suitable for FreeMarker to create an index to this WorkUnit
-     *
-     * @return
+     * The summary of the documentation object
      */
-    public Map<String, String> indexDataMap() {
-        Map<String, String> data = new HashMap<String, String>();
-        data.put("name", name);
-        data.put("summary", summary);
-        data.put("filename", getTargetFileName());
-        data.put("group", group);
-        return data;
-    }
+    public String getSummary() { return summary; }
 
-    public String getTargetFileName() { return handler.getDestinationFilename(classDoc, clazz); }
+    public Class<?> getClazz() { return clazz; }
+
+    /**
+     * Populate the property map for this work unit by delegating to the documented feature handler for this work unit.
+     * @param featureMaps map of all features included in this javadoc run
+     * @param groupMaps map of all groups included in the javadoc run
+     */
+    public void processDoc(final List<Map<String, String>> featureMaps, final List<Map<String, String>> groupMaps) {
+        workUnitHandler.processWorkUnit(this, featureMaps, groupMaps);
+
+    };
+
+    /**
+     * Get the template to be used for this work unit. Delegates to the feature handler.
+     * @return name of the template (relative to the input path specified to the doclet) for the template to be used
+     * for this work unit.
+     */
+    public String getTemplateName() { return workUnitHandler.getTemplateName(this); }
+
+    public String getTargetFileName() { return workUnitHandler.getDestinationFilename(this); }
+
+    /**
+     * Get the CommandLineProgramProperties annotation for this work unit.
+     * @return CommandLineProgramProperties object for this work unit. May be null for features that are not
+     * command line programs.
+     */
+    public CommandLineProgramProperties getCommandLineProperties() { return commandLineProperties; }
+
+    /**
+     * Get the CommandLineProgramGroup object from the CommandLineProgramProperties of this work unit.
+     * @return CommandLineProgramGroup if the feature has one, otherwise null.
+     */
+    public CommandLineProgramGroup getCommandLineProgramGroup() {
+        if (commandLineProperties != null) {
+            try {
+                return commandLineProperties.programGroup().newInstance();
+            } catch (IllegalAccessException | InstantiationException e) {
+                logger.warn(
+                        String.format("Can't instantiate program group class to retrieve summary for group %s for class %s",
+                                commandLineProperties.programGroup().getName(),
+                                clazz.getName()));
+            }
+        }
+        return null;
+    }
 
     /**
      * Sort in order of the name of this WorkUnit
-     *
-     * @param other
-     * @return
      */
     public int compareTo(DocWorkUnit other) {
         return this.name.compareTo(other.name);
