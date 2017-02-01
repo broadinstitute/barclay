@@ -161,13 +161,13 @@ public abstract class CommandLinePluginDescriptor<T> {
      * @return the default plugins used for this instance of this descriptor as a list of Object. Used for
      * help/doc generation.
      */
-    public abstract List<? extends T> getDefaultInstances();
+    public abstract List<? super T> getDefaultInstances();
 
     /**
      * @return an ordered List of actual plugin instances that have been specified on the command
      * line, in the same order they were obtained/created by {@line #getInstance}).
      */
-    public abstract List<T> getAllInstances();
+    public abstract List<? super T> getAllInstances();
 
     /**
      * @param pluginName Name of the plugin requested
