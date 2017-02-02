@@ -69,6 +69,9 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     public static final String COMMENT = "#";
     public static final String POSITIONAL_ARGUMENTS_NAME = "Positional Argument";
 
+    // Extension for collection argument list files
+    private static final String COLLECTION_LIST_FILE_EXTENSION = ".list";
+
     private static final Logger logger = LogManager.getLogger();
 
     // Map from (full class) name of each CommandLinePluginDescriptor requested and
@@ -581,7 +584,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     }
 
     @SuppressWarnings("unchecked")
-    private void setArgument(ArgumentDefinition argumentDefinition, final List<String> values) {
+    private void setArgument(ArgumentDefinition argumentDefinition, List<String> values) {
         //special treatment for flags
         if (argumentDefinition.isFlag() && values.isEmpty()){
             argumentDefinition.hasBeenSet = true;
@@ -598,6 +601,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
             @SuppressWarnings("rawtypes")
             final Collection c = (Collection) argumentDefinition.getFieldValue();
             c.clear();
+            values = expandListFile(values);
         }
 
         for (String stringValue: values) {
@@ -635,6 +639,46 @@ public final class CommandLineArgumentParser implements CommandLineParser {
                 argumentDefinition.setFieldValue(value);
                 argumentDefinition.hasBeenSet = true;
             }
+        }
+    }
+
+    /**
+     * Expand any collection values that are ".list" argument files, and add them
+     * to the list of values for that argument.
+     * @param originalValues
+     * @return a list containing the original entries in {@code originalValues}, with any
+     * values from list files expanded in place, preserving both the original list order and
+     * the file order
+     */
+    private List<String> expandListFile(final List<String> originalValues) {
+        List<String> expandedValues = new ArrayList<>(originalValues.size());
+        for (String stringValue: originalValues) {
+            if (stringValue.endsWith(COLLECTION_LIST_FILE_EXTENSION)) {
+                expandedValues.addAll(loadCollectionListFile(stringValue));
+            }
+            else {
+                expandedValues.add(stringValue);
+            }
+        }
+        return expandedValues;
+    }
+
+    /**
+     * Read a list file and return a list of the collection values contained in it
+     * A line that starts with {@link #COMMENT}  is ignored.
+     *
+     * @param collectionListFile a text file containing list values
+     * @return false if a fatal error occurred
+     */
+    private List<String> loadCollectionListFile(final String collectionListFile) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(collectionListFile))){
+            return reader.lines()
+                    .map(String::trim)
+                    .filter(line -> !line.isEmpty())
+                    .filter(line -> !line.startsWith(COMMENT))
+                    .collect(Collectors.toList());
+        } catch (final IOException e) {
+            throw new CommandLineException("I/O error loading list file:" + collectionListFile, e);
         }
     }
 
