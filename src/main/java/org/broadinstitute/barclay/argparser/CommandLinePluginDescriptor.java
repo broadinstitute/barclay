@@ -78,10 +78,12 @@ public abstract class CommandLinePluginDescriptor<T> {
     /**
      * Give this descriptor a chance to filter out any classes it doesn't want to be
      * dynamically discoverable.
+     *
+     * Default implementation uses {@link Class#isAssignableFrom(Class)}.
+     *
      * @return false if the class shouldn't be used; otherwise true
      */
-    // TODO: I don't think that this should be bounded, but I think that the default value should return c -> c instanceof getPluginClass()
-    public Predicate<Class<?>> getClassFilter() { return c -> true;}
+    public Predicate<Class<?>> getClassFilter() { return c -> c.isAssignableFrom(getPluginClass());}
 
     /**
      * Return an instance of the specified pluggable class. The descriptor should
@@ -136,7 +138,6 @@ public abstract class CommandLinePluginDescriptor<T> {
      * @return true if the plugin for this class was specified on the command line, or the
      * values in this class may be set byt he user, otherwise false
      */
-    // TODO: I don't think that this should be bounded
     public abstract boolean isDependentArgumentAllowed(Class<?> dependentClass);
 
     /**
@@ -175,7 +176,6 @@ public abstract class CommandLinePluginDescriptor<T> {
      * @param pluginName Name of the plugin requested
      * @return Class object for the plugin instance requested
      */
-    // TODO: this method is unused in Barclay and GATK -> it is something needed?
     public abstract Class<?> getClassForInstance(final String pluginName);
 
 }
