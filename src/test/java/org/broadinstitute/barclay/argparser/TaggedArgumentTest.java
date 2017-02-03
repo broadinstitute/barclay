@@ -96,13 +96,13 @@ public class TaggedArgumentTest {
                 {
                         // single value in a collection, no tag, no attributes, short name
                         new String[]{"--t", "tumor.bam"},
-                        new KeyValuePair[]{ KeyValuePair.of("tFullName", "tumor.bam")}, // tag is long arg name
+                        new KeyValuePair[]{ KeyValuePair.of(null, "tumor.bam")}, // tag is long arg name
                         new KeyValuePair[][]{{}}
                 },
                 {
                         // same as above, with "-" instead of "--"
                         new String[]{"-t", "tumor.bam"},
-                        new KeyValuePair[]{ KeyValuePair.of("tFullName", "tumor.bam")}, // tag is long arg name
+                        new KeyValuePair[]{ KeyValuePair.of(null, "tumor.bam")}, // tag is long arg name
                         new KeyValuePair[][]{{}}
                 },
                 {

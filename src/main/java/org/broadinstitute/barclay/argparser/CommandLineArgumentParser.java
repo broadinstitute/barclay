@@ -639,7 +639,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
                             taggedArgument,
                             argumentDefinition.getLongName(),
                             taggedOptionPair == null ?
-                                    argumentDefinition.getLongName() :
+                                    null :
                                     taggedOptionPair.getLeft());
                 }
                 else {
