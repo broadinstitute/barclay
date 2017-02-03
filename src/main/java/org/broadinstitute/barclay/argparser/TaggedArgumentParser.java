@@ -207,9 +207,14 @@ public final class TaggedArgumentParser {
      * @param tagString tag string (including logical name and attributes, no option name)
      */
     public void populateArgumentTags(final TaggedArgument taggedArg, final String longArgName, final String tagString) {
-        final ParsedArgument pa = ParsedArgument.of(longArgName, tagString);
-        taggedArg.setTag(pa.getName());
-        taggedArg.setTagAttributes(pa.keyValueMap());
+        if (tagString == null) {
+            taggedArg.setTag(null);
+            taggedArg.setTagAttributes(Collections.emptyMap());
+        } else {
+            final ParsedArgument pa = ParsedArgument.of(longArgName, tagString);
+            taggedArg.setTag(pa.getName());
+            taggedArg.setTagAttributes(pa.keyValueMap());
+        }
     }
 
     /**
@@ -217,7 +222,7 @@ public final class TaggedArgumentParser {
      * including the tag and attributes, for display purposes.
      *
      * @param taggedArg implementation of TaggedArgument interface
-     * @return a display string representing the tag name and attributes
+     * @return a display string representing the tag name and attributes. May be empty if no tag name/attributes are present.
      */
     public static String getDisplayString(final String longArgName, final TaggedArgument taggedArg) {
         Utils.nonNull(longArgName);
@@ -225,19 +230,22 @@ public final class TaggedArgumentParser {
 
         StringBuilder sb = new StringBuilder();
         sb.append(longArgName);
-        sb.append(ARGUMENT_TAG_NAME_SEPARATOR);
-        sb.append(taggedArg.getTag());
+        if (taggedArg.getTag() != null) {
+            sb.append(ARGUMENT_TAG_NAME_SEPARATOR);
+            sb.append(taggedArg.getTag());
 
-        if (taggedArg.getTagAttributes() != null) {
-            taggedArg.getTagAttributes().entrySet().stream()
-                    .forEach(
-                            entry -> {
-                                sb.append(ARGUMENT_KEY_VALUE_PAIR_DELIMITER);
-                                sb.append(entry.getKey().toString());
-                                sb.append(ARGUMENT_KEY_VALUE_SEPARATOR);
-                                sb.append(entry.getValue().toString());
-                            });
+            if (taggedArg.getTagAttributes() != null) {
+                taggedArg.getTagAttributes().entrySet().stream()
+                        .forEach(
+                                entry -> {
+                                    sb.append(ARGUMENT_KEY_VALUE_PAIR_DELIMITER);
+                                    sb.append(entry.getKey().toString());
+                                    sb.append(ARGUMENT_KEY_VALUE_SEPARATOR);
+                                    sb.append(entry.getValue().toString());
+                                });
+            }
         }
+
         return sb.toString();
     }
 
