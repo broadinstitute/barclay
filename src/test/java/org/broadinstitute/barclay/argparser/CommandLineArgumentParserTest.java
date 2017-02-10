@@ -841,6 +841,9 @@ public final class CommandLineArgumentParserTest {
         // recommended values are not explicitly verified by the tests, but do force the code through the warning code paths
         @Argument(doc = "Integer in the range [0, 30]", optional = true, minValue = 0, minRecommendedValue = 10, maxRecommendedValue = 15, maxValue = 30)
         public int integerArg = 20;
+        // Integer without boundaries and null should be allowed
+        @Argument(doc = "Integer with null value allowed", optional = true)
+        public Integer nullInteger = null;
     }
 
     @DataProvider
@@ -853,7 +856,8 @@ public final class CommandLineArgumentParserTest {
             {new String[]{"--doubleArg", "12"}, 12, 20},
             {new String[]{"--doubleArg", "16"}, 16, 20},
             {new String[]{"--doubleArg", "18"}, 18, 20},
-            {new String[]{"--doubleArg", "20"}, 20, 20}
+            {new String[]{"--doubleArg", "20"}, 20, 20},
+            {new String[]{"--nullInteger", "null"}, 15, 20}
         };
     }
 
@@ -864,6 +868,7 @@ public final class CommandLineArgumentParserTest {
         Assert.assertTrue(clp.parseArguments(System.err, argv));
         Assert.assertEquals(o.doubleArg, expectedDouble);
         Assert.assertEquals(o.integerArg, expectedInteger);
+        Assert.assertNull(o.nullInteger);
     }
 
     @DataProvider
