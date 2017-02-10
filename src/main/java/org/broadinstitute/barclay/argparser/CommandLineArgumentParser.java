@@ -535,7 +535,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         final Double argumentDoubleValue = (argumentValue == null) ? null : ((Number)argumentValue).doubleValue();
 
         // Check hard limits first, if specified
-        if (isOutOfRange(argumentDefinition.minValue, argumentDefinition.maxValue, argumentDoubleValue)) {
+        if (argumentDefinition.hasBoundedRange() && isOutOfRange(argumentDefinition.minValue, argumentDefinition.maxValue, argumentDoubleValue)) {
             throw new CommandLineException.OutOfRangeArgumentValue(argumentDefinition.getLongName(), argumentDefinition.minValue, argumentDefinition.maxValue, argumentValue);
         }
         // Check recommended values
@@ -552,6 +552,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
                 logger.warn("Argument --{} has value {}, but maximum recommended is {}",
                         argumentDefinition.getLongName(), argumentDoubleValue, argumentDefinition.maxRecommendedValue);
             }
+            // if it does not have any recommended value, it does not log anything as expected
         }
     }
 
@@ -1184,6 +1185,11 @@ public final class CommandLineArgumentParser implements CommandLineParser {
 
         public boolean isFlag(){
             return field.getType().equals(boolean.class) || field.getType().equals(Boolean.class);
+        }
+
+        /** Returns {@code true} if the argument has a bounded range; {@code false} otherwise. */
+        public boolean hasBoundedRange() {
+            return this.minValue != Double.NEGATIVE_INFINITY || this.maxValue != Double.POSITIVE_INFINITY;
         }
 
         /**
