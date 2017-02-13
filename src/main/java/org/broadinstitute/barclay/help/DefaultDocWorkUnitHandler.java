@@ -693,7 +693,7 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
     protected Map<String, Object> docForArgument(final FieldDoc fieldDoc, final CommandLineArgumentParser.ArgumentDefinition def) {
         final Map<String, Object> root = new HashMap<>();
 
-        final Pair<String, String> names = displayNames(def.shortName, def.fullName);
+        final Pair<String, String> names = displayNames(def.shortName, def.getLongName());
         root.put("name", names.getLeft());
         root.put("synonyms", names.getRight() != null ? names.getRight() : "NA");
         root.put("required", def.optional ? "no": "yes") ;

@@ -51,9 +51,9 @@ public class DocumentationGenerationIntegrationTest {
         Assert.assertTrue(filesContentsIdentical(outputDir, expectedDir,
                 "org_broadinstitute_barclay_help_TestArgumentContainer.html.json"));
         Assert.assertTrue(filesContentsIdentical(outputDir, expectedDir,
-                "org_broadinstitute_barclay_help_TestArgumentContainer.html"));
+                "org_broadinstitute_barclay_help_TestExtraDocs.html"));
         Assert.assertTrue(filesContentsIdentical(outputDir, expectedDir,
-                "org_broadinstitute_barclay_help_TestArgumentContainer.html.json"));
+                "org_broadinstitute_barclay_help_TestExtraDocs.html.json"));
     }
 
     public boolean filesContentsIdentical(

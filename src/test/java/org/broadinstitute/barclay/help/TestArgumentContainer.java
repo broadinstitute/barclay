@@ -127,6 +127,9 @@ public class TestArgumentContainer implements CommandLinePluginProvider {
             doc = "deprecated", optional = true)
     protected int deprecatedString;
 
+    @Argument(doc="Use field name if no name in annotation.")
+    protected String usesFieldNameForArgName;
+
     //////////////////////////////////////////////////////////////////////
     // Embedded argument collection
     @ArgumentCollection
