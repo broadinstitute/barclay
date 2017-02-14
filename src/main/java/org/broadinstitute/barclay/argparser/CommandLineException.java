@@ -77,7 +77,7 @@ public class CommandLineException extends RuntimeException {
      * <p/>
      * For internal errors in the command line parser not related to syntax errors in the command line itself.
      */
-    public static class CommandLineParserInternalException extends CommandLineException {
+    public static class CommandLineParserInternalException extends RuntimeException {
         private static final long serialVersionUID = 0L;
         public CommandLineParserInternalException( final String s ) {
             super(s);
@@ -90,8 +90,9 @@ public class CommandLineException extends RuntimeException {
 
     /**
      * For wrapping errors that are believed to never be reachable
+     * Package protected to restrict usage to the arg parsers.
      */
-    public static class ShouldNeverReachHereException extends CommandLineException {
+    static class ShouldNeverReachHereException extends CommandLineParserInternalException {
         private static final long serialVersionUID = 0L;
         public ShouldNeverReachHereException( final String s ) {
             super(s);
@@ -99,7 +100,7 @@ public class CommandLineException extends RuntimeException {
         public ShouldNeverReachHereException( final String s, final Throwable throwable ) {
             super(s, throwable);
         }
-        public ShouldNeverReachHereException( final Throwable throwable) {this("Should never reach here.", throwable);}
+        public ShouldNeverReachHereException( final Throwable throwable) {this("Barclay command line parser; should never reach here.", throwable);}
     }
 
 }
