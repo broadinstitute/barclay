@@ -805,6 +805,45 @@ public final class CommandLineArgumentParserTest {
         return out.toString();
     }
 
+
+    @CommandLineProgramProperties(
+            summary = "tool with nullable arguments",
+            oneLineSummary = "tools with nullable arguments",
+            programGroup = TestProgramGroup.class
+    )
+    public class WithNullableArguments {
+        // Integer without boundaries and null should be allowed
+        @Argument(doc = "Integer with null value allowed", optional = true)
+        public Integer nullInteger = null;
+        // Double without boundaries and null should be allowed
+        @Argument(doc = "Double with null value allowed", optional = true)
+        public Double nullDouble= null;
+    }
+
+    @DataProvider(name = "nullableArgs")
+    public Object[][] getNullableArguments() {
+        return new Object[][] {
+                // null values
+                {new String[]{}, null, null},
+                {new String[]{"--nullInteger", "null"}, null, null},
+                {new String[]{"--nullDouble", "null"}, null, null},
+                {new String[]{"--nullInteger", "null", "--nullDouble", "null"}, null, null},
+                // with values
+                {new String[]{"--nullInteger", "1"}, 1, null},
+                {new String[]{"--nullDouble", "2"}, null, 2d},
+                {new String[]{"--nullInteger", "1", "--nullDouble", "2"}, 1, 2.d},
+        };
+    }
+
+    @Test(dataProvider = "nullableArgs")
+    public void testWithinBoundariesArguments(final String[] argv, final Integer expectedInteger, final Double expectedDouble) throws Exception {
+        final WithNullableArguments o = new WithNullableArguments();
+        final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
+        Assert.assertTrue(clp.parseArguments(System.err, argv));
+        Assert.assertEquals(o.nullInteger, expectedInteger);
+        Assert.assertEquals(o.nullDouble, expectedDouble);
+    }
+
     @Test(expectedExceptions = CommandLineException.CommandLineParserInternalException.class)
     public void testWithBoundariesArgumentsForNoNumeric() {
         @CommandLineProgramProperties(summary = "broken tool",
@@ -841,9 +880,6 @@ public final class CommandLineArgumentParserTest {
         // recommended values are not explicitly verified by the tests, but do force the code through the warning code paths
         @Argument(doc = "Integer in the range [0, 30]", optional = true, minValue = 0, minRecommendedValue = 10, maxRecommendedValue = 15, maxValue = 30)
         public int integerArg = 20;
-        // Integer without boundaries and null should be allowed
-        @Argument(doc = "Integer with null value allowed", optional = true)
-        public Integer nullInteger = null;
     }
 
     @DataProvider
@@ -856,8 +892,7 @@ public final class CommandLineArgumentParserTest {
             {new String[]{"--doubleArg", "12"}, 12, 20},
             {new String[]{"--doubleArg", "16"}, 16, 20},
             {new String[]{"--doubleArg", "18"}, 18, 20},
-            {new String[]{"--doubleArg", "20"}, 20, 20},
-            {new String[]{"--nullInteger", "null"}, 15, 20}
+            {new String[]{"--doubleArg", "20"}, 20, 20}
         };
     }
 
@@ -868,7 +903,6 @@ public final class CommandLineArgumentParserTest {
         Assert.assertTrue(clp.parseArguments(System.err, argv));
         Assert.assertEquals(o.doubleArg, expectedDouble);
         Assert.assertEquals(o.integerArg, expectedInteger);
-        Assert.assertNull(o.nullInteger);
     }
 
     @DataProvider
