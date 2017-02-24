@@ -936,6 +936,19 @@ public final class CommandLineArgumentParserTest {
         Assert.assertEquals(tool.hidden.intValue(), 10);
     }
 
+    @Test(expectedExceptions = CommandLineException.CommandLineParserInternalException.class)
+    public void testRequiredAdvancedNotAllowed() throws Exception {
+        @CommandLineProgramProperties(summary = "test",
+                oneLineSummary = "test",
+                programGroup = TestProgramGroup.class)
+        final class ToolWithRequiredAdvancedArgument {
+            @Advanced
+            @Argument(optional = false)
+            public String invalid;
+        }
+        new CommandLineArgumentParser(new ToolWithRequiredAdvancedArgument());
+    }
+
     /***************************************************************************************
      * Start of tests and helper classes for CommandLineParser.gatherArgumentValuesOfType()
      ***************************************************************************************/
