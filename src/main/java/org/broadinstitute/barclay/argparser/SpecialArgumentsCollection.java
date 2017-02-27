@@ -10,6 +10,7 @@ import java.util.List;
  */
 public final class SpecialArgumentsCollection {
     public static final String HELP_FULLNAME = "help";
+    public static final String SHOW_HIDDEN_FULLNAME = "showHidden";
     public static final String VERSION_FULLNAME = "version";
     public static final String ARGUMENTS_FILE_FULLNAME = "arguments_file";
     private static final long serialVersionUID = 1L;
@@ -23,4 +24,7 @@ public final class SpecialArgumentsCollection {
     @Argument(fullName = ARGUMENTS_FILE_FULLNAME, doc="read one or more arguments files and add them to the command line", optional = true, special = true)
     public List<File> ARGUMENTS_FILE = new ArrayList<>();
 
+    @Advanced
+    @Argument(fullName = SHOW_HIDDEN_FULLNAME, shortName = SHOW_HIDDEN_FULLNAME, doc = "display hidden arguments", special = true)
+    public boolean SHOW_HIDDEN = false;
 }

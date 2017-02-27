@@ -230,7 +230,7 @@ public class CommandLinePluginUnitTest {
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(
                 plugInTest,
                 Collections.singletonList(new TestPluginDescriptor(Collections.singletonList(new TestDefaultPlugin()))));
-        final String out = clp.usage(true); // with common args
+        final String out = clp.usage(true, false); // with common args, without hidden
 
         TestPluginDescriptor pid = clp.getPluginDescriptor(TestPluginDescriptor.class);
         Assert.assertNotNull(pid);

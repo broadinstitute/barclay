@@ -95,10 +95,11 @@ public final class CommandLineArgumentParserTest {
     public void testRequiredOnlyUsage() {
         final RequiredOnlyArguments nr = new RequiredOnlyArguments();
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(nr);
-        final String out = clp.usage(false); // without common args
+        final String out = clp.usage(false, false); // without common/hidden args
         final int reqIndex = out.indexOf("Required Arguments:");
         Assert.assertTrue(reqIndex > 0);
         Assert.assertTrue(out.indexOf("Optional Arguments:", reqIndex) < 0);
+        Assert.assertTrue(out.indexOf("Advanced Arguments:", reqIndex) < 0);
     }
 
     class AbbreviatableArgument{
@@ -132,52 +133,58 @@ public final class CommandLineArgumentParserTest {
     public void testOptionalOnlyUsage() {
         final OptionalOnlyArguments oo = new OptionalOnlyArguments();
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(oo);
-        final String out = clp.usage(false); // without common args
+        final String out = clp.usage(false, false); // without common/hidden args
         final int reqIndex = out.indexOf("Required Arguments:");
         Assert.assertTrue(reqIndex < 0);
         Assert.assertTrue(out.indexOf("Optional Arguments:", reqIndex) > 0);
         Assert.assertEquals(out.indexOf("Conditional Arguments:", reqIndex), -1);
+        Assert.assertEquals(out.indexOf("Advanced Arguments:", reqIndex), -1);
     }
 
     /**
      * Validate the text emitted by a call to usage by ensuring that required arguments are
      * emitted before optional ones.
      */
-    private void validateRequiredOptionalUsage(final CommandLineArgumentParser clp, final boolean withDefault) {
-        final String out = clp.usage(withDefault); // with common args
+    private void validateRequiredOptionalUsage(final CommandLineArgumentParser clp, final boolean withDefault, final boolean hasAdvanced) {
+        final String out = clp.usage(withDefault, false); // with common args, without hidden args
         // Required arguments should appear before optional ones
         final int reqIndex = out.indexOf("Required Arguments:");
         Assert.assertTrue(reqIndex > 0);
         Assert.assertTrue(out.indexOf("Optional Arguments:", reqIndex) > 0);
         Assert.assertEquals(out.indexOf("Conditional Arguments:", reqIndex), -1);
+        Assert.assertEquals(out.indexOf("Advanced Arguments:", reqIndex) != -1, hasAdvanced);
     }
 
     @Test
     public void testRequiredOptionalWithDefaultUsage() {
         final FrobnicateArguments fo = new FrobnicateArguments();
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(fo);
-        validateRequiredOptionalUsage(clp, true); // with common args
+        // FrobnicateArguments has a SpecialArgumentsCollection that contains an @Advanced argument ("called showHidden")
+        validateRequiredOptionalUsage(clp, true, true); // with common args
     }
 
     @Test
     public void testRequiredOptionalWithoutDefaultUsage() {
         final FrobnicateArguments fo = new FrobnicateArguments();
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(fo);
-        validateRequiredOptionalUsage(clp, false); // without common args
+        // FrobnicateArguments has a SpecialArgumentsCollection that contains an @Advanced argument ("called showHidden")
+        validateRequiredOptionalUsage(clp, false, true); // without common args
     }
 
     @Test
     public void testWithoutPositionalWithDefaultUsage() {
         final ArgumentsWithoutPositional fo = new ArgumentsWithoutPositional();
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(fo);
-        validateRequiredOptionalUsage(clp, true); // with common args
+        // does not have the special showHidden advanced argument
+        validateRequiredOptionalUsage(clp, true, false); // with common args
     }
 
     @Test
     public void testWithoutPositionalWithoutDefaultUsage() {
         final ArgumentsWithoutPositional fo = new ArgumentsWithoutPositional();
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(fo);
-        validateRequiredOptionalUsage(clp, false); // without commoon args
+        // does not have the special showHidden advanced argument
+        validateRequiredOptionalUsage(clp, false, false); // without common args
     }
 
     @Test
@@ -223,7 +230,7 @@ public final class CommandLineArgumentParserTest {
                 "org.broadinstitute.barclay.argparser.CommandLineArgumentParserTest$FrobnicateArguments  " +
                         "positional1 positional2 --FROBNICATION_THRESHOLD 17 --FROBNICATION_FLAVOR BAR " +
                         "--SHMIGGLE_TYPE shmiggle1 --SHMIGGLE_TYPE shmiggle2 --TRUTHINESS true  --help false " +
-                        "--version false");
+                        "--version false --showHidden false");
     }
 
     private static class WithSensitiveValues {
@@ -891,6 +898,72 @@ public final class CommandLineArgumentParserTest {
         final List<String> result = new ArrayList<>();
         Collections.addAll(result, list);
         return result;
+    }
+
+    @Test(expectedExceptions = CommandLineException.CommandLineParserInternalException.class)
+    public void testHiddenRequiredArgumentThrowException() throws Exception {
+        @CommandLineProgramProperties(summary = "tool with required and hidden argument",
+                oneLineSummary = "tool with required and hidden argument",
+                programGroup = TestProgramGroup.class)
+        final class ToolWithRequiredHiddenArgument {
+            @Argument(fullName = "hiddenTestArgument", shortName = "hiddenTestArgument", doc = "Hidden argument", optional = false)
+            @Hidden
+            public Integer hidden;
+        }
+        new CommandLineArgumentParser(new ToolWithRequiredHiddenArgument());
+    }
+
+    @Test
+    public void testHiddenArguments() throws Exception {
+        @CommandLineProgramProperties(summary = "test",
+                oneLineSummary = "test",
+                programGroup = TestProgramGroup.class)
+        final class ToolWithHiddenArgument {
+            @Argument(fullName = "hiddenTestArgument", shortName = "hiddenTestArgument", doc = "Hidden argument", optional = true)
+            @Hidden
+            public Integer hidden = 0;
+        }
+
+        final ToolWithHiddenArgument tool = new ToolWithHiddenArgument();
+        final CommandLineArgumentParser clp = new CommandLineArgumentParser(tool);
+        // test that it is not printed in the usage
+        String out = clp.usage(true, false); // with common args, without hidden
+        Assert.assertEquals(out.indexOf("hiddenTestArgument"), -1, out);
+        out = clp.usage(true, true); // with common and hidden args
+        Assert.assertNotEquals(out.indexOf("hiddenTestArgument"), -1, out);
+        // test that it is parsed from the command line if specified
+        clp.parseArguments(System.err, new String[]{"--hiddenTestArgument", "10"});
+        Assert.assertEquals(tool.hidden.intValue(), 10);
+    }
+
+    @Test
+    public void testAdvancedArguments() throws Exception {
+        @CommandLineProgramProperties(summary = "test",
+                oneLineSummary = "test",
+                programGroup = TestProgramGroup.class)
+        final class ToolWithAdvancedArgument {
+            @Argument(fullName = "advancedTestArgument", shortName = "advancedTestArgument", doc = "Advanced argument", optional = true)
+            @Advanced
+            public Integer advanced = 0;
+        }
+
+        final CommandLineParser clp = new CommandLineArgumentParser(new ToolWithAdvancedArgument());
+        // test that it is printed in the usage
+        final String out = clp.usage(true, false); // with common args, without hidden
+        Assert.assertTrue(out.contains("advancedTestArgument"), out);
+    }
+
+    @Test(expectedExceptions = CommandLineException.CommandLineParserInternalException.class)
+    public void testRequiredAdvancedNotAllowed() throws Exception {
+        @CommandLineProgramProperties(summary = "test",
+                oneLineSummary = "test",
+                programGroup = TestProgramGroup.class)
+        final class ToolWithRequiredAdvancedArgument {
+            @Advanced
+            @Argument(optional = false)
+            public String invalid;
+        }
+        new CommandLineArgumentParser(new ToolWithRequiredAdvancedArgument());
     }
 
     /***************************************************************************************
