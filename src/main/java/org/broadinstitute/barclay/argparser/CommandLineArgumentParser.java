@@ -542,11 +542,11 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         final Double argumentDoubleValue = (argumentValue == null) ? null : ((Number)argumentValue).doubleValue();
 
         // Check hard limits first, if specified
-        if (isOutOfRange(argumentDefinition.minValue, argumentDefinition.maxValue, argumentDoubleValue)) {
+        if (argumentDefinition.hasBoundedRange() && isOutOfRange(argumentDefinition.minValue, argumentDefinition.maxValue, argumentDoubleValue)) {
             throw new CommandLineException.OutOfRangeArgumentValue(argumentDefinition.getLongName(), argumentDefinition.minValue, argumentDefinition.maxValue, argumentValue);
         }
         // Check recommended values
-        if (isOutOfRange(argumentDefinition.minRecommendedValue, argumentDefinition.maxRecommendedValue, argumentDoubleValue)) {
+        if (argumentDefinition.hasRecommendedRange() && isOutOfRange(argumentDefinition.minRecommendedValue, argumentDefinition.maxRecommendedValue, argumentDoubleValue)) {
             final boolean outMinValue = argumentDefinition.minRecommendedValue != Double.NEGATIVE_INFINITY;
             final boolean outMaxValue = argumentDefinition.maxRecommendedValue != Double.POSITIVE_INFINITY;
             if (outMinValue && outMaxValue) {
@@ -559,6 +559,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
                 logger.warn("Argument --{} has value {}, but maximum recommended is {}",
                         argumentDefinition.getLongName(), argumentDoubleValue, argumentDefinition.maxRecommendedValue);
             }
+            // if there is no recommended value, do not log anything
         }
     }
 
@@ -1154,10 +1155,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
             // be set to an integer
             this.type = CommandLineParser.getUnderlyingType(this.field);
             if (! Number.class.isAssignableFrom(this.type)) {
-                if (this.maxValue != Double.POSITIVE_INFINITY
-                        || this.minValue != Double.NEGATIVE_INFINITY
-                        || this.maxRecommendedValue != Double.POSITIVE_INFINITY
-                        || this.minRecommendedValue != Double.NEGATIVE_INFINITY) {
+                if (hasBoundedRange() || hasRecommendedRange()) {
                     throw new CommandLineException.CommandLineParserInternalException(String.format("Min/max value ranges can only be set for numeric arguments. Argument --%s has a minimum or maximum value but has a non-numeric type.", this.getLongName()));
                 }
             }
@@ -1203,6 +1201,15 @@ public final class CommandLineArgumentParser implements CommandLineParser {
 
         public boolean isFlag(){
             return field.getType().equals(boolean.class) || field.getType().equals(Boolean.class);
+        }
+
+        /** Returns {@code true} if the argument has a bounded range; {@code false} otherwise. */
+        private boolean hasBoundedRange() {
+            return this.minValue != Double.NEGATIVE_INFINITY || this.maxValue != Double.POSITIVE_INFINITY;
+        }
+
+        private boolean hasRecommendedRange() {
+            return this.maxRecommendedValue != Double.POSITIVE_INFINITY || this.minRecommendedValue != Double.NEGATIVE_INFINITY;
         }
 
         /**

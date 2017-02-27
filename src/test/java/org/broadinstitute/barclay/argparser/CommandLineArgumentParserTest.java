@@ -812,6 +812,45 @@ public final class CommandLineArgumentParserTest {
         return out.toString();
     }
 
+
+    @CommandLineProgramProperties(
+            summary = "tool with nullable arguments",
+            oneLineSummary = "tools with nullable arguments",
+            programGroup = TestProgramGroup.class
+    )
+    public class WithNullableArguments {
+        // Integer without boundaries and null should be allowed
+        @Argument(doc = "Integer with null value allowed", optional = true)
+        public Integer nullInteger = null;
+        // Double without boundaries and null should be allowed
+        @Argument(doc = "Double with null value allowed", optional = true)
+        public Double nullDouble= null;
+    }
+
+    @DataProvider(name = "nullableArgs")
+    public Object[][] getNullableArguments() {
+        return new Object[][] {
+                // null values
+                {new String[]{}, null, null},
+                {new String[]{"--nullInteger", "null"}, null, null},
+                {new String[]{"--nullDouble", "null"}, null, null},
+                {new String[]{"--nullInteger", "null", "--nullDouble", "null"}, null, null},
+                // with values
+                {new String[]{"--nullInteger", "1"}, 1, null},
+                {new String[]{"--nullDouble", "2"}, null, 2d},
+                {new String[]{"--nullInteger", "1", "--nullDouble", "2"}, 1, 2.d},
+        };
+    }
+
+    @Test(dataProvider = "nullableArgs")
+    public void testWithinBoundariesArguments(final String[] argv, final Integer expectedInteger, final Double expectedDouble) throws Exception {
+        final WithNullableArguments o = new WithNullableArguments();
+        final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
+        Assert.assertTrue(clp.parseArguments(System.err, argv));
+        Assert.assertEquals(o.nullInteger, expectedInteger);
+        Assert.assertEquals(o.nullDouble, expectedDouble);
+    }
+
     @Test(expectedExceptions = CommandLineException.CommandLineParserInternalException.class)
     public void testWithBoundariesArgumentsForNoNumeric() {
         @CommandLineProgramProperties(summary = "broken tool",
