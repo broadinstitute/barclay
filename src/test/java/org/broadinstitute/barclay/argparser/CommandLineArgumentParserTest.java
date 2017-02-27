@@ -159,7 +159,7 @@ public final class CommandLineArgumentParserTest {
     public void testRequiredOptionalWithDefaultUsage() {
         final FrobnicateArguments fo = new FrobnicateArguments();
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(fo);
-        // have the special showHidden advanced argument
+        // FrobnicateArguments has a SpecialArgumentsCollection that contains an @Advanced argument ("called showHidden")
         validateRequiredOptionalUsage(clp, true, true); // with common args
     }
 
@@ -167,7 +167,7 @@ public final class CommandLineArgumentParserTest {
     public void testRequiredOptionalWithoutDefaultUsage() {
         final FrobnicateArguments fo = new FrobnicateArguments();
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(fo);
-        // have the special showHidden advanced argument
+        // FrobnicateArguments has a SpecialArgumentsCollection that contains an @Advanced argument ("called showHidden")
         validateRequiredOptionalUsage(clp, false, true); // without common args
     }
 
@@ -934,6 +934,23 @@ public final class CommandLineArgumentParserTest {
         // test that it is parsed from the command line if specified
         clp.parseArguments(System.err, new String[]{"--hiddenTestArgument", "10"});
         Assert.assertEquals(tool.hidden.intValue(), 10);
+    }
+
+    @Test
+    public void testAdvancedArguments() throws Exception {
+        @CommandLineProgramProperties(summary = "test",
+                oneLineSummary = "test",
+                programGroup = TestProgramGroup.class)
+        final class ToolWithAdvancedArgument {
+            @Argument(fullName = "advancedTestArgument", shortName = "advancedTestArgument", doc = "Advanced argument", optional = true)
+            @Advanced
+            public Integer advanced = 0;
+        }
+
+        final CommandLineParser clp = new CommandLineArgumentParser(new ToolWithAdvancedArgument());
+        // test that it is printed in the usage
+        final String out = clp.usage(true, false); // with common args, without hidden
+        Assert.assertTrue(out.contains("advancedTestArgument"), out);
     }
 
     @Test(expectedExceptions = CommandLineException.CommandLineParserInternalException.class)
