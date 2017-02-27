@@ -939,6 +939,56 @@ public final class CommandLineArgumentParserTest {
         return result;
     }
 
+    @CommandLineProgramProperties(
+            summary = "tool with bounded collection argument",
+            oneLineSummary = "bounded collection argumen",
+            programGroup = TestProgramGroup.class
+    )
+    public class BoundedCollection {
+        @Argument(doc = "Integer collection in the range [0, 30]",
+                optional = true,
+                minValue = 0, maxValue = 30,
+                minRecommendedValue = 10, maxRecommendedValue = 15)
+        public List<Integer> intListArg = new ArrayList<>();
+    }
+
+    @DataProvider(name="goodBoundedCollectionArgs")
+    public Object[][] goodBoundedCollection() {
+        return new Object[][]{
+                {new String[]{"--intListArg", "1"}, new Integer[]{ 1 } },
+                {new String[]{"--intListArg", "19", "--intListArg", "2"}, new Integer[]{ 19, 2 } },
+                {new String[]{"--intListArg", "0", "--intListArg", "18", "--intListArg", "27" }, new Integer[]{ 0, 18, 27 } },
+        };
+    }
+
+    @Test(dataProvider = "goodBoundedCollectionArgs")
+    public void testGoodBoundedCollections(final String[] argv, final Integer[] expectedIntegers) throws Exception {
+        final BoundedCollection o = new BoundedCollection();
+        final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
+        Assert.assertTrue(clp.parseArguments(System.err, argv));
+        Assert.assertEquals(expectedIntegers.length, o.intListArg.size());
+        for (int i = 0; i < expectedIntegers.length; i++) {
+            Assert.assertEquals(o.intListArg.get(i).intValue(), expectedIntegers[i].intValue());
+        }
+    }
+
+    @DataProvider(name="badBoundedCollectionArgs")
+    public Object[][] badBoundedCollection() {
+        return new Object[][]{
+                {new String[]{"--intListArg", "-1"}},
+                {new String[]{"--intListArg", "57"}},
+                {new String[]{"--intListArg", "1", "--intListArg", "57"}},
+                {new String[]{"--intListArg", "null" }},
+        };
+    }
+
+    @Test(dataProvider = "badBoundedCollectionArgs", expectedExceptions = CommandLineException.OutOfRangeArgumentValue.class)
+    public void testBadBoundedCollections(final String[] argv) throws Exception {
+        final BoundedCollection o = new BoundedCollection();
+        final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
+        Assert.assertTrue(clp.parseArguments(System.err, argv));
+    }
+
     @Test(expectedExceptions = CommandLineException.CommandLineParserInternalException.class)
     public void testHiddenRequiredArgumentThrowException() throws Exception {
         @CommandLineProgramProperties(summary = "tool with required and hidden argument",
