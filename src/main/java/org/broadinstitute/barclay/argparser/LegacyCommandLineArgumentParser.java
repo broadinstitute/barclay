@@ -1056,7 +1056,7 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
             this.mutuallyExclusive = new HashSet<String>(Arrays.asList(mutuallyExclusive));
             this.printOrder = printOrder;
             if (this.field.getAnnotation(Hidden.class) != null) {
-                logger.warn("Hidden argument --{} is not handled", this.name);
+                logger.warn("Hidden annotation is not honored for --{}", this.name);
             }
         }
     }
