@@ -875,6 +875,69 @@ public final class CommandLineArgumentParserTest {
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(new WithDoubleBoundariesArgumentsForInteger());
     }
 
+    @Test(expectedExceptions = CommandLineException.CommandLineParserInternalException.class)
+    public void testBoundedIntegerIntializedOutsideRange() throws Exception {
+        @CommandLineProgramProperties(
+                summary = "tool with bounded integer with bad initial value",
+                oneLineSummary = "tool with bounded integer with bad initial value",
+                programGroup = TestProgramGroup.class
+        )
+        class BoundedIntegerIntializedOutsideRange {
+            @Argument(doc = "Integer in the range [0, 30]",
+                    optional = false,
+                    minValue = 0, maxValue = 30,
+                    minRecommendedValue = 10, maxRecommendedValue = 15)
+            public Integer startLifeOutOfRange = new Integer(97);
+        }
+        final BoundedIntegerIntializedOutsideRange o = new BoundedIntegerIntializedOutsideRange();
+        final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
+    }
+
+    @Test(expectedExceptions = CommandLineException.CommandLineParserInternalException.class)
+    public void testBoundedCollectionIntializedOutOfRange() throws Exception {
+        @CommandLineProgramProperties(
+                summary = "tool with bounded collection argument with bad initial value",
+                oneLineSummary = "ool with bounded collection argument with bad initial value",
+                programGroup = TestProgramGroup.class
+        )
+        class BoundedCollectionIntializedOutsideRange {
+            @Argument(doc = "Integer collection in the range [0, 30]",
+                    optional = false,
+                    minValue = 0, maxValue = 30,
+                    minRecommendedValue = 10, maxRecommendedValue = 15)
+            public List<Integer> startLifeOutOfRange = Arrays.asList(new Integer[]{ 25, 97 });
+        }
+
+        final BoundedCollectionIntializedOutsideRange o = new BoundedCollectionIntializedOutsideRange();
+        final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
+    }
+
+    @Test(expectedExceptions = CommandLineException.OutOfRangeArgumentValue.class)
+    public void testBoundedCollectionReset() throws Exception {
+        @CommandLineProgramProperties(
+                summary = "tool with bounded argument with bad initial value",
+                oneLineSummary = "bounded collection argument",
+                programGroup = TestProgramGroup.class
+        )
+        class BoundedCollectionIntializedValid {
+            @Argument(doc = "Integer collection in the range [0, 30]",
+                    optional = false,
+                    minValue = 0, maxValue = 30,
+                    minRecommendedValue = 10, maxRecommendedValue = 15)
+            public List<Integer> initializedValid = new ArrayList<Integer>()
+                        {
+                            private static final long serialVersionUID = 1L;
+                            { add(7);
+                              add(4);
+                            }
+                        };
+        }
+
+        final BoundedCollectionIntializedValid o = new BoundedCollectionIntializedValid();
+        final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
+        Assert.assertTrue(clp.parseArguments(System.err, new String[]{"--initializedValid", "null"}));
+    }
+
     @CommandLineProgramProperties(
             summary = "tool with boundaries",
             oneLineSummary = "tools with boundaries",
@@ -941,7 +1004,7 @@ public final class CommandLineArgumentParserTest {
 
     @CommandLineProgramProperties(
             summary = "tool with bounded collection argument",
-            oneLineSummary = "bounded collection argumen",
+            oneLineSummary = "bounded collection argument",
             programGroup = TestProgramGroup.class
     )
     public class BoundedCollection {
@@ -968,7 +1031,7 @@ public final class CommandLineArgumentParserTest {
         Assert.assertTrue(clp.parseArguments(System.err, argv));
         Assert.assertEquals(expectedIntegers.length, o.intListArg.size());
         for (int i = 0; i < expectedIntegers.length; i++) {
-            Assert.assertEquals(o.intListArg.get(i).intValue(), expectedIntegers[i].intValue());
+            Assert.assertEquals(o.intListArg.get(i), expectedIntegers[i]);
         }
     }
 
