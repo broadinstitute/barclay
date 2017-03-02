@@ -534,6 +534,22 @@ public final class CommandLineArgumentParserTest {
 
     }
 
+    // Should be able to use null to reset a list (with no ranges specified) to empty
+    @Test
+    public void testResetListToNull() {
+        class ResetListToNull {
+            @Argument
+            public List<String> LIST = makeList("foo", "bar");
+        }
+        final ResetListToNull o = new ResetListToNull();
+        final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
+        final String[] args = {"--LIST","null"};
+        Assert.assertTrue(clp.parseArguments(System.err, args));
+        Assert.assertTrue(o.LIST.isEmpty());
+    }
+
+    // Can't use null to reset a list if there are also other values specified (other values automatically
+    // reset the list).
     @Test(expectedExceptions = CommandLineException.class)
     public void testClearDefaultValuesFromListArgumentAndAddNew() {
         final CollectionWithDefaultValuesArguments o = new CollectionWithDefaultValuesArguments();
@@ -543,6 +559,7 @@ public final class CommandLineArgumentParserTest {
         Assert.assertEquals(o.LIST, makeList("baz", "frob"));
     }
 
+    // Replace the initial values in a list with new values
     @Test
     public void testReplaceListArgument() {
         final CollectionWithDefaultValuesArguments o = new CollectionWithDefaultValuesArguments();
