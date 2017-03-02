@@ -527,41 +527,6 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         // finally, give each plugin a chance to trim down any unseen instances from it's own list
         pluginDescriptors.entrySet().forEach(e -> e.getValue().validateArguments());
     }
-    /**
-     * Check the provided value against any range constraints specified in the Argument annotation
-     * for the corresponding field. Throw an exception if limits are violated.
-     *
-     * - Only checks numeric types (int, double, etc.)
-     */
-    private void checkArgumentRange(final ArgumentDefinition argumentDefinition, final Object argumentValue) {
-        // Only validate numeric types because we have already ensured at constructor time that only numeric types have bounds
-        if (!Number.class.isAssignableFrom(argumentDefinition.type)) {
-            return;
-        }
-
-        final Double argumentDoubleValue = (argumentValue == null) ? null : ((Number)argumentValue).doubleValue();
-
-        // Check hard limits first, if specified
-        if (argumentDefinition.hasBoundedRange() && isOutOfRange(argumentDefinition.minValue, argumentDefinition.maxValue, argumentDoubleValue)) {
-            throw new CommandLineException.OutOfRangeArgumentValue(argumentDefinition.getLongName(), argumentDefinition.minValue, argumentDefinition.maxValue, argumentValue);
-        }
-        // Check recommended values
-        if (argumentDefinition.hasRecommendedRange() && isOutOfRange(argumentDefinition.minRecommendedValue, argumentDefinition.maxRecommendedValue, argumentDoubleValue)) {
-            final boolean outMinValue = argumentDefinition.minRecommendedValue != Double.NEGATIVE_INFINITY;
-            final boolean outMaxValue = argumentDefinition.maxRecommendedValue != Double.POSITIVE_INFINITY;
-            if (outMinValue && outMaxValue) {
-                logger.warn("Argument --{} has value {}, but recommended within range ({},{})",
-                        argumentDefinition.getLongName(), argumentDoubleValue, argumentDefinition.minRecommendedValue, argumentDefinition.maxRecommendedValue);
-            } else if (outMinValue) {
-                logger.warn("Argument --{} has value {}, but minimum recommended is {}",
-                        argumentDefinition.getLongName(), argumentDoubleValue, argumentDefinition.minRecommendedValue);
-            } else if (outMaxValue) {
-                logger.warn("Argument --{} has value {}, but maximum recommended is {}",
-                        argumentDefinition.getLongName(), argumentDoubleValue, argumentDefinition.maxRecommendedValue);
-            }
-            // if there is no recommended value, do not log anything
-        }
-    }
 
     // null values are always out of range
     private static boolean isOutOfRange(final double minValue, final double maxValue, final Double value) {
@@ -668,7 +633,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
             }
 
             // check the argument range
-            checkArgumentRange(argumentDefinition, value);
+            argumentDefinition.validateValueForRange(value);
 
             if (argumentDefinition.isCollection) {
                 @SuppressWarnings("rawtypes")
@@ -1154,19 +1119,6 @@ public final class CommandLineArgumentParser implements CommandLineParser {
             // bounds should be only set for numeric arguments and if the type is integer it should
             // be set to an integer
             this.type = CommandLineParser.getUnderlyingType(this.field);
-            if (! Number.class.isAssignableFrom(this.type)) {
-                if (hasBoundedRange() || hasRecommendedRange()) {
-                    throw new CommandLineException.CommandLineParserInternalException(String.format("Min/max value ranges can only be set for numeric arguments. Argument --%s has a minimum or maximum value but has a non-numeric type.", this.getLongName()));
-                }
-            }
-            if (Integer.class.isAssignableFrom(this.type)) {
-                if (!isInfinityOrMathematicalInteger(this.maxValue)
-                        || !isInfinityOrMathematicalInteger(this.minValue)
-                        || !isInfinityOrMathematicalInteger(this.maxRecommendedValue)
-                        || !isInfinityOrMathematicalInteger(this.minRecommendedValue)) {
-                    throw new CommandLineException.CommandLineParserInternalException(String.format("Integer argument --%s has a minimum or maximum attribute with a non-integral value.", this.getLongName()));
-                }
-            }
             this.isHidden = field.getAnnotation(Hidden.class) != null;
             if (this.isHidden && !this.optional) {
                 // required arguments cannot be hidden, because they should be provided in the command line
@@ -1177,6 +1129,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
                 // required arguments cannot be advanced, because they represent options that should be changed carefully
                 throw new CommandLineException.CommandLineParserInternalException(String.format("A required argument cannot be annotated with @Advanced: %s", this.getLongName()));
             }
+            validateRangeDefinitions();
         }
 
         public Object getFieldValue(){
@@ -1210,6 +1163,80 @@ public final class CommandLineArgumentParser implements CommandLineParser {
 
         private boolean hasRecommendedRange() {
             return this.maxRecommendedValue != Double.POSITIVE_INFINITY || this.minRecommendedValue != Double.NEGATIVE_INFINITY;
+        }
+
+        // Validate the min/max range attribute values set in the code, and make sure
+        // any initial values are within range.
+        private void validateRangeDefinitions() {
+            if (hasBoundedRange() || hasRecommendedRange()) {
+                if (! Number.class.isAssignableFrom(this.type)) {
+                    throw new CommandLineException.CommandLineParserInternalException(
+                            String.format("Min/max value ranges can only be set for numeric arguments. "+
+                                    "Argument --%s has a minimum or maximum value but has a non-numeric type.",
+                                    this.getLongName()));
+                }
+                if (Integer.class.isAssignableFrom(this.type)) {
+                    if (!isInfinityOrMathematicalInteger(this.maxValue)
+                            || !isInfinityOrMathematicalInteger(this.minValue)
+                            || !isInfinityOrMathematicalInteger(this.maxRecommendedValue)
+                            || !isInfinityOrMathematicalInteger(this.minRecommendedValue)) {
+                        throw new CommandLineException.CommandLineParserInternalException(
+                                String.format("Integer argument --%s has a minimum or maximum attribute with a non-integral value.",
+                                        this.getLongName()));
+                    }
+                }
+
+                // check to see if the initial value(s) are out of range
+                try {
+                    if (isCollection) {
+                        @SuppressWarnings({"rawtypes", "unchecked"})
+                        final Collection<?> c = (Collection<?>) getFieldValue();
+                        c.forEach(el -> validateValueForRange(el));
+                    } else {
+                        validateValueForRange(getFieldValue());
+                    }
+                } catch (final CommandLineException.OutOfRangeArgumentValue e) {
+                    // translate this to an internal exception since its the coder's fault, not the user's
+                    throw new CommandLineException.CommandLineParserInternalException(
+                            "Initial field value is outside the argument range bounds ", e);
+                }
+            }
+        }
+
+        /**
+         * Check the provided value against any range constraints specified in the Argument annotation
+         * for the corresponding field. Throw an exception if limits are violated.
+         *
+         * - Only checks numeric types (int, double, etc.)
+         */
+        private void validateValueForRange(final Object argumentValue) {
+            // Only validate numeric types because we have already ensured at constructor time that only numeric types have bounds
+            if (!Number.class.isAssignableFrom(type)) {
+                return;
+            }
+
+            final Double argumentDoubleValue = (argumentValue == null) ? null : ((Number)argumentValue).doubleValue();
+
+            // Check hard limits first, if specified
+            if (hasBoundedRange() && isOutOfRange(minValue, maxValue, argumentDoubleValue)) {
+                throw new CommandLineException.OutOfRangeArgumentValue(getLongName(), minValue, maxValue, argumentValue);
+            }
+            // Check recommended values
+            if (hasRecommendedRange() && isOutOfRange(minRecommendedValue, maxRecommendedValue, argumentDoubleValue)) {
+                final boolean outMinValue = minRecommendedValue != Double.NEGATIVE_INFINITY;
+                final boolean outMaxValue = maxRecommendedValue != Double.POSITIVE_INFINITY;
+                if (outMinValue && outMaxValue) {
+                    logger.warn("Argument --{} has value {}, but recommended within range ({},{})",
+                            getLongName(), argumentDoubleValue, minRecommendedValue, maxRecommendedValue);
+                } else if (outMinValue) {
+                    logger.warn("Argument --{} has value {}, but minimum recommended is {}",
+                            getLongName(), argumentDoubleValue, minRecommendedValue);
+                } else if (outMaxValue) {
+                    logger.warn("Argument --{} has value {}, but maximum recommended is {}",
+                            getLongName(), argumentDoubleValue, maxRecommendedValue);
+                }
+                // if there is no recommended value, do not log anything
+            }
         }
 
         /**
