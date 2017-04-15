@@ -110,9 +110,9 @@ public class LegacyCommandLineArgumentParserTest {
     }
 
     class OptionsWithSameShortName {
-        @Argument(shortName = "SAME_SHORT_NAME", overridable = true, optional = true)
+        @Argument(shortName = "SAME_SHORT_NAME", optional = true)
         public String SAME_SHORT_NAME;
-        @Argument(shortName = "SOMETHING_ELSE", overridable = true, optional = true)
+        @Argument(shortName = "SOMETHING_ELSE", optional = true)
         public String DIFF_SHORT_NAME;
     }
 
@@ -608,52 +608,151 @@ public class LegacyCommandLineArgumentParserTest {
         Assert.assertEquals(o.LIST, makeList("foo", "bar", "baz", "frob"));
     }
 
+    class ArgsCollection {
+        @Argument(fullName = "arg1")
+        public int Arg1;
+    }
+
+    class ArgsCollectionContainer {
+
+        public ArgsCollectionContainer(){}
+
+        @ArgumentCollection
+        public ArgsCollection default_args = new ArgsCollection();
+
+        @Argument(fullName = "somenumber",shortName = "n")
+        public int someNumber = 0;
+    }
+
+    @Test
+    public void testArgumentCollectionFlat() {
+        final ArgsCollectionContainer o = new ArgsCollectionContainer();
+        final LegacyCommandLineArgumentParser clp = new LegacyCommandLineArgumentParser(o);
+
+        String[] args = {"arg1=42", "somenumber=12"};
+        Assert.assertTrue(clp.parseArguments(System.err, args));
+        Assert.assertEquals(o.default_args.Arg1, 42);
+        Assert.assertEquals(o.someNumber, 12);
+    }
+
+    public abstract class ReferenceArgumentCollection {
+        public abstract File getReferenceFile();
+    }
+
+    public class OptionalReferenceArgumentCollection extends ReferenceArgumentCollection {
+
+        @Argument(doc="A reference is optional", optional=true, common=true)
+        public File REFERENCE_SEQUENCE;
+
+        public File getReferenceFile() { return REFERENCE_SEQUENCE; };
+    }
+
+    public class RequiredReferenceArgumentCollection extends ReferenceArgumentCollection {
+
+        @Argument(doc="A reference is required", optional=false, common=false)
+        public File REFERENCE_SEQUENCE;
+
+        public File getReferenceFile() { return REFERENCE_SEQUENCE; };
+    }
+
+    class ArgCollectionToolBase {
+        @ArgumentCollection
+        public ReferenceArgumentCollection referenceSequence =
+                requiresReference() ?
+                        new RequiredReferenceArgumentCollection() :
+                        new OptionalReferenceArgumentCollection();
+
+        public boolean requiresReference() { return false;}
+    }
+
+    class ToolWithRequiredReference extends ArgCollectionToolBase {
+        public boolean requiresReference() { return true; }
+    }
+
+    class ToolWithOptionalReference extends ArgCollectionToolBase {
+        public boolean requiresReference() { return false; }
+    }
+
+    // Tool with optional reference, no reference provided
+    @Test
+    public void testArgumentCollectionNoReferenceProvidedForOptional(){
+        final ToolWithOptionalReference o = new ToolWithOptionalReference();
+        final LegacyCommandLineArgumentParser clp = new LegacyCommandLineArgumentParser(o);
+
+        String[] args = {}; // no reference provided
+        Assert.assertTrue(clp.parseArguments(System.err, args));
+        Assert.assertNull(o.referenceSequence.getReferenceFile());
+    }
+
+    // Tool with optional reference, with reference provided
+    @Test
+    public void testArgumentCollectionWithReferenceProvidedForOptional() {
+        final ToolWithOptionalReference o = new ToolWithOptionalReference();
+        final LegacyCommandLineArgumentParser clp = new LegacyCommandLineArgumentParser(o);
+
+        String[] args = {"REFERENCE_SEQUENCE=ref.fasta"}; // with reference provided
+        Assert.assertTrue(clp.parseArguments(System.err, args));
+        Assert.assertEquals(o.referenceSequence.getReferenceFile().getName(), "ref.fasta");
+    }
+
+    // Tool with required reference, no reference provided (parseArguments issues error message; returns false)
+    @Test
+    public void testArgumentCollectionNoReferenceProvidedForRequired() {
+        final ToolWithRequiredReference o = new ToolWithRequiredReference();
+        final LegacyCommandLineArgumentParser clp = new LegacyCommandLineArgumentParser(o);
+
+        String[] args = {}; // no reference provided
+        Assert.assertFalse(clp.parseArguments(System.err, args));
+    }
+
+    // Tool with required reference, with reference provided
+    @Test
+    public void testArgumentCollectionWithReferenceProvidedForRequired(){
+        final ToolWithRequiredReference o = new ToolWithRequiredReference();
+        final LegacyCommandLineArgumentParser clp = new LegacyCommandLineArgumentParser(o);
+
+        String[] args = {"REFERENCE_SEQUENCE=ref.fasta"}; // with reference provided
+        Assert.assertTrue(clp.parseArguments(System.err, args));
+        Assert.assertEquals(o.referenceSequence.getReferenceFile().getName(), "ref.fasta");
+    }
+
+    //////////////////////////////
+    // Nested argument collections
+
+    class ArgumentCollectionContainerInner {
+        @ArgumentCollection
+        ArgsCollection innerContainerArg = new ArgsCollection();
+    }
+
+    class ArgumentCollectionContainerOuter {
+        @Argument(fullName = "outerContainerArg")
+        public int outerContainerArg;
+
+        @ArgumentCollection
+        ArgumentCollectionContainerInner argInner = new ArgumentCollectionContainerInner();
+    }
+
+    class ToolWithNestedArgumentCollection  {
+        @ArgumentCollection
+        public ArgumentCollectionContainerOuter argOuter =  new ArgumentCollectionContainerOuter();
+    }
+
+    @Test
+    public void testArgumentCollectionNested() {
+        final ToolWithNestedArgumentCollection o = new ToolWithNestedArgumentCollection();
+        final LegacyCommandLineArgumentParser clp = new LegacyCommandLineArgumentParser(o);
+
+        String[] args = {"outerContainerArg=17", "arg1=92"};
+        Assert.assertTrue(clp.parseArguments(System.err, args));
+        Assert.assertEquals(o.argOuter.outerContainerArg, 17);
+        Assert.assertEquals(o.argOuter.argInner.innerContainerArg.Arg1, 92);
+    }
+
     private List<String> makeList(final String... list) {
         final List<String> result = new ArrayList<>();
         Collections.addAll(result, list);
         return result;
     }
-
-    class StaticParent {
-
-        @Argument
-        public String STRING1 = "String1ParentDefault";
-
-        @Argument
-        public String STRING2 = "String2ParentDefault";
-
-        @Argument(overridable = true)
-        public String STRING3 = "String3ParentDefault";
-
-        public void doSomething() {
-            System.out.println(STRING3);
-        }
-
-    }
-
-    class OverridePropagation extends StaticParent {
-        @Argument
-        public String STRING3 = "String3Overriden";
-    }
-
-    @Test
-    public void testOveriddenOptions() {
-        final OverridePropagation overridden = new OverridePropagation();
-        final LegacyCommandLineArgumentParser overrideClp = new LegacyCommandLineArgumentParser(overridden);
-
-        overrideClp.parseArguments(System.err, new String[0]);
-
-        final OverridePropagation props = (OverridePropagation) overrideClp.getCallerOptions();
-        Assert.assertTrue(props.STRING3.equals("String3Overriden"));
-        Assert.assertTrue(((StaticParent) props).STRING3.equals("String3Overriden"));
-
-        overrideClp.parseArguments(System.err, new String[]{"STRING3=String3Supplied"});
-
-        final OverridePropagation propsSet = (OverridePropagation) overrideClp.getCallerOptions();
-        Assert.assertTrue(propsSet.STRING3.equals("String3Supplied"));
-        Assert.assertTrue(((StaticParent) propsSet).STRING3.equals("String3Supplied"));
-    }
-
 
     @DataProvider(name = "testHtmlEscapeData")
     public Object[][] testHtmlEscapeData() {

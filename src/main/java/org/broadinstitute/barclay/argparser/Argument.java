@@ -77,31 +77,12 @@ public @interface Argument {
      */
     boolean sensitive() default false;
 
-    /**
-     * Overwrite default order in which Option are printed in usage by explicitly setting a
-     * print position e.g. printOrder=1 is printed before printOrder=2.
-     * Options without printOrder automatically receive a printOrder that (1) is a multiple of 1000
-     * and (2) reflects the order's default position. This gives you the option to insert your own options between
-     * options inherited from super classes (which order you do not control).
-     * The default ordering follows (1)the option declaration position in the class and (2) sub-classes options printed
-     *  before superclass options.
-     *
-     * @author charles girardot
-     */
-    int printOrder() default Integer.MAX_VALUE;
-
     /** The minimum number of times that this option is required. */
     int minElements() default 0;
 
     /** The maximum number of times this option is allowed. */
     int maxElements() default Integer.MAX_VALUE;
-
-    /**
-     * This boolean determines if this annotation overrides a parent annotation. If that is the case then
-     * the options of the parent annotation are overridden with this annotation.
-     */
-    boolean overridable() default false;
-
+    
     /**
      * Hard lower bound on the allowed value for the annotated argument -- generates an exception if violated.
      * Enforced only for numeric types whose values are explicitly specified on the command line.
