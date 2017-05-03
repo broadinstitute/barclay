@@ -65,6 +65,8 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     private static final String defaultUsagePreamble = "Usage: program [arguments...]\n";
     private static final String defaultUsagePreambleWithPositionalArguments =
             "Usage: program [arguments...] [positional-arguments...]\n";
+    protected static final String BETA_PREFIX = "\n\n**BETA FEATURE - FOR EVALUATION ONLY**\n\n";
+
     private static final String NULL_STRING = "null";
     public static final String COMMENT = "#";
     public static final String POSITIONAL_ARGUMENTS_NAME = "Positional Argument";
@@ -96,9 +98,12 @@ public final class CommandLineArgumentParser implements CommandLineParser {
      */
     @Override
     public String getStandardUsagePreamble(final Class<?> mainClass) {
-        return "USAGE: " + mainClass.getSimpleName() + " [arguments]\n\n";
+        if (mainClass.getAnnotation(BetaFeature.class) != null) {
+            return BETA_PREFIX + "USAGE: " + mainClass.getSimpleName() + " [arguments]\n\n";
+        } else {
+            return "USAGE: " + mainClass.getSimpleName() + " [arguments]\n\n";
+        }
     }
-
 
     private void putInArgumentMap(ArgumentDefinition arg){
         for (String key: arg.getNames()){

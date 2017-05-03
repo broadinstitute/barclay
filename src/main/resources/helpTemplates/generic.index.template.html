@@ -29,7 +29,11 @@
                     <#list data as datum>
                         <#if datum.group == group.name>
                             <tr>
-                                <td><a href="${datum.filename}">${datum.name}</a></td>
+                                <#if datum.beta??>
+                                    <td><a href="${datum.filename}">${datum.name} **BETA**</a></td>
+                                <#else>
+                                    <td><a href="${datum.filename}">${datum.name}</a></td>
+                                </#if>
                                 <td>${datum.summary}</td>
                             </tr>
                         </#if>

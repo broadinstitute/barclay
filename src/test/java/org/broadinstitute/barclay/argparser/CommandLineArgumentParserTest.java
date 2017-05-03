@@ -102,6 +102,24 @@ public final class CommandLineArgumentParserTest {
         Assert.assertTrue(out.indexOf("Advanced Arguments:", reqIndex) < 0);
     }
 
+    @CommandLineProgramProperties(
+            summary = "[oscillation_frequency]\n\nResets oscillation frequency.\n",
+            oneLineSummary = "Reset oscillation frequency.",
+            programGroup = TestProgramGroup.class
+    )
+    @BetaFeature
+    public class BetaTool {
+    }
+
+    @Test
+    public void testBetaFeatureUsage() {
+        final BetaTool eo = new BetaTool();
+        final CommandLineArgumentParser clp = new CommandLineArgumentParser(eo);
+        final String out = clp.usage(false, false); // without common/hidden args
+        final int reqIndex = out.indexOf(CommandLineArgumentParser.BETA_PREFIX);
+        Assert.assertEquals(reqIndex, 0);
+    }
+
     class AbbreviatableArgument{
         public static final String ARGUMENT_NAME = "longNameArgument";
         @Argument(fullName= ARGUMENT_NAME)

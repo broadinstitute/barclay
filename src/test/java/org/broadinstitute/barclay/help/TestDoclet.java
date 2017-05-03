@@ -23,14 +23,12 @@ public class TestDoclet extends HelpDoclet {
     @Override
     protected DocWorkUnit createWorkUnit(
         final DocumentedFeature documentedFeature,
-        final CommandLineProgramProperties commmandLineProgramProperties,
         final ClassDoc classDoc,
         final Class<?> clazz)
     {
         return new DocWorkUnit(
                 new TestDocWorkUnitHandler(this),
                 documentedFeature,
-                commmandLineProgramProperties,
                 classDoc,
                 clazz);
     }

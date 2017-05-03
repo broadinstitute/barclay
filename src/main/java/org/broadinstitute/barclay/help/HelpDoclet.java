@@ -10,7 +10,6 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.broadinstitute.barclay.argparser.CommandLineProgramProperties;
 import org.broadinstitute.barclay.argparser.Hidden;
 import org.broadinstitute.barclay.utils.JVMUtils;
 
@@ -190,7 +189,6 @@ public class HelpDoclet {
                 if (documentedFeature.enable()) {
                     DocWorkUnit workUnit = createWorkUnit(
                             documentedFeature,
-                            clazz.getAnnotation(CommandLineProgramProperties.class),
                             classDoc,
                             clazz);
                     if (workUnit != null) {
@@ -271,14 +269,12 @@ public class HelpDoclet {
      */
     protected DocWorkUnit createWorkUnit(
             final DocumentedFeature documentedFeature,
-            final CommandLineProgramProperties commmandLineProgramProperties,
             final ClassDoc classDoc,
             final Class<?> clazz)
     {
         return new DocWorkUnit(
                 new DefaultDocWorkUnitHandler(this),
                 documentedFeature,
-                commmandLineProgramProperties,
                 classDoc,
                 clazz);
     }
@@ -398,6 +394,7 @@ public class HelpDoclet {
         propertyMap.put("summary", workUnit.getSummary());
         propertyMap.put("filename", workUnit.getTargetFileName());
         propertyMap.put("group", workUnit.getGroupName());
+        propertyMap.put("beta", Boolean.toString(workUnit.getBetaFeature()));
         return propertyMap;
     }
 
