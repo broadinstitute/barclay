@@ -84,8 +84,6 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
             "Usage: program [options...] [positional-arguments...]\n";
     private static final String OPTIONS_FILE = "OPTIONS_FILE";
 
-    private static final String PRECEDENCE_SYMBOL = "++";
-
     /** name, shortName, description for options built in to framework */
     private static final String[][] FRAMEWORK_OPTION_DOC = {
             {"--help", "-h", "Displays options specific to this tool."},
@@ -93,8 +91,6 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
                     "options common to all Picard command line tools."},
             {"--version", null, "Displays program version."}
     };
-
-    private final Set<String> optionsThatCannotBeOverridden = new HashSet<String>();
 
     private final static Logger logger = LogManager.getLogger();
 
@@ -213,26 +209,32 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
             prefixDot = prefix + ".";
         }
 
-        int fieldCounter = 1;
-        for (final Field field : CommandLineParser.getAllFields(this.callerOptions.getClass())) {
+        createArgumentDefinitions(callerOptions);
+
+        this.programProperties = this.callerOptions.getClass().getAnnotation(CommandLineProgramProperties.class);
+    }
+
+    private void createArgumentDefinitions(final Object callerArguments) {
+        for (final Field field : CommandLineParser.getAllFields(callerArguments.getClass())) {
+            if (field.getAnnotation(Argument.class) != null && field.getAnnotation(ArgumentCollection.class) != null){
+                throw new CommandLineException.CommandLineParserInternalException("An Argument cannot be an argument collection: "
+                        +field.getName() + " in " + callerArguments.toString() + " is annotated as both.");
+            }
             if (field.getAnnotation(PositionalArguments.class) != null) {
                 handlePositionalArgumentAnnotation(field);
             }
             if (field.getAnnotation(Argument.class) != null) {
-                handleOptionAnnotation(field, fieldCounter);
-                // only increase counter if the field had default printOrder
-                if (field.getAnnotation(Argument.class).printOrder() == Integer.MAX_VALUE) {
-                    fieldCounter++;
+                handleOptionAnnotation(field, callerArguments);
+            }
+            if (field.getAnnotation(ArgumentCollection.class) != null) {
+                try {
+                    field.setAccessible(true);
+                    createArgumentDefinitions(field.get(callerArguments));
+                } catch (final IllegalAccessException e) {
+                    throw new CommandLineException.ShouldNeverReachHereException("should never reach here because we setAccessible(true)", e);
                 }
             }
         }
-
-        // make sure to sort options according to printOrder
-        if (optionDefinitions != null && !optionDefinitions.isEmpty()){
-            Collections.sort(optionDefinitions, new OptionDefinitionByPrintOrderComparator());
-        }
-
-        this.programProperties = this.callerOptions.getClass().getAnnotation(CommandLineProgramProperties.class);
     }
 
     @Override
@@ -282,12 +284,12 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
                 throw new CommandLineException("Should never happen", e);
             }
             final OptionDefinition optionsFileOptionDefinition =
-                    new OptionDefinition(fileField, OPTIONS_FILE, "",
+                    new OptionDefinition(fileField, null, OPTIONS_FILE, "",
                             "File of OPTION_NAME=value pairs.  No positional parameters allowed.  Unlike command-line options, " +
                                     "unrecognized options are ignored.  " + "A single-valued option set in an options file may be overridden " +
                                     "by a subsequent command-line option.  " +
                                     "A line starting with '#' is considered a comment.",
-                            false, true, false, 0, Integer.MAX_VALUE, null, true, new String[0], Integer.MAX_VALUE);
+                            false, false, 0, Integer.MAX_VALUE, null, true, new String[0]);
             printOptionUsage(sb, optionsFileOptionDefinition);
         }
         return sb.toString();
@@ -420,7 +422,7 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
                     return false;
                 }
                 if (optionDefinition.isCollection) {
-                    final Collection<?> c = (Collection<?>) optionDefinition.field.get(callerOptions);
+                    final Collection<?> c = (Collection<?>) optionDefinition.field.get(optionDefinition.parent);
                     if (c.size() < optionDefinition.minElements) {
                         messageStream.println("ERROR: Option '" + fullName + "' must be specified at least " +
                                 optionDefinition.minElements + " times.");
@@ -454,7 +456,7 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
             for (final OptionDefinition optionDefinition : optionDefinitions) {
                 if (optionDefinition.hasBeenSet) {
                     commandLineString.append(' ').append(prefixDot).append(optionDefinition.name).append('=').append(
-                            optionDefinition.field.get(callerOptions));
+                            optionDefinition.field.get(optionDefinition.parent));
                 }
             }
             commandLineString.append("   "); //separator to tell the 2 apart
@@ -501,23 +503,12 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
         return true;
     }
 
-    private boolean parseOption(final String key, final String stringValue, final boolean optionsFile) {
-        return parseOption(key, stringValue, optionsFile, false);
-    }
-
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private boolean parseOption(String key, final String stringValue, final boolean optionsFile,
-                                boolean precedenceSet) {
+    private boolean parseOption(String key, final String stringValue, final boolean optionsFile) {
         key = key.toUpperCase();
         if (key.equals(OPTIONS_FILE)) {
             commandLine += " " + prefix + OPTIONS_FILE + "=" + stringValue;
             return parseOptionsFile(stringValue);
-        }
-
-        // Check to see if the precedence symbol was used
-        if (key.startsWith(PRECEDENCE_SYMBOL)) {
-            key = key.substring(PRECEDENCE_SYMBOL.length());
-            precedenceSet = true;
         }
 
         final OptionDefinition optionDefinition = optionMap.get(key);
@@ -528,13 +519,6 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
             }
             messageStream.println("ERROR: Unrecognized option: " + key);
             return false;
-        }
-
-        // Check to see if the option has been "fixed" already
-        if (this.optionsThatCannotBeOverridden.contains(optionDefinition.name)) {
-            return true;
-        } else if (precedenceSet) {
-            this.optionsThatCannotBeOverridden.add(optionDefinition.name);
         }
 
         if (!optionDefinition.isCollection && optionDefinition.hasBeenSet && !optionDefinition.hasBeenSetFromOptionsFile) {
@@ -562,7 +546,7 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
         }
         try {
             if (optionDefinition.isCollection) {
-                final Collection c = (Collection) optionDefinition.field.get(callerOptions);
+                final Collection c = (Collection) optionDefinition.field.get(optionDefinition.parent);
                 if (value == null) {
                     //user specified this arg=null which is interpreted as empty list
                     c.clear();
@@ -576,19 +560,8 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
                 optionDefinition.hasBeenSet = true;
                 optionDefinition.hasBeenSetFromOptionsFile = optionsFile;
             } else {
-                //get all fields with this name and set them to the argument.
-                final String fieldName = optionDefinition.field.getName();
-                final Field[] fields = callerOptions.getClass().getFields();
-                for (final Field field : fields) {
-                    if (field.getName().equals(fieldName)) {
-                        field.set(callerOptions, value);
-                        optionDefinition.hasBeenSet = true;
-                    }
-                }
-                if (!optionDefinition.hasBeenSet) {
-                    optionDefinition.field.set(callerOptions, value);
-                    optionDefinition.hasBeenSet = true;
-                }
+                optionDefinition.field.set(optionDefinition.parent, value);
+                optionDefinition.hasBeenSet = true;
                 optionDefinition.hasBeenSetFromOptionsFile = optionsFile;
             }
         } catch (final IllegalAccessException e) {
@@ -774,9 +747,8 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
 
     /**
      * @param field the command line parameter as a {@link Field}
-     * @param fieldPosition the field number as returned by getAllFields() that returns all fields including those of superclasses
      */
-    private void handleOptionAnnotation(final Field field, final int fieldPosition) {
+    private void handleOptionAnnotation(final Field field, Object parent) {
         try {
             field.setAccessible(true);
             final Argument optionAnnotation = field.getAnnotation(Argument.class);
@@ -790,8 +762,8 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
                     throw new CommandLineException.CommandLineParserInternalException("In @Argument member " + field.getName() +
                             ", minElements cannot be > maxElements");
                 }
-                if (field.get(callerOptions) == null) {
-                    createCollection(field, callerOptions, "@Argument");
+                if (field.get(parent) == null) {
+                    createCollection(field, parent, "@Argument");
                 }
             }
             if (!canBeMadeFromString(getUnderlyingType(field))) {
@@ -799,27 +771,14 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
                         " must have a String ctor or be an enum");
             }
 
-            int printOrder = optionAnnotation.printOrder();
-            /*
-        	 *  check if we got the default printOrder (ie the print order was not specified in
-        	 *  field annotation).
-        	 *  If so we use the field position to set its default print order
-        	 *  *but* we multiply the field position by 1000 to
-        	 *  (1) make sure that custom ordering is preserved as long as it is below 1000
-        	 *  (2) get rooms in between each options to be able to insert your own options
-        	 */
-            if (printOrder == Integer.MAX_VALUE) {
-                printOrder = fieldPosition * 1000;
-            }
-
             final OptionDefinition optionDefinition = new OptionDefinition(field,
+                    parent,
                     field.getName(),
                     optionAnnotation.shortName(),
-                    optionAnnotation.doc(), optionAnnotation.optional() || (field.get(callerOptions) != null),
-                    optionAnnotation.overridable(), isCollection, optionAnnotation.minElements(),
-                    optionAnnotation.maxElements(), field.get(callerOptions), optionAnnotation.common(),
-                    optionAnnotation.mutex(),
-                    printOrder);
+                    optionAnnotation.doc(), optionAnnotation.optional() || (field.get(parent) != null),
+                    isCollection, optionAnnotation.minElements(),
+                    optionAnnotation.maxElements(), field.get(parent), optionAnnotation.common(),
+                    optionAnnotation.mutex());
 
             // log a warning if boundaries are set
             if (optionAnnotation.maxValue() != Double.POSITIVE_INFINITY) {
@@ -841,28 +800,21 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
                     mutextOptionDef.mutuallyExclusive.add(field.getName());
                 }
             }
-            if (!optionDefinition.overridable && optionMap.containsKey(optionDefinition.name)) {
+            if (optionMap.containsKey(optionDefinition.name)) {
                 throw new CommandLineException.CommandLineParserInternalException(optionDefinition.name + " has already been used.");
             }
             if (!optionDefinition.shortName.isEmpty() && !optionDefinition.shortName.equals(optionDefinition.name)) {
                 if (optionMap.containsKey(optionDefinition.shortName)) {
-                    if (!optionDefinition.overridable) {
                         throw new CommandLineException.CommandLineParserInternalException(optionDefinition.shortName +
                                 " has already been used");
-                    }
                 } else {
                     optionMap.put(optionDefinition.shortName, optionDefinition);
                 }
             }
-            //if we are overridable and we already exist don't add again to the option defs
-            if (!(optionDefinition.overridable && optionMap.containsKey(optionDefinition.name))) {
-                optionDefinitions.add(optionDefinition);
+            if (!optionMap.containsKey(optionDefinition.name)) {
                 optionMap.put(optionDefinition.name, optionDefinition);
             }
-            //we are overridable but we already exist in the map so we need to update the hidden field value
-            else if (optionMap.containsKey(optionDefinition.name)) {
-                field.set(this.callerOptions, optionMap.get(optionDefinition.name).field.get(callerOptions));
-            }
+            optionDefinitions.add(optionDefinition);
         } catch (final IllegalAccessException e) {
             throw new CommandLineException.CommandLineParserInternalException(field.getName() +
                     " must have public visibility to have @Argument annotation");
@@ -1002,25 +954,16 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
         return argv;
     }
 
-    protected static class OptionDefinitionByPrintOrderComparator implements Comparator<OptionDefinition> {
-
-        @Override
-        public int compare(OptionDefinition o1, OptionDefinition o2) {
-            return o1.printOrder - o2.printOrder;
-        }
-    }
-
     protected static final class OptionDefinition {
         final Field field;
+        final Object parent;
         final String name;
         final String shortName;
         final String doc;
         final boolean optional;
-        final boolean overridable;
         final boolean isCollection;
         final int minElements;
         final int maxElements;
-        final int printOrder;
         final String defaultValue;
         final boolean isCommon;
         boolean hasBeenSet = false;
@@ -1028,16 +971,16 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
         boolean hasBeenSetFromParent = false;
         final Set<String> mutuallyExclusive;
 
-        private OptionDefinition(final Field field, final String name, final String shortName, final String doc,
-                                 final boolean optional, final boolean overridable, boolean collection, final int minElements,
+        private OptionDefinition(final Field field, final Object parent,final String name, final String shortName, final String doc,
+                                 final boolean optional, boolean collection, final int minElements,
                                  final int maxElements, final Object defaultValue, final boolean isCommon,
-                                 final String[] mutuallyExclusive, final int printOrder) {
+                                 final String[] mutuallyExclusive) {
             this.field = field;
+            this.parent = parent;
             this.name = name.toUpperCase();
             this.shortName = shortName.toUpperCase();
             this.doc = doc;
             this.optional = optional;
-            this.overridable = overridable;
             isCollection = collection;
             this.minElements = minElements;
             this.maxElements = maxElements;
@@ -1054,30 +997,12 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
             }
             this.isCommon = isCommon;
             this.mutuallyExclusive = new HashSet<String>(Arrays.asList(mutuallyExclusive));
-            this.printOrder = printOrder;
             if (this.field.getAnnotation(Hidden.class) != null) {
                 logger.warn("Hidden annotation is not honored for --{}", this.name);
             }
         }
     }
 
-    /**
-     * Holds a command-line argument that is destined for a child parser.  Prefix has been stripped from name.
-     */
-    private static final class ChildOptionArg {
-        final String name;
-        final String value;
-        final boolean fromFile;
-        final boolean precedenceSet;
-
-        private ChildOptionArg(final String name, final String value, final boolean fromFile, final boolean precedenceSet) {
-            this.name = name;
-            this.value = value;
-            this.fromFile = fromFile;
-            this.precedenceSet = precedenceSet;
-        }
-    }
-    
     /**
      * The commandline used to run this program, including any default args that
      * weren't necessarily specified. This is used for logging and debugging.

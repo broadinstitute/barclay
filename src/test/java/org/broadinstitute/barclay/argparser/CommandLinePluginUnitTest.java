@@ -212,7 +212,8 @@ public class CommandLinePluginUnitTest {
         PlugInTestObject plugInTest = new PlugInTestObject();
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(
                 plugInTest,
-                Collections.singletonList(new TestPluginDescriptor(Collections.singletonList(new TestDefaultPlugin()))));
+                Collections.singletonList(new TestPluginDescriptor(Collections.singletonList(new TestDefaultPlugin()))),
+                Collections.emptySet());
 
         Assert.assertTrue(clp.parseArguments(System.err, args));
 
@@ -229,7 +230,8 @@ public class CommandLinePluginUnitTest {
         PlugInTestObject plugInTest = new PlugInTestObject();
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(
                 plugInTest,
-                Collections.singletonList(new TestPluginDescriptor(Collections.singletonList(new TestDefaultPlugin()))));
+                Collections.singletonList(new TestPluginDescriptor(Collections.singletonList(new TestDefaultPlugin()))),
+                Collections.emptySet());
         final String out = clp.usage(true, false); // with common args, without hidden
 
         TestPluginDescriptor pid = clp.getPluginDescriptor(TestPluginDescriptor.class);
@@ -258,7 +260,8 @@ public class CommandLinePluginUnitTest {
             final String argValue)  //unused
     {
         CommandLineParser clp = new CommandLineArgumentParser(new Object(),
-                Collections.singletonList(new TestPluginDescriptor(Collections.singletonList(new TestDefaultPlugin()))));
+                Collections.singletonList(new TestPluginDescriptor(Collections.singletonList(new TestDefaultPlugin()))),
+                Collections.emptySet());
         String[] args = {
                 "--" + TestPluginDescriptor.testPluginArgumentName, plugin  // no args, just enable plugin
         };
@@ -282,7 +285,8 @@ public class CommandLinePluginUnitTest {
             final String argValue)
     {
         CommandLineParser clp = new CommandLineArgumentParser(new Object(),
-                Collections.singletonList(new TestPluginDescriptor(Collections.singletonList(new TestDefaultPlugin()))));
+                Collections.singletonList(new TestPluginDescriptor(Collections.singletonList(new TestDefaultPlugin()))),
+                Collections.emptySet());
 
         String[] args = { argName, argValue }; // plugin args are specified but no plugin actually specified
 
@@ -292,7 +296,8 @@ public class CommandLinePluginUnitTest {
     @Test
     public void testNoPluginsSpecified() {
         CommandLineParser clp = new CommandLineArgumentParser(new Object(),
-                Collections.singletonList(new TestPluginDescriptor(Collections.singletonList(new TestDefaultPlugin()))));
+                Collections.singletonList(new TestPluginDescriptor(Collections.singletonList(new TestDefaultPlugin()))),
+                Collections.emptySet());
         clp.parseArguments(System.out, new String[]{});
 
         // get the command line read plugins
@@ -304,7 +309,8 @@ public class CommandLinePluginUnitTest {
     @Test
     public void testEnableMultiplePlugins() {
         CommandLineParser clp = new CommandLineArgumentParser(new Object(),
-                Collections.singletonList(new TestPluginDescriptor(Collections.singletonList(new TestDefaultPlugin()))));
+                Collections.singletonList(new TestPluginDescriptor(Collections.singletonList(new TestDefaultPlugin()))),
+                Collections.emptySet());
         String[] args = {
                 "--" + TestPluginDescriptor.testPluginArgumentName, TestPluginWithRequiredArg.class.getSimpleName(),
                 "--" + TestPluginWithRequiredArg.requiredArgName, "fake",
@@ -324,7 +330,8 @@ public class CommandLinePluginUnitTest {
     @Test(expectedExceptions = CommandLineException.class)
     public void testEnableNonExistentPlugin() {
         CommandLineParser clp = new CommandLineArgumentParser(new Object(),
-                Collections.singletonList(new TestPluginDescriptor(Collections.singletonList(new TestDefaultPlugin()))));
+                Collections.singletonList(new TestPluginDescriptor(Collections.singletonList(new TestDefaultPlugin()))),
+                Collections.emptySet());
         clp.parseArguments(System.out, new String[] {"--" + TestPluginDescriptor.testPluginArgumentName, "nonExistentPlugin"});
     }
 
@@ -443,7 +450,8 @@ public class CommandLinePluginUnitTest {
         // just the act of passing this descriptor to the parser should cause the collision
         new CommandLineArgumentParser(
                 PlugInTestObject,
-                Collections.singletonList(new TestPluginArgCollisionDescriptor()));
+                Collections.singletonList(new TestPluginArgCollisionDescriptor()),
+                Collections.emptySet());
     }
 
 }

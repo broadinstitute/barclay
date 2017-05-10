@@ -20,16 +20,7 @@ import java.io.PrintStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -119,6 +110,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     // and into which the values will be assigned.
     private final Object callerArguments;
 
+    private final Set<CommandLineParserOptions> parserOptions;
 
     // null if no @PositionalArguments annotation
     private Field positionalArguments;
@@ -153,7 +145,11 @@ public final class CommandLineArgumentParser implements CommandLineParser {
      *                        this command line parser.
      */
     public CommandLineArgumentParser(final Object callerArguments) {
-        this(callerArguments, new ArrayList<>());
+        this(
+                callerArguments,
+                Collections.<CommandLinePluginDescriptor<?>>emptyList(),
+                Collections.<CommandLineParserOptions>emptySet()
+        );
     }
 
     /**
@@ -166,11 +162,14 @@ public final class CommandLineArgumentParser implements CommandLineParser {
      */
     public CommandLineArgumentParser(
             final Object callerArguments,
-            final List<? extends CommandLinePluginDescriptor<?>> pluginDescriptors) {
+            final List<? extends CommandLinePluginDescriptor<?>> pluginDescriptors,
+            final Set<CommandLineParserOptions> parserOptions) {
         Utils.nonNull(callerArguments, "The object with command line arguments cannot be null");
         Utils.nonNull(pluginDescriptors, "The list of pluginDescriptors cannot be null");
+        Utils.nonNull(parserOptions, "The set of parser options cannot be null");
 
         this.callerArguments = callerArguments;
+        this.parserOptions = parserOptions;
 
         createArgumentDefinitions(callerArguments, null);
         createCommandLinePluginArgumentDefinitions(pluginDescriptors);
@@ -608,20 +607,27 @@ public final class CommandLineArgumentParser implements CommandLineParser {
             throw new CommandLineException("Argument '" + argumentDefinition.getNames() + "' cannot be specified more than once.");
         }
         if (argumentDefinition.isCollection) {
-            // if this is a collection then we only want to clear it once at the beginning, before we process
-            // any of the values
-            @SuppressWarnings("rawtypes")
-            final Collection c = (Collection) argumentDefinition.getFieldValue();
-            c.clear();
+            if (!parserOptions.contains(CommandLineParserOptions.APPEND_TO_COLLECTIONS)) {
+                // if this is a collection then we only want to clear it once at the beginning, before we process
+                // any of the values, unless we're in APPEND_TO_COLLECTIONS mode, in which case we leave the initial
+                // and append to it
+                @SuppressWarnings("rawtypes")
+                final Collection c = (Collection) argumentDefinition.getFieldValue();
+                c.clear();
+            }
             values = expandListFile(values);
         }
 
-        for (String stringValue: values) {
+        for (int i = 0; i < values.size(); i++) {
+            String stringValue = values.get(i);
             final Object value;
             if (stringValue.equals(NULL_STRING)) {
-                if (argumentDefinition.isCollection && values.size() > 1) {
-                    // multiple values for a collection were passed, and at least one of them is null
-                    throw new CommandLineException("A value of \"null\" can only be provided for a collection if it is the only value provided. Multiple values were provided for: " + argumentDefinition.getNames() + ".");
+                if (argumentDefinition.isCollection && i != 0) {
+                    // If a "null" is included, and its not the first value for this option, honor it, but warn,
+                    // since it will clobber any values that were previously set for this option, and may indicate
+                    // an unintentional error on the user's part
+                    logger.warn("A \"null\" value was detected for an option after values for that option were already set. " +
+                            "Clobbering previously set values for this option: " + argumentDefinition.getNames() + ".");
                 }
                 //"null" is a special value that allows the user to override any default
                 //value set for this arg

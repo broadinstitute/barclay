@@ -187,7 +187,9 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
             final Object argumentContainer = workUnit.getClazz().newInstance();
             if (argumentContainer instanceof CommandLinePluginProvider ) {
                 pluginDescriptors = ((CommandLinePluginProvider) argumentContainer).getPluginDescriptors();
-                clp = new CommandLineArgumentParser(argumentContainer, pluginDescriptors);
+                clp = new CommandLineArgumentParser(
+                        argumentContainer, pluginDescriptors, Collections.emptySet()
+                );
             } else {
                 clp = new CommandLineArgumentParser(argumentContainer);
             }
