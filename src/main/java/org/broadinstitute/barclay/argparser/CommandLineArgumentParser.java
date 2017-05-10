@@ -462,13 +462,11 @@ public final class CommandLineArgumentParser implements CommandLineParser {
                 if (argumentDefinition.isCollection && !argumentDefinition.optional) {
                     @SuppressWarnings("rawtypes")
                     final Collection c = (Collection) argumentDefinition.getFieldValue();
-                    if (c.isEmpty()) {
-                        throw new CommandLineException.MissingArgument(fullName, "Argument '" + fullName + "' must be specified at least once.");
+                    if (c.isEmpty() && mutextArgumentNames.length() == 0) {
+                       throw new CommandLineException.MissingArgument(fullName, getOneOfMutexRequiredErrorMessage(argumentDefinition));
                     }
                 } else if (!argumentDefinition.optional && !argumentDefinition.hasBeenSet && mutextArgumentNames.length() == 0) {
-                    throw new CommandLineException.MissingArgument(fullName, "Argument '" + fullName + "' is required" +
-                            (argumentDefinition.mutuallyExclusive.isEmpty() ? "." : " unless any of " + argumentDefinition.mutuallyExclusive +
-                                    " are specified."));
+                    throw new CommandLineException.MissingArgument(fullName, getOneOfMutexRequiredErrorMessage(argumentDefinition));
                 }
             }
             if (positionalArguments != null) {
@@ -483,6 +481,14 @@ public final class CommandLineArgumentParser implements CommandLineParser {
             throw new CommandLineException.ShouldNeverReachHereException("Should never happen",e);
         }
 
+    }
+
+    // Error message for when mutex args are mutually required (meaning one of them must be specified) but none was
+    private String getOneOfMutexRequiredErrorMessage(ArgumentDefinition argumentDefinition) {
+        return "Argument '" + argumentDefinition.getLongName() + "' is required" +
+                (argumentDefinition.mutuallyExclusive.isEmpty() ?
+                        "." :
+                        " unless any of " + argumentDefinition.mutuallyExclusive) + " are specified.";
     }
 
     // Once all command line args have been processed, go through the argument definitions and
