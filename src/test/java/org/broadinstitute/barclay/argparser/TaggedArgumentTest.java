@@ -422,10 +422,10 @@ public class TaggedArgumentTest {
     public Object[][] taggedGetCommandLine() {
         return new Object[][]{
                 {new String[]{"--t:tumor", "gcs://my/tumor.bam"},
-                        "org.broadinstitute.barclay.argparser.TaggedArgumentTest$TaggableArguments  --tFullName:tumor gcs://my/tumor.bam  --tScalar:taggableArgScalar foo --scalarArg 17"
+                        "TaggableArguments  --tFullName:tumor gcs://my/tumor.bam  --tScalar:taggableArgScalar foo --scalarArg 17"
                 },
                 {new String[]{"--t:tumor,truth=false,training=true", "tumor.bam", "--tFullName:normal,truth=true,training=false", "normal.bam"},
-                        "org.broadinstitute.barclay.argparser.TaggedArgumentTest$TaggableArguments  --tFullName:tumor,training=true,truth=false tumor.bam --tFullName:normal,training=false,truth=true normal.bam  --tScalar:taggableArgScalar foo --scalarArg 17"
+                        "TaggableArguments  --tFullName:tumor,training=true,truth=false tumor.bam --tFullName:normal,training=false,truth=true normal.bam  --tScalar:taggableArgScalar foo --scalarArg 17"
                 }
         };
     }
@@ -437,6 +437,5 @@ public class TaggedArgumentTest {
         clp.parseArguments(System.err, argv);
         final String commandLine = clp.getCommandLine();
         Assert.assertEquals(commandLine, expectedCommandLine);
-
     }
 }

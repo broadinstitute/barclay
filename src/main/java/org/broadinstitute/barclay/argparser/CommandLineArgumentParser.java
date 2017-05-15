@@ -1305,7 +1305,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     @SuppressWarnings("unchecked")
     @Override
     public String getCommandLine() {
-        final String toolName = callerArguments.getClass().getName();
+        final String toolName = callerArguments.getClass().getSimpleName();
         final StringBuilder commandLineString = new StringBuilder();
 
         final List<Object> positionalArgs;

@@ -353,7 +353,7 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
         this.argv = args;
         this.messageStream = messageStream;
         if (prefix.isEmpty()) {
-            commandLine = callerOptions.getClass().getName();
+            commandLine = callerOptions.getClass().getSimpleName();
         }
         for (int i = 0; i < args.length; ++i) {
             final String arg = args[i];
