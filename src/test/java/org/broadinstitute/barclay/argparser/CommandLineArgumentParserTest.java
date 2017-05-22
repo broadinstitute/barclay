@@ -8,7 +8,6 @@ import org.testng.annotations.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
@@ -78,7 +77,14 @@ public final class CommandLineArgumentParserTest {
         public String Y;
         @Argument(mutex={"A", "B", "M", "N"})
         public String Z;
-        
+
+    }
+
+    class MixedCardinalityMutexArguments {
+        @Argument(optional=false, mutex={"scalar"})
+        public List<String> collection;
+        @Argument(optional=false, mutex={"collection"})
+        public String scalar;
     }
 
     @CommandLineProgramProperties(
@@ -464,27 +470,36 @@ public final class CommandLineArgumentParserTest {
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(fo);
         clp.parseArguments(System.err, args);
     }
-    
+
     @DataProvider(name="failingMutexScenarios")
     public Object[][] failingMutexScenarios() {
         return new Object[][] {
-                { "no args", new String[0], false },
-                { "1 of group required", new String[] {"-A","1"}, false },
-                { "mutex", new String[]  {"-A","1", "-Y","3"}, false },
-                { "mega mutex", new String[]  {"-A","1", "-B","2", "-Y","3", "-Z","1", "-M","2", "-N","3"}, false }
+                { "no args", new MutexArguments(), new String[0] },
+                { "1 of group required", new MutexArguments(), new String[] {"-A","1"} },
+                { "mutex", new MutexArguments(), new String[]  {"-A","1", "-Y","3"} },
+                { "mega mutex", new MutexArguments(), new String[]  {"-A","1", "-B","2", "-Y","3", "-Z","1", "-M","2", "-N","3"} },
+                { "collection and scalar mutex mix", new MixedCardinalityMutexArguments(), new String[] { "-collection", "s1", "-scalar", "s2"}}
         };
     }
 
-    @Test
-    public void passingMutexCheck(){
-        final MutexArguments o = new MutexArguments();
+    @DataProvider(name="passingMutexScenarios")
+    public Object[][] passingMutexScenarios() {
+        return new Object[][] {
+                { "simple mutex", new MutexArguments(), new String[] { "-A", "1", "-B", "2"} },
+                { "collection mixed", new MixedCardinalityMutexArguments(), new String[] { "-collection", "s1"} },
+                { "collection multiple mixed", new MixedCardinalityMutexArguments(), new String[] { "-collection", "s1", "-collection", "s2"} },
+                { "scalar mixed", new MixedCardinalityMutexArguments(), new String[] { "-scalar", "s1"} }
+        };
+    }
+
+    @Test(dataProvider="passingMutexScenarios")
+    public void passingMutexCheck(final String testName, final Object o, final String[] args){
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
-        Assert.assertTrue(clp.parseArguments(System.err, new String[]{"-A", "1", "-B", "2"}));
+        Assert.assertTrue(clp.parseArguments(System.err, args));
     }
 
     @Test(dataProvider="failingMutexScenarios", expectedExceptions = CommandLineException.class)
-    public void testFailingMutex(final String testName, final String[] args, final boolean expected) {
-        final MutexArguments o = new MutexArguments();
+    public void testFailingMutex(final String testName, final Object o, final String[] args) {
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
         clp.parseArguments(System.err, args);
     }
