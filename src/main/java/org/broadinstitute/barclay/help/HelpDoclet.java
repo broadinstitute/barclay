@@ -41,6 +41,8 @@ import java.util.*;
  * {@link #createWorkUnit}
  * {@link #createGSONWorkUnit}
  *
+ * This requires that the static {@link #start(RootDoc)} methods is implemented to call the
+ * {@link #startProcessDocs(RootDoc)} from their instance.
  */
 public class HelpDoclet {
     final protected static Logger logger = LogManager.getLogger(HelpDoclet.class);
@@ -79,6 +81,14 @@ public class HelpDoclet {
 
     private RootDoc rootDoc;                // The javadoc root doc
     private Set<DocWorkUnit> workUnits;     // Set of all things we are going to document
+
+    /**
+     * The entry point to javadoc generation. It calls {@link #startProcessDocs(RootDoc)} (String[])} from this instance.
+     * Consumers should implement this static method to call {@link #startProcessDocs(RootDoc)} from their instance.
+     */
+     public static boolean start(final RootDoc rootDoc) throws IOException {
+         return new HelpDoclet().startProcessDocs(rootDoc);
+     }
 
     /**
      * Extracts the contents of certain types of javadoc and adds them to an output file.
