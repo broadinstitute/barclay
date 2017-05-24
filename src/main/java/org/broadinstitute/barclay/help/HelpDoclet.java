@@ -234,7 +234,7 @@ public class HelpDoclet {
     /**
      * @return the output extension to use for the index, i.e., ".html" or ".php"
      */
-    public String getIndexFileExtension() { return indexFileExtension; }
+    public String getIndexFileExtension() { return (indexFileExtension == null) ? outputFileExtension : indexFileExtension; }
 
     /**
      * @return the name of the index template to be used for this doclet
