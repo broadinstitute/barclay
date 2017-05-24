@@ -219,12 +219,17 @@ public class HelpDoclet {
     /**
      * @return the output extension to use, i.e., ".html" or ".php"
      */
-    protected String getOutputFileExtension() { return outputFileExtension; }
+    public String getOutputFileExtension() { return outputFileExtension; }
 
     /**
      * @return the name of the index template to be used for this doclet
      */
-    protected String getIndexTemplateName() { return "generic.index.template.html"; }
+    public String getIndexTemplateName() { return "generic.index.template.html"; }
+
+    /**
+     * @return the file where the files will be output
+     */
+    public File getDestinationDir() { return  destinationDir; }
 
     /**
      * Determine if a particular class should be included in the output. This is called by the doclet
@@ -332,7 +337,7 @@ public class HelpDoclet {
    ) throws IOException {
         // Get or create a template and merge in the data
         final Template template = cfg.getTemplate(getIndexTemplateName());
-        final File indexFile = new File(destinationDir + "/index." + outputFileExtension);
+        final File indexFile = new File(getDestinationDir() + "/index." + outputFileExtension);
         try (final FileOutputStream fileOutStream = new FileOutputStream(indexFile);
              final OutputStreamWriter outWriter = new OutputStreamWriter(fileOutStream)) {
             template.process(groupIndexMap(workUnitList, groupMaps), outWriter);
@@ -364,8 +369,8 @@ public class HelpDoclet {
 
         root.put("data", data);
         root.put("groups", groupMaps);
-        root.put("timestamp", buildTimestamp);
-        root.put("version", absoluteVersion);
+        root.put("timestamp", getBuildTimeStamp());
+        root.put("version", getBuildVersion());
 
         return root;
     }
@@ -441,7 +446,7 @@ public class HelpDoclet {
         try {
             // Merge data-model with template
             Template template = cfg.getTemplate(workUnit.getTemplateName());
-            File outputPath = new File(destinationDir + "/" + workUnit.getTargetFileName());
+            File outputPath = new File(getDestinationDir() + "/" + workUnit.getTargetFileName());
             try (final Writer out = new OutputStreamWriter(new FileOutputStream(outputPath))) {
                 template.process(workUnit.getRootMap(), out);
             }
@@ -463,7 +468,7 @@ public class HelpDoclet {
         );
 
         // Convert object to JSON and write JSON entry to file
-        File outputPathForJSON = new File(destinationDir + "/" + workUnit.getTargetFileName() + ".json");
+        File outputPathForJSON = new File(getDestinationDir() + "/" + workUnit.getTargetFileName() + ".json");
 
         try (final BufferedWriter jsonWriter = new BufferedWriter(new FileWriter(outputPathForJSON))) {
             Gson gson = new GsonBuilder()
