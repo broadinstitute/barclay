@@ -58,6 +58,7 @@ public class HelpDoclet {
     final private static String ABSOLUTE_VERSION_OPTION = "-absolute-version";
     final private static String INCLUDE_HIDDEN_OPTION = "-hidden-version";
     final private static String OUTPUT_FILE_EXTENSION_OPTION = "-output-file-extension";
+    final private static String INDEX_FILE_EXTENSION_OPTION = "-index-file-extension";
 
     // Where we find the help FreeMarker templates
     final private static File DEFAULT_SETTINGS_DIR = new File("settings/helpTemplates");
@@ -74,6 +75,7 @@ public class HelpDoclet {
     protected static File settingsDir = DEFAULT_SETTINGS_DIR;
     protected static File destinationDir = DEFAULT_DESTINATION_DIR;
     protected static String outputFileExtension = DEFAULT_OUTPUT_FILE_EXTENSION;
+    protected static String indexFileExtension = null;
     protected static String buildTimestamp = "[no timestamp available]";
     protected static String absoluteVersion = "[no version available]";
     protected static boolean showHiddenFeatures = false;
@@ -103,6 +105,14 @@ public class HelpDoclet {
             if (options[0].equals(OUTPUT_FILE_EXTENSION_OPTION)) {
                 outputFileExtension = options[1];
             }
+            if (options[0].equals(INDEX_FILE_EXTENSION_OPTION)) {
+                indexFileExtension = options[1];
+            }
+        }
+
+        // default to outputFileExtension
+        if (indexFileExtension == null) {
+            indexFileExtension = outputFileExtension;
         }
 
         if (!settingsDir.exists())
@@ -222,6 +232,11 @@ public class HelpDoclet {
     public String getOutputFileExtension() { return outputFileExtension; }
 
     /**
+     * @return the output extension to use for the index, i.e., ".html" or ".php"
+     */
+    public String getIndexFileExtension() { return indexFileExtension; }
+
+    /**
      * @return the name of the index template to be used for this doclet
      */
     public String getIndexTemplateName() { return "generic.index.template.html"; }
@@ -337,7 +352,7 @@ public class HelpDoclet {
    ) throws IOException {
         // Get or create a template and merge in the data
         final Template template = cfg.getTemplate(getIndexTemplateName());
-        final File indexFile = new File(getDestinationDir() + "/index." + outputFileExtension);
+        final File indexFile = new File(getDestinationDir() + "/index." + getIndexFileExtension());
         try (final FileOutputStream fileOutStream = new FileOutputStream(indexFile);
              final OutputStreamWriter outWriter = new OutputStreamWriter(fileOutStream)) {
             template.process(groupIndexMap(workUnitList, groupMaps), outWriter);
