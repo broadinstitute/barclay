@@ -83,8 +83,12 @@ public class HelpDoclet {
     private Set<DocWorkUnit> workUnits;     // Set of all things we are going to document
 
     /**
-     * The entry point to javadoc generation. It calls {@link #startProcessDocs(RootDoc)} (String[])} from this instance.
-     * Consumers should implement this static method to call {@link #startProcessDocs(RootDoc)} from their instance.
+     * The entry point for javadoc generation. Default implementation creates an instance of
+     * {@link HelpDoclet} and calls {@link #startProcessDocs(RootDoc)} on that instance.
+     *
+     * <p>Note: Custom Barclay doclets should subclass this class, and implement a similar static
+     * method that creates an instance of the doclet subclass and delegates to that instance's
+     * {@link #startProcessDocs(RootDoc)}.
      */
      public static boolean start(final RootDoc rootDoc) throws IOException {
          return new HelpDoclet().startProcessDocs(rootDoc);
