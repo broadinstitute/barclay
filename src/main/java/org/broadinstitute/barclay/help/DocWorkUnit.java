@@ -5,6 +5,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.broadinstitute.barclay.argparser.CommandLineProgramGroup;
 import org.broadinstitute.barclay.argparser.CommandLineProgramProperties;
+import org.broadinstitute.barclay.argparser.BetaFeature;
 import org.broadinstitute.barclay.utils.Utils;
 
 import java.util.HashMap;
@@ -26,6 +27,7 @@ public class DocWorkUnit implements Comparable<DocWorkUnit> {
     // Annotations attached to the feature class being documented by this work unit
     private final DocumentedFeature documentedFeature;
     private final CommandLineProgramProperties commandLineProperties;
+    private final BetaFeature betaFeature;
 
     private Map<String, Object> propertyMap = new HashMap<>(); // propertyMap for this unit's template
 
@@ -37,14 +39,12 @@ public class DocWorkUnit implements Comparable<DocWorkUnit> {
     /**
      * @param workUnitHandler
      * @param documentedFeatureAnnotation
-     * @param commandLinePropertiesAnnotation may be null
      * @param classDoc
      * @param clazz
      */
     public DocWorkUnit(
             final DocWorkUnitHandler workUnitHandler,
             final DocumentedFeature documentedFeatureAnnotation,
-            final CommandLineProgramProperties commandLinePropertiesAnnotation,
             final ClassDoc classDoc,
             final Class<?> clazz)
     {
@@ -56,7 +56,8 @@ public class DocWorkUnit implements Comparable<DocWorkUnit> {
         this.name = clazz.getSimpleName();
 
         this.documentedFeature = documentedFeatureAnnotation;
-        this.commandLineProperties = commandLinePropertiesAnnotation;
+        this.commandLineProperties = clazz.getAnnotation(CommandLineProgramProperties.class);
+        this.betaFeature = clazz.getAnnotation(BetaFeature.class);
         this.workUnitHandler = workUnitHandler;
         this.classDoc = classDoc;
         this.clazz = clazz;
@@ -160,6 +161,11 @@ public class DocWorkUnit implements Comparable<DocWorkUnit> {
      * command line programs.
      */
     public CommandLineProgramProperties getCommandLineProperties() { return commandLineProperties; }
+
+    /**
+     * @return a boolean determining if this documented feature is marked as a beta feature
+     */
+    public boolean getBetaFeature() { return betaFeature != null; }
 
     /**
      * Get the CommandLineProgramGroup object from the CommandLineProgramProperties of this work unit.

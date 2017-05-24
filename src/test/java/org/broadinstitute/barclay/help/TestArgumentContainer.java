@@ -24,6 +24,11 @@ import java.util.*;
  * </ol>
  * </p>
  */
+@CommandLineProgramProperties(
+        summary = "Test tool summary",
+        oneLineSummary = "Argument container class for testing documentation generation.",
+        programGroup = TestProgramGroup.class)
+@BetaFeature
 @DocumentedFeature(groupName = "Test feature group name", extraDocs = TestExtraDocs.class)
 public class TestArgumentContainer implements CommandLinePluginProvider {
 

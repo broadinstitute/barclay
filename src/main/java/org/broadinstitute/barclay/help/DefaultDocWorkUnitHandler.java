@@ -217,6 +217,7 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
         workUnit.setProperty("name", workUnit.getName());
         workUnit.setProperty("group", workUnit.getGroupName());
         workUnit.setProperty("summary", workUnit.getSummary());
+        workUnit.setProperty("beta", workUnit.getBetaFeature());
 
         workUnit.setProperty("description", getDescription(workUnit));
 
