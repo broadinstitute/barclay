@@ -251,7 +251,7 @@ public final class CommandLineArgumentParserTest {
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(fo);
         Assert.assertTrue(clp.parseArguments(System.err, args));
         Assert.assertEquals(clp.getCommandLine(),
-                "org.broadinstitute.barclay.argparser.CommandLineArgumentParserTest$FrobnicateArguments  " +
+                "FrobnicateArguments  " +
                         "positional1 positional2 --FROBNICATION_THRESHOLD 17 --FROBNICATION_FLAVOR BAR " +
                         "--SHMIGGLE_TYPE shmiggle1 --SHMIGGLE_TYPE shmiggle2 --TRUTHINESS true  --help false " +
                         "--version false --showHidden false");
