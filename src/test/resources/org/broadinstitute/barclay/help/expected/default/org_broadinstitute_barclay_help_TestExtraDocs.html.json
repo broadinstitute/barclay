@@ -1,0 +1,23 @@
+{
+  "summary": "Class for testing extraDocs property in docgen.",
+  "arguments": [
+    {
+      "summary": "Extra stuff",
+      "name": "--extraDocsArgument",
+      "synonyms": "-extDocArg",
+      "type": "String",
+      "required": "no",
+      "fulltext": "",
+      "defaultValue": "initial string value",
+      "minValue": "NA",
+      "maxValue": "NA",
+      "minRecValue": "NA",
+      "maxRecValue": "NA",
+      "kind": "optional",
+      "options": []
+    }
+  ],
+  "description": "Class for testing extraDocs property in docgen.",
+  "name": "TestExtraDocs",
+  "group": "Test extra docs group name"
+}

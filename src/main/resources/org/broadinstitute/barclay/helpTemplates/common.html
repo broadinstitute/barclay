@@ -27,27 +27,21 @@
             }
         </style>
         <ul class="nav nav-pills nav-stacked" id="sidenav">
-        	<#assign seq = ["engine", "tools", "other", "utilities"]>
-        	<#list seq as supercat>
-        		<hr>
-        		<#list groups?sort_by("name") as group>
-        			<#if group.supercat == supercat>
-						<li><a data-toggle="collapse" data-parent="#sidenav" href="#${group.id}">${group.name}</a>
-							<div id="${group.id}"
-								<?php echo ($group == '${group.name}')? 'class="accordion-body collapse in"'.chr(62) : 'class="accordion-body collapse"'.chr(62);?>
-								<ul>
-									<#list data as datum>
-										<#if datum.group == group.name>
-											<li>
-												<a href="${datum.filename}">${datum.name}</a>
-											</li>
-										</#if>
-									</#list>
-								</ul>
-							</div>
-						</li>
-        			</#if>
-        		</#list>
-        	</#list>
+			<#list groups?sort_by("name") as group>
+				<li><a data-toggle="collapse" data-parent="#sidenav" href="#${group.id}">${group.name}</a>
+					<div id="${group.id}"
+					<?php echo ($group == '${group.name}')? 'class="accordion-body collapse in"'.chr(62) : 'class="accordion-body collapse"'.chr(62);?>
+					<ul>
+						<#list data as datum>
+							<#if datum.group == group.name>
+								<li>
+									<a href="${datum.filename}">${datum.name}</a>
+								</li>
+							</#if>
+						</#list>
+					</ul>
+					</div>
+				</li>
+			</#list>
         </ul>
     </#macro>
