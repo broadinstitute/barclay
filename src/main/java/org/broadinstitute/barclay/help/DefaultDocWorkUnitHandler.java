@@ -180,21 +180,31 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
             final List<Map<String, String>> featureMaps,
             final List<Map<String, String>> groupMaps) {
 
-        CommandLineArgumentParser clp;
+        CommandLineArgumentParser clp = null;
         List<? extends CommandLinePluginDescriptor<?>> pluginDescriptors = new ArrayList<>();
 
-        try {
-            final Object argumentContainer = workUnit.getClazz().newInstance();
-            if (argumentContainer instanceof CommandLinePluginProvider ) {
-                pluginDescriptors = ((CommandLinePluginProvider) argumentContainer).getPluginDescriptors();
-                clp = new CommandLineArgumentParser(
-                        argumentContainer, pluginDescriptors, Collections.emptySet()
-                );
-            } else {
-                clp = new CommandLineArgumentParser(argumentContainer);
+        // Not all DocumentedFeature targets are CommandLinePrograms, and thus not all can be instantiated via
+        // a no-arg constructor. But we do want to generate a doc page for them. Any arguments associated with
+        // such a feature will show up in the doc page for any referencing CommandLinePrograms, instead of in
+        // the standalone feature page.
+        //
+        // Ex: We may want to document an input or output file format by adding @DocumentedFeature
+        // to the format's reader/writer class (i.e. TableReader), and then reference that feature
+        // in the extraDocs attribute in a CommandLineProgram that reads/writes that format.
+        if (workUnit.getCommandLineProperties() != null) {
+            try {
+                final Object argumentContainer = workUnit.getClazz().newInstance();
+                if (argumentContainer instanceof CommandLinePluginProvider ) {
+                    pluginDescriptors = ((CommandLinePluginProvider) argumentContainer).getPluginDescriptors();
+                    clp = new CommandLineArgumentParser(
+                            argumentContainer, pluginDescriptors, Collections.emptySet()
+                    );
+                } else {
+                    clp = new CommandLineArgumentParser(argumentContainer);
+                }
+            } catch (IllegalAccessException | InstantiationException e) {
+                throw new RuntimeException(e);
             }
-        } catch (IllegalAccessException | InstantiationException e) {
-            throw new RuntimeException(e);
         }
 
         workUnit.setProperty("groups", groupMaps);
@@ -285,36 +295,38 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
         final Map<String, List<Map<String, Object>>> argMap = createArgumentMap();
         currentWorkUnit.setProperty("arguments", argMap);
 
-        // do positional arguments, followed by named arguments
-        processPositionalArguments(clp, argMap);
-        clp.getArgumentDefinitions().stream().forEach(argDef -> processNamedArgument(currentWorkUnit, argMap, argDef));
+        if (clp != null) {
+            // do positional arguments, followed by named arguments
+            processPositionalArguments(clp, argMap);
+            clp.getArgumentDefinitions().stream().forEach(argDef -> processNamedArgument(currentWorkUnit, argMap, argDef));
 
-        // sort the resulting args
-        argMap.entrySet().stream().forEach( entry -> entry.setValue(sortArguments(entry.getValue())));
+            // sort the resulting args
+            argMap.entrySet().stream().forEach( entry -> entry.setValue(sortArguments(entry.getValue())));
 
-        // Write out the GSON version
-        // make a GSON-friendly map of arguments -- uses some hacky casting
-        final List<GSONArgument> allGSONArgs = new ArrayList<>();
-        for (final Map<String, Object> item : argMap.get("all")) {
-            GSONArgument itemGSONArg = new GSONArgument();
+            // Write out the GSON version
+            // make a GSON-friendly map of arguments -- uses some hacky casting
+            final List<GSONArgument> allGSONArgs = new ArrayList<>();
+            for (final Map<String, Object> item : argMap.get("all")) {
+                GSONArgument itemGSONArg = new GSONArgument();
 
-            itemGSONArg.populate(item.get("summary").toString(),
-                    item.get("name").toString(),
-                    item.get("synonyms").toString(),
-                    item.get("type").toString(),
-                    item.get("required").toString(),
-                    item.get("fulltext").toString(),
-                    item.get("defaultValue").toString(),
-                    item.get("minValue").toString(),
-                    item.get("maxValue").toString(),
-                    item.get("minRecValue").toString(),
-                    item.get("maxRecValue").toString(),
-                    item.get("kind").toString(),
-                    (List<Map<String, Object>>)item.get("options")
-            );
-            allGSONArgs.add(itemGSONArg);
+                itemGSONArg.populate(item.get("summary").toString(),
+                        item.get("name").toString(),
+                        item.get("synonyms").toString(),
+                        item.get("type").toString(),
+                        item.get("required").toString(),
+                        item.get("fulltext").toString(),
+                        item.get("defaultValue").toString(),
+                        item.get("minValue").toString(),
+                        item.get("maxValue").toString(),
+                        item.get("minRecValue").toString(),
+                        item.get("maxRecValue").toString(),
+                        item.get("kind").toString(),
+                        (List<Map<String, Object>>)item.get("options")
+                );
+                allGSONArgs.add(itemGSONArg);
+            }
+            currentWorkUnit.setProperty("gson-arguments", allGSONArgs);
         }
-        currentWorkUnit.setProperty("gson-arguments", allGSONArgs);
     }
 
     private String getTagPrefix() {
@@ -602,11 +614,17 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
             if (fieldDoc.name().equals(name))
                 return fieldDoc;
 
+            // This can return null, specifically, we can encounter https://bugs.openjdk.java.net/browse/JDK-8033735,
+            // which is fixed in JDK9 http://hg.openjdk.java.net/jdk9/jdk9/hotspot/rev/ba8c351b7096.
             final Field field = DocletUtils.getFieldForFieldDoc(fieldDoc);
-            if (field == null)
-                throw new RuntimeException("Could not find the field corresponding to " + fieldDoc +
-                        ", presumably because the field is inaccessible");
-            if (field.isAnnotationPresent(ArgumentCollection.class)) {
+            if (field == null) {
+                logger.warn(
+                    String.format(
+                        "Could not access the field definition for %s while searching for %s, presumably because the field is inaccessible",
+                        fieldDoc.name(),
+                        name)
+                );
+            } else if (field.isAnnotationPresent(ArgumentCollection.class)) {
                 final ClassDoc typeDoc = getDoclet().getRootDoc().classNamed(fieldDoc.type().qualifiedTypeName());
                 if (typeDoc == null)
                     throw new DocException("Tried to get javadocs for ArgumentCollection field " +

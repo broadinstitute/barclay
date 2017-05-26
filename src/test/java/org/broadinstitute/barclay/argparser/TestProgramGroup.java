@@ -6,11 +6,11 @@ package org.broadinstitute.barclay.argparser;
 public final class TestProgramGroup implements CommandLineProgramGroup {
     @Override
     public String getName() {
-        return "Testing";
+        return "TestProgramGroup";
     }
 
     @Override
     public String getDescription() {
-        return "group used for testing";
+        return "Test program group used for testing";
     }
 }
