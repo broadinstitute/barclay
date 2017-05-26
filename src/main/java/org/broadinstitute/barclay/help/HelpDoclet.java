@@ -75,7 +75,7 @@ public class HelpDoclet {
     protected static File settingsDir = DEFAULT_SETTINGS_DIR;
     protected static File destinationDir = DEFAULT_DESTINATION_DIR;
     protected static String outputFileExtension = DEFAULT_OUTPUT_FILE_EXTENSION;
-    protected static String indexFileExtension = null;
+    protected static String indexFileExtension = DEFAULT_OUTPUT_FILE_EXTENSION;
     protected static String buildTimestamp = "[no timestamp available]";
     protected static String absoluteVersion = "[no version available]";
     protected static boolean showHiddenFeatures = false;
@@ -91,6 +91,9 @@ public class HelpDoclet {
      * @throws java.io.IOException if output can't be written.
      */
     protected boolean startProcessDocs(final RootDoc rootDoc) throws IOException {
+        // set the indexFileExtension to null to identify if it was provided with -index-file-extension option
+        // this is necessary the make the default the same as the -output-file-extension if it wasn't provided
+        indexFileExtension = null;
         for (String[] options : rootDoc.options()) {
             if (options[0].equals(SETTINGS_DIR_OPTION))
                 settingsDir = new File(options[1]);
@@ -110,7 +113,7 @@ public class HelpDoclet {
             }
         }
 
-        // default to outputFileExtension
+        // default to outputFileExtension if it was not provided
         if (indexFileExtension == null) {
             indexFileExtension = outputFileExtension;
         }
@@ -234,7 +237,7 @@ public class HelpDoclet {
     /**
      * @return the output extension to use for the index, i.e., ".html" or ".php"
      */
-    public String getIndexFileExtension() { return (indexFileExtension == null) ? outputFileExtension : indexFileExtension; }
+    public String getIndexFileExtension() { return (indexFileExtension; }
 
     /**
      * @return the name of the index template to be used for this doclet
