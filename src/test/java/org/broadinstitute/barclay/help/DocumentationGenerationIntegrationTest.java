@@ -26,7 +26,7 @@ public class DocumentationGenerationIntegrationTest {
         String[] argArray = new String[]{
                 "-build-timestamp", "2016/01/01 01:01:01",      // dummy, constant timestamp
                 "-absolute-version", "11.1",                    // dummy version
-                "-settings-dir", "src/main/resources/helpTemplates",
+                "-settings-dir", "src/test/resources/org/broadinstitute/barclay/help/templates/",
                 "-d", outputDir.getAbsolutePath(),
                 "-output-file-extension", "html",
                 "-doclet", TestDoclet.class.getName(),
