@@ -91,9 +91,6 @@ public class HelpDoclet {
      * @throws java.io.IOException if output can't be written.
      */
     protected boolean startProcessDocs(final RootDoc rootDoc) throws IOException {
-        // set the indexFileExtension to null to identify if it was provided with -index-file-extension option
-        // this is necessary the make the default the same as the -output-file-extension if it wasn't provided
-        indexFileExtension = null;
         for (String[] options : rootDoc.options()) {
             if (options[0].equals(SETTINGS_DIR_OPTION))
                 settingsDir = new File(options[1]);
@@ -111,11 +108,6 @@ public class HelpDoclet {
             if (options[0].equals(INDEX_FILE_EXTENSION_OPTION)) {
                 indexFileExtension = options[1];
             }
-        }
-
-        // default to outputFileExtension if it was not provided
-        if (indexFileExtension == null) {
-            indexFileExtension = outputFileExtension;
         }
 
         if (!settingsDir.exists())
