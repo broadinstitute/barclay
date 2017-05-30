@@ -78,7 +78,7 @@ public class DocumentationGenerationIntegrationTest {
                 "-settings-dir", "src/main/resources/org/broadinstitute/barclay/helpTemplates/",
                 "-d", outputDir.getAbsolutePath(),
                 "-output-file-extension", "html",
-                "-doclet", TestDoclet.class.getName(),
+                "-doclet", HelpDoclet.class.getName(),
                 "-docletpath", "build/libs",
                 "-sourcepath", "src/test/java",
                 "org.broadinstitute.barclay.help",

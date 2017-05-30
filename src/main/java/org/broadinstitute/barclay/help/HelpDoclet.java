@@ -40,9 +40,8 @@ import java.util.*;
  * {@link #getIndexTemplateName}
  * {@link #createWorkUnit}
  * {@link #createGSONWorkUnit}
- *
- * This requires that the static {@link #start(RootDoc)} methods is implemented to call the
- * {@link #startProcessDocs(RootDoc)} from their instance.
+ * {@link #start(RootDoc)} A static method that instantiates the subclass and delegates to the
+ * instance method {@link #startProcessDocs(RootDoc)}.
  */
 public class HelpDoclet {
     final protected static Logger logger = LogManager.getLogger(HelpDoclet.class);

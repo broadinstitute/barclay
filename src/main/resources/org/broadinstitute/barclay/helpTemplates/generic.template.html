@@ -128,25 +128,6 @@
 		${description}
 
 		<#-- Create references to additional capabilities if appropriate -->
-			<#if testPlugin?size != 0>
-				<hr>
-				<h2>Additional Information</h2>
-				<p></p>
-			</#if>
-			<#if testPlugin?size != 0>
-				<h3>Test Plugins</h3>
-				<#if testPlugin?size = 1>
-					<p>This Test Plugin is automatically applied to the data by the Engine before processing by ${name}.</p>
-				</#if>
-				<#if (testPlugin?size > 1) >
-					<p>These Test Plugins are automatically applied to the data by the Engine before processing by ${name}.</p>
-				</#if>
-				<ul>
-					<#list testPlugin as plugin>
-						<li><a href="${plugin.filename}">${plugin.name}</a></li>
-					</#list>
-				</ul>
-			</#if>
 			<#if extradocs?size != 0 || arguments.all?size != 0>
 				<hr>
 				<h2>Command-line Arguments</h2>
