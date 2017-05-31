@@ -40,7 +40,8 @@ import java.util.*;
  * {@link #getIndexTemplateName}
  * {@link #createWorkUnit}
  * {@link #createGSONWorkUnit}
- *
+ * {@link #start(RootDoc)} A static method that instantiates the subclass and delegates to the
+ * instance method {@link #startProcessDocs(RootDoc)}.
  */
 public class HelpDoclet {
     final protected static Logger logger = LogManager.getLogger(HelpDoclet.class);
@@ -79,6 +80,18 @@ public class HelpDoclet {
 
     private RootDoc rootDoc;                // The javadoc root doc
     private Set<DocWorkUnit> workUnits;     // Set of all things we are going to document
+
+    /**
+     * The entry point for javadoc generation. Default implementation creates an instance of
+     * {@link HelpDoclet} and calls {@link #startProcessDocs(RootDoc)} on that instance.
+     *
+     * <p>Note: Custom Barclay doclets should subclass this class, and implement a similar static
+     * method that creates an instance of the doclet subclass and delegates to that instance's
+     * {@link #startProcessDocs(RootDoc)}.
+     */
+     public static boolean start(final RootDoc rootDoc) throws IOException {
+         return new HelpDoclet().startProcessDocs(rootDoc);
+     }
 
     /**
      * Extracts the contents of certain types of javadoc and adds them to an output file.

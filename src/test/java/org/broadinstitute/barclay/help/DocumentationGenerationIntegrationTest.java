@@ -2,6 +2,7 @@ package org.broadinstitute.barclay.help;
 
 
 import org.testng.Assert;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.io.File;
@@ -16,33 +17,52 @@ import java.util.List;
  */
 public class DocumentationGenerationIntegrationTest {
 
-    @Test
-    public void testDocGenRoundTrip() throws IOException {
-        File outputDir = Files.createTempDirectory("BarclayDocGen").toAbsolutePath().toFile();
-        File expectedDir = new File("src/test/resources/org/broadinstitute/barclay/help/expected/");
+    // common arguments not changed for tests
+    private static final List<String> COMMON_DOC_ARG_LIST = Arrays.asList(
+            "-build-timestamp", "2016/01/01 01:01:01",      // dummy, constant timestamp
+            "-absolute-version", "11.1",                    // dummy version
+            "-output-file-extension", "html",               // we are only testing html outputs
+            "-docletpath", "build/libs",
+            "-sourcepath", "src/test/java",
+            "org.broadinstitute.barclay.help",
+            "org.broadinstitute.barclay.argparser",
+            "-verbose",
+            "-cp", System.getProperty("java.class.path")
+    );
 
+    private static String[] docArgList(final Class<?> docletClass, final File templatesFolder, final File outputDir) {
+        // set the common arguments
+        final List<String> docArgList = new ArrayList<>(COMMON_DOC_ARG_LIST);
+        // set the templates
+        docArgList.add("-settings-dir");
+        docArgList.add(templatesFolder.getAbsolutePath());
+        // set the output directory
+        docArgList.add("-d");
+        docArgList.add(outputDir.getAbsolutePath());
+        // set the doclet class
+        docArgList.add("-doclet");
+        docArgList.add(docletClass.getName());
+        return docArgList.toArray(new String[]{});
+    }
+
+    @DataProvider
+    public Object[][] getDocGenTestParams() {
+        return new Object[][] {
+                // default doclet and templates
+                {HelpDoclet.class, new File("src/main/resources/org/broadinstitute/barclay/helpTemplates/"), new File("src/test/resources/org/broadinstitute/barclay/help/expected/HelpDoclet")},
+                // custom doclet and templates
+                {TestDoclet.class, new File("src/test/resources/org/broadinstitute/barclay/help/templates/TestDoclet"), new File("src/test/resources/org/broadinstitute/barclay/help/expected/TestDoclet")}
+        };
+    }
+
+    @Test(dataProvider = "getDocGenTestParams")
+    public void testDocGenRoundTrip(final Class<?> docletClass, final File templatesFolder, final File expectedDir) throws IOException {
+        // creates a temp output directory
+        final File outputDir = Files.createTempDirectory(docletClass.getName()).toAbsolutePath().toFile();
         outputDir.deleteOnExit();
 
-        String[] argArray = new String[]{
-                "-build-timestamp", "2016/01/01 01:01:01",      // dummy, constant timestamp
-                "-absolute-version", "11.1",                    // dummy version
-                "-settings-dir", "src/main/resources/helpTemplates",
-                "-d", outputDir.getAbsolutePath(),
-                "-output-file-extension", "html",
-                "-doclet", TestDoclet.class.getName(),
-                "-docletpath", "build/libs",
-                "-sourcepath", "src/test/java",
-                "org.broadinstitute.barclay.help",
-                "org.broadinstitute.barclay.argparser",
-                "-verbose",
-                "-cp", System.getProperty("java.class.path")
-        };
-
-        List<String> docArgList = new ArrayList<>();
-        docArgList.addAll(Arrays.asList(argArray));
-
         // run javadoc with the the custom doclet
-        com.sun.tools.javadoc.Main.execute(docArgList.toArray(new String[]{}));
+        com.sun.tools.javadoc.Main.execute(docArgList(docletClass, templatesFolder, outputDir));
 
         // Compare output files
         Assert.assertTrue(filesContentsIdentical(outputDir, expectedDir, "index.html"));
@@ -56,7 +76,7 @@ public class DocumentationGenerationIntegrationTest {
                 "org_broadinstitute_barclay_help_TestExtraDocs.html.json"));
     }
 
-    public boolean filesContentsIdentical(
+    private boolean filesContentsIdentical(
             final File actualDir,
             final File expectedDir,
             final String fileName) throws IOException {
@@ -64,5 +84,4 @@ public class DocumentationGenerationIntegrationTest {
         byte[] expectedBytes = Files.readAllBytes(new File(expectedDir, fileName).toPath());
         return Arrays.equals(actualBytes, expectedBytes);
     }
-
 }

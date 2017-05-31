@@ -1,0 +1,573 @@
+<?php
+    include '../../../common/include/common.php';
+?>
+
+<div class='row-fluid' id="top">
+
+	
+
+	<?php $group = 'Test feature group name'; ?>
+
+	<section class="span4">
+		<aside class="well">
+			<a href="index"><h4><i class='fa fa-chevron-left'></i> Back to Tool Docs Index</h4></a>
+		</aside>
+		<aside class="well">
+			<h2>Categories</h2>
+        <style>
+            #sidenav .accordion-body a {
+                color : gray;
+            }
+
+            .accordion-body li {
+                list-style : none;
+            }
+        </style>
+        <ul class="nav nav-pills nav-stacked" id="sidenav">
+				<li><a data-toggle="collapse" data-parent="#sidenav" href="#Testextradocsgroupname">Test extra docs group name</a>
+					<div id="Testextradocsgroupname"
+					<?php echo ($group == 'Test extra docs group name')? 'class="accordion-body collapse in"'.chr(62) : 'class="accordion-body collapse"'.chr(62);?>
+					<ul>
+								<li>
+									<a href="org_broadinstitute_barclay_help_TestExtraDocs.html">TestExtraDocs</a>
+								</li>
+					</ul>
+					</div>
+				</li>
+				<li><a data-toggle="collapse" data-parent="#sidenav" href="#Testfeaturegroupname">Test feature group name</a>
+					<div id="Testfeaturegroupname"
+					<?php echo ($group == 'Test feature group name')? 'class="accordion-body collapse in"'.chr(62) : 'class="accordion-body collapse"'.chr(62);?>
+					<ul>
+								<li>
+									<a href="org_broadinstitute_barclay_help_TestArgumentContainer.html">TestArgumentContainer</a>
+								</li>
+					</ul>
+					</div>
+				</li>
+        </ul>
+		</aside>
+		<?php getForumPosts( 'TestArgumentContainer' ) ?>
+
+	</section>
+
+	<div class="span8">
+
+			<h1>TestArgumentContainer **BETA**</h1>
+
+		<p class="lead">Argument container class for testing documentation generation.</p>
+
+			<h3>Category
+				<small> Test feature group name</small>
+			</h3>
+		<hr>
+		<h2>Overview</h2>
+		Argument container class for testing documentation generation. Contains an argument
+ for each @Argument, @ArgumentCollection, and @DocumentedFeature property that should
+ be tested.
+
+ Test custom tag:
+ testType
+
+ <p>
+ The purpose of this paragraph is to test embedded html formatting.
+ <ol>
+     <li>This is point number 1</li>
+     <li>This is point number 2</li>
+ </ol>
+ </p>
+
+				<hr>
+				<h2>Command-line Arguments</h2>
+				<p></p>
+				<h3>Additional References</h3>
+				<p>See these additional references for more information.</p>
+				<ul>
+						<li><a href="org_broadinstitute_barclay_help_TestExtraDocs.html">TestExtraDocs</a></li>
+				</ul>
+
+				<h3>TestArgumentContainer specific arguments</h3>
+				<p>This table summarizes the command-line arguments that are specific to this tool. For more details on each argument, see the list further down below the table or click on an argument name to jump directly to that entry in the list.</p>
+				<table class="table table-striped table-bordered table-condensed">
+					<thead>
+					<tr>
+						<th>Argument name(s)</th>
+						<th>Default value</th>
+						<th>Summary</th>
+					</tr>
+					</thead>
+					<tbody>
+			<tr>
+				<th colspan="4" id="row-divider">Positional Arguments</th>
+			</tr>
+				<tr>
+					<td><a href="#[NA - Positional]">[NA - Positional]</a><br />
+					</td>
+					<!--<td>List[File]</td> -->
+					<td>NA</td>
+					<td>Positional arguments, min = 2, max = 2</td>
+				</tr>
+			<tr>
+				<th colspan="4" id="row-divider">Required Arguments</th>
+			</tr>
+				<tr>
+					<td><a href="#--requiredClpEnum">--requiredClpEnum</a><br />
+					</td>
+					<!--<td>TestEnum</td> -->
+					<td>null</td>
+					<td>Required Clp enum</td>
+				</tr>
+				<tr>
+					<td><a href="#--requiredFileList">--requiredFileList</a><br />
+								&nbsp;<em>-reqFilList</em>
+					</td>
+					<!--<td>List[File]</td> -->
+					<td>[]</td>
+					<td>Required file list</td>
+				</tr>
+				<tr>
+					<td><a href="#--requiredInputFilesFromArgCollection">--requiredInputFilesFromArgCollection</a><br />
+								&nbsp;<em>-rRequiredInputFilesFromArgCollection</em>
+					</td>
+					<!--<td>List[File]</td> -->
+					<td>[]</td>
+					<td>Required input files from argument collection</td>
+				</tr>
+				<tr>
+					<td><a href="#--requiredStringInputFromArgCollection">--requiredStringInputFromArgCollection</a><br />
+					</td>
+					<!--<td>String</td> -->
+					<td>null</td>
+					<td>Required string input from argument collection</td>
+				</tr>
+				<tr>
+					<td><a href="#--requiredStringList">--requiredStringList</a><br />
+								&nbsp;<em>-reqStrList</em>
+					</td>
+					<!--<td>List[String]</td> -->
+					<td>[]</td>
+					<td>A required list of strings</td>
+				</tr>
+				<tr>
+					<td><a href="#--usesFieldNameForArgName">--usesFieldNameForArgName</a><br />
+								&nbsp;<em>-</em>
+					</td>
+					<!--<td>String</td> -->
+					<td>null</td>
+					<td>Use field name if no name in annotation.</td>
+				</tr>
+			<tr>
+				<th colspan="4" id="row-divider">Optional Tool Arguments</th>
+			</tr>
+				<tr>
+					<td><a href="#--mutexArg">--mutexArg</a><br />
+					</td>
+					<!--<td>List[File]</td> -->
+					<td>[]</td>
+					<td>Undocumented option</td>
+				</tr>
+				<tr>
+					<td><a href="#--mutexTargetField1">--mutexTargetField1</a><br />
+					</td>
+					<!--<td>List[File]</td> -->
+					<td>[]</td>
+					<td>SAM/BAM/CRAM file(s) with alignment data from the first read of a pair.</td>
+				</tr>
+				<tr>
+					<td><a href="#--mutexTargetField2">--mutexTargetField2</a><br />
+					</td>
+					<!--<td>List[File]</td> -->
+					<td>[]</td>
+					<td>SAM/BAM file(s) with alignment data from the second read of a pair.</td>
+				</tr>
+				<tr>
+					<td><a href="#--optionalClpEnum">--optionalClpEnum</a><br />
+					</td>
+					<!--<td>TestEnum</td> -->
+					<td>ENUM_VALUE_1</td>
+					<td>Optional Clp enum</td>
+				</tr>
+				<tr>
+					<td><a href="#--optionalDouble">--optionalDouble</a><br />
+								&nbsp;<em>-optDouble</em>
+					</td>
+					<!--<td>double</td> -->
+					<td>2.15</td>
+					<td>Optionals double with initial value 2.15</td>
+				</tr>
+				<tr>
+					<td><a href="#--optionalDoubleList">--optionalDoubleList</a><br />
+								&nbsp;<em>-optDoubleList</em>
+					</td>
+					<!--<td>List[Double]</td> -->
+					<td>[100.0, 99.9, 99.0, 90.0]</td>
+					<td>optionalDoubleList with initial values: 100.0, 99.9, 99.0, 90.0</td>
+				</tr>
+				<tr>
+					<td><a href="#--optionalFileList">--optionalFileList</a><br />
+								&nbsp;<em>-optFilList</em>
+					</td>
+					<!--<td>List[File]</td> -->
+					<td>[]</td>
+					<td>Optional file list</td>
+				</tr>
+				<tr>
+					<td><a href="#--optionalFlag">--optionalFlag</a><br />
+								&nbsp;<em>-optFlag</em>
+					</td>
+					<!--<td>boolean</td> -->
+					<td>false</td>
+					<td>Optional flag, defaults to false.</td>
+				</tr>
+				<tr>
+					<td><a href="#--optionalInputFilesFromArgCollection">--optionalInputFilesFromArgCollection</a><br />
+					</td>
+					<!--<td>List[File]</td> -->
+					<td>[]</td>
+					<td>Optional input files from argument collection</td>
+				</tr>
+				<tr>
+					<td><a href="#--optionalStringInputFromArgCollection">--optionalStringInputFromArgCollection</a><br />
+					</td>
+					<!--<td>String</td> -->
+					<td>null</td>
+					<td>Optional string input from argument collection</td>
+				</tr>
+				<tr>
+					<td><a href="#--optionalStringList">--optionalStringList</a><br />
+								&nbsp;<em>-optStrList</em>
+					</td>
+					<!--<td>List[String]</td> -->
+					<td>[]</td>
+					<td>An optional list of strings</td>
+				</tr>
+				<tr>
+					<td><a href="#--testPlugin">--testPlugin</a><br />
+								&nbsp;<em>-</em>
+					</td>
+					<!--<td>List[String]</td> -->
+					<td>[]</td>
+					<td>Undocumented option</td>
+				</tr>
+			<tr>
+				<th colspan="4" id="row-divider">Advanced Arguments</th>
+			</tr>
+				<tr>
+					<td><a href="#--advancedOptionalInt">--advancedOptionalInt</a><br />
+								&nbsp;<em>-advancedOptInt</em>
+					</td>
+					<!--<td>int</td> -->
+					<td>1</td>
+					<td>advancedOptionalInt with initial value 1</td>
+				</tr>
+			<tr>
+				<th colspan="4" id="row-divider">Deprecated Arguments</th>
+			</tr>
+				<tr>
+					<td><a href="#--deprecatedString">--deprecatedString</a><br />
+								&nbsp;<em>-depStr</em>
+					</td>
+					<!--<td>int</td> -->
+					<td>0</td>
+					<td>deprecated</td>
+				</tr>
+					</tbody>
+				</table>
+
+					<h3>Argument details</h3>
+					<p>Arguments in this list are specific to this tool. Keep in mind that other arguments are available that are shared with other tools (e.g. command-line GATK arguments); see Inherited arguments above.</p>
+		<hr style="border-bottom: dotted 1px #C0C0C0;" />
+		<h3><a name="[NA - Positional]">[NA - Positional] </a>
+			 / <small>NA</small>
+		</h3>
+		<p class="args">
+			<b>Positional arguments, min = 2, max = 2</b><br />
+			Positional arguments, min = 2, max = 2
+		</p>
+		<p>
+				<span class="badge badge-important">R</span>
+			<span class="label label-info ">List[File]</span>
+				&nbsp;<span class="label">NA</span>
+		</p>
+		<hr style="border-bottom: dotted 1px #C0C0C0;" />
+		<h3><a name="--advancedOptionalInt">--advancedOptionalInt </a>
+			 / <small>-advancedOptInt</small>
+		</h3>
+		<p class="args">
+			<b>advancedOptionalInt with initial value 1</b><br />
+			Advanced, Optional int
+		</p>
+		<p>
+			<span class="label label-info ">int</span>
+				&nbsp;<span class="label">1</span>
+				&nbsp;<span class="label label-warning">[ [ -∞</span>
+				&nbsp;<span class="label label-warning">∞ ] ]</span>
+		</p>
+		<hr style="border-bottom: dotted 1px #C0C0C0;" />
+		<h3><a name="--deprecatedString">--deprecatedString </a>
+			 / <small>-depStr</small>
+		</h3>
+		<p class="args">
+			<b>deprecated</b><br />
+			Deprecated string
+		</p>
+		<p>
+			<span class="label label-info ">int</span>
+				&nbsp;<span class="label">0</span>
+				&nbsp;<span class="label label-warning">[ [ -∞</span>
+				&nbsp;<span class="label label-warning">∞ ] ]</span>
+		</p>
+		<hr style="border-bottom: dotted 1px #C0C0C0;" />
+		<h3><a name="--mutexArg">--mutexArg </a>
+			 / <small>-mutexArg</small>
+		</h3>
+		<p class="args">
+			<b>Undocumented option</b><br />
+			Mutually exclusive args
+		</p>
+			<p><b>Exclusion:</b> This argument cannot be used at the same time as <code>READ1_ALIGNED_BAM, READ2_ALIGNED_BAM</code>.</p>
+		<p>
+			<span class="label label-info ">List[File]</span>
+				&nbsp;<span class="label">[]</span>
+		</p>
+		<hr style="border-bottom: dotted 1px #C0C0C0;" />
+		<h3><a name="--mutexTargetField1">--mutexTargetField1 </a>
+			 / <small>-mutexTargetField1</small>
+		</h3>
+		<p class="args">
+			<b>SAM/BAM/CRAM file(s) with alignment data from the first read of a pair.</b><br />
+			
+		</p>
+			<p><b>Exclusion:</b> This argument cannot be used at the same time as <code>mutexSourceField</code>.</p>
+		<p>
+			<span class="label label-info ">List[File]</span>
+				&nbsp;<span class="label">[]</span>
+		</p>
+		<hr style="border-bottom: dotted 1px #C0C0C0;" />
+		<h3><a name="--mutexTargetField2">--mutexTargetField2 </a>
+			 / <small>-mutexTargetField2</small>
+		</h3>
+		<p class="args">
+			<b>SAM/BAM file(s) with alignment data from the second read of a pair.</b><br />
+			
+		</p>
+			<p><b>Exclusion:</b> This argument cannot be used at the same time as <code>mutexSourceField</code>.</p>
+		<p>
+			<span class="label label-info ">List[File]</span>
+				&nbsp;<span class="label">[]</span>
+		</p>
+		<hr style="border-bottom: dotted 1px #C0C0C0;" />
+		<h3><a name="--optionalClpEnum">--optionalClpEnum </a>
+			 / <small>-optionalClpEnum</small>
+		</h3>
+		<p class="args">
+			<b>Optional Clp enum</b><br />
+			
+		</p>
+			<p>
+				The --optionalClpEnum argument is an enumerated type (TestEnum), which can have one of the following values:
+			<dl class="enum">
+					<dt class="enum">ENUM_VALUE_1</dt>
+					<dd class="enum"></dd>
+					<dt class="enum">ENUM_VALUE_2</dt>
+					<dd class="enum"></dd>
+			</dl>
+			</p>
+		<p>
+			<span class="label label-info ">TestEnum</span>
+				&nbsp;<span class="label">ENUM_VALUE_1</span>
+		</p>
+		<hr style="border-bottom: dotted 1px #C0C0C0;" />
+		<h3><a name="--optionalDouble">--optionalDouble </a>
+			 / <small>-optDouble</small>
+		</h3>
+		<p class="args">
+			<b>Optionals double with initial value 2.15</b><br />
+			Required double
+		</p>
+		<p>
+			<span class="label label-info ">double</span>
+				&nbsp;<span class="label">2.15</span>
+				&nbsp;<span class="label label-warning">[ [ -∞</span>
+				&nbsp;<span class="label label-warning">∞ ] ]</span>
+		</p>
+		<hr style="border-bottom: dotted 1px #C0C0C0;" />
+		<h3><a name="--optionalDoubleList">--optionalDoubleList </a>
+			 / <small>-optDoubleList</small>
+		</h3>
+		<p class="args">
+			<b>optionalDoubleList with initial values: 100.0, 99.9, 99.0, 90.0</b><br />
+			Optional double list.
+		</p>
+		<p>
+			<span class="label label-info ">List[Double]</span>
+				&nbsp;<span class="label">[100.0, 99.9, 99.0, 90.0]</span>
+		</p>
+		<hr style="border-bottom: dotted 1px #C0C0C0;" />
+		<h3><a name="--optionalFileList">--optionalFileList </a>
+			 / <small>-optFilList</small>
+		</h3>
+		<p class="args">
+			<b>Optional file list</b><br />
+			Optional file list.
+		</p>
+		<p>
+			<span class="label label-info ">List[File]</span>
+				&nbsp;<span class="label">[]</span>
+		</p>
+		<hr style="border-bottom: dotted 1px #C0C0C0;" />
+		<h3><a name="--optionalFlag">--optionalFlag </a>
+			 / <small>-optFlag</small>
+		</h3>
+		<p class="args">
+			<b>Optional flag, defaults to false.</b><br />
+			Optional flag.
+		</p>
+		<p>
+			<span class="label label-info ">boolean</span>
+				&nbsp;<span class="label">false</span>
+		</p>
+		<hr style="border-bottom: dotted 1px #C0C0C0;" />
+		<h3><a name="--optionalInputFilesFromArgCollection">--optionalInputFilesFromArgCollection </a>
+			 / <small>-optionalInputFilesFromArgCollection</small>
+		</h3>
+		<p class="args">
+			<b>Optional input files from argument collection</b><br />
+			
+		</p>
+		<p>
+			<span class="label label-info ">List[File]</span>
+				&nbsp;<span class="label">[]</span>
+		</p>
+		<hr style="border-bottom: dotted 1px #C0C0C0;" />
+		<h3><a name="--optionalStringInputFromArgCollection">--optionalStringInputFromArgCollection </a>
+			 / <small>-optionalStringInputFromArgCollection</small>
+		</h3>
+		<p class="args">
+			<b>Optional string input from argument collection</b><br />
+			
+		</p>
+		<p>
+			<span class="label label-info ">String</span>
+				&nbsp;<span class="label">null</span>
+		</p>
+		<hr style="border-bottom: dotted 1px #C0C0C0;" />
+		<h3><a name="--optionalStringList">--optionalStringList </a>
+			 / <small>-optStrList</small>
+		</h3>
+		<p class="args">
+			<b>An optional list of strings</b><br />
+			Optional string list.
+		</p>
+		<p>
+			<span class="label label-info ">List[String]</span>
+				&nbsp;<span class="label">[]</span>
+		</p>
+		<hr style="border-bottom: dotted 1px #C0C0C0;" />
+		<h3><a name="--requiredClpEnum">--requiredClpEnum </a>
+			 / <small>-requiredClpEnum</small>
+		</h3>
+		<p class="args">
+			<b>Required Clp enum</b><br />
+			
+		</p>
+			<p>
+				The --requiredClpEnum argument is an enumerated type (TestEnum), which can have one of the following values:
+			<dl class="enum">
+					<dt class="enum">ENUM_VALUE_1</dt>
+					<dd class="enum"></dd>
+					<dt class="enum">ENUM_VALUE_2</dt>
+					<dd class="enum"></dd>
+			</dl>
+			</p>
+		<p>
+				<span class="badge badge-important">R</span>
+			<span class="label label-info ">TestEnum</span>
+				&nbsp;<span class="label">null</span>
+		</p>
+		<hr style="border-bottom: dotted 1px #C0C0C0;" />
+		<h3><a name="--requiredFileList">--requiredFileList </a>
+			 / <small>-reqFilList</small>
+		</h3>
+		<p class="args">
+			<b>Required file list</b><br />
+			Required file list.
+		</p>
+		<p>
+				<span class="badge badge-important">R</span>
+			<span class="label label-info ">List[File]</span>
+				&nbsp;<span class="label">[]</span>
+		</p>
+		<hr style="border-bottom: dotted 1px #C0C0C0;" />
+		<h3><a name="--requiredInputFilesFromArgCollection">--requiredInputFilesFromArgCollection </a>
+			 / <small>-rRequiredInputFilesFromArgCollection</small>
+		</h3>
+		<p class="args">
+			<b>Required input files from argument collection</b><br />
+			
+		</p>
+		<p>
+				<span class="badge badge-important">R</span>
+			<span class="label label-info ">List[File]</span>
+				&nbsp;<span class="label">[]</span>
+		</p>
+		<hr style="border-bottom: dotted 1px #C0C0C0;" />
+		<h3><a name="--requiredStringInputFromArgCollection">--requiredStringInputFromArgCollection </a>
+			 / <small>-requiredStringInputFromArgCollection</small>
+		</h3>
+		<p class="args">
+			<b>Required string input from argument collection</b><br />
+			
+		</p>
+		<p>
+				<span class="badge badge-important">R</span>
+			<span class="label label-info ">String</span>
+				&nbsp;<span class="label">null</span>
+		</p>
+		<hr style="border-bottom: dotted 1px #C0C0C0;" />
+		<h3><a name="--requiredStringList">--requiredStringList </a>
+			 / <small>-reqStrList</small>
+		</h3>
+		<p class="args">
+			<b>A required list of strings</b><br />
+			Required string list.
+		</p>
+		<p>
+				<span class="badge badge-important">R</span>
+			<span class="label label-info ">List[String]</span>
+				&nbsp;<span class="label">[]</span>
+		</p>
+		<hr style="border-bottom: dotted 1px #C0C0C0;" />
+		<h3><a name="--testPlugin">--testPlugin </a>
+			 / <small>-</small>
+		</h3>
+		<p class="args">
+			<b>Undocumented option</b><br />
+			
+		</p>
+		<p>
+			<span class="label label-info ">List[String]</span>
+				&nbsp;<span class="label">[]</span>
+		</p>
+		<hr style="border-bottom: dotted 1px #C0C0C0;" />
+		<h3><a name="--usesFieldNameForArgName">--usesFieldNameForArgName </a>
+			 / <small>-</small>
+		</h3>
+		<p class="args">
+			<b>Use field name if no name in annotation.</b><br />
+			
+		</p>
+		<p>
+				<span class="badge badge-important">R</span>
+			<span class="label label-info ">String</span>
+				&nbsp;<span class="label">null</span>
+		</p>
+
+        <hr>
+        <p><a href='#top'><i class='fa fa-chevron-up'></i> Return to top</a></p>
+        <hr>
+        <p class="version">Barclay version 11.1 built at 2016/01/01 01:01:01.
+        </p>
+
+	</div>
+
+	<?php printFooter($module); ?>
