@@ -58,6 +58,7 @@ public class HelpDoclet {
     final private static String ABSOLUTE_VERSION_OPTION = "-absolute-version";
     final private static String INCLUDE_HIDDEN_OPTION = "-hidden-version";
     final private static String OUTPUT_FILE_EXTENSION_OPTION = "-output-file-extension";
+    final private static String INDEX_FILE_EXTENSION_OPTION = "-index-file-extension";
 
     // Where we find the help FreeMarker templates
     final private static File DEFAULT_SETTINGS_DIR = new File("settings/helpTemplates");
@@ -74,6 +75,7 @@ public class HelpDoclet {
     protected static File settingsDir = DEFAULT_SETTINGS_DIR;
     protected static File destinationDir = DEFAULT_DESTINATION_DIR;
     protected static String outputFileExtension = DEFAULT_OUTPUT_FILE_EXTENSION;
+    protected static String indexFileExtension = DEFAULT_OUTPUT_FILE_EXTENSION;
     protected static String buildTimestamp = "[no timestamp available]";
     protected static String absoluteVersion = "[no version available]";
     protected static boolean showHiddenFeatures = false;
@@ -114,6 +116,9 @@ public class HelpDoclet {
                 showHiddenFeatures = true;
             if (options[0].equals(OUTPUT_FILE_EXTENSION_OPTION)) {
                 outputFileExtension = options[1];
+            }
+            if (options[0].equals(INDEX_FILE_EXTENSION_OPTION)) {
+                indexFileExtension = options[1];
             }
         }
 
@@ -230,12 +235,22 @@ public class HelpDoclet {
     /**
      * @return the output extension to use, i.e., ".html" or ".php"
      */
-    protected String getOutputFileExtension() { return outputFileExtension; }
+    public String getOutputFileExtension() { return outputFileExtension; }
+
+    /**
+     * @return the output extension to use for the index, i.e., ".html" or ".php"
+     */
+    public String getIndexFileExtension() { return indexFileExtension; }
 
     /**
      * @return the name of the index template to be used for this doclet
      */
-    protected String getIndexTemplateName() { return "generic.index.template.html"; }
+    public String getIndexTemplateName() { return "generic.index.template.html"; }
+
+    /**
+     * @return the file where the files will be output
+     */
+    public File getDestinationDir() { return  destinationDir; }
 
     /**
      * Determine if a particular class should be included in the output. This is called by the doclet
@@ -341,7 +356,7 @@ public class HelpDoclet {
    ) throws IOException {
         // Get or create a template and merge in the data
         final Template template = cfg.getTemplate(getIndexTemplateName());
-        final File indexFile = new File(destinationDir + "/index." + outputFileExtension);
+        final File indexFile = new File(getDestinationDir() + "/index." + getIndexFileExtension());
         try (final FileOutputStream fileOutStream = new FileOutputStream(indexFile);
              final OutputStreamWriter outWriter = new OutputStreamWriter(fileOutStream)) {
             template.process(groupIndexMap(workUnitList, groupMaps), outWriter);
@@ -373,8 +388,8 @@ public class HelpDoclet {
 
         root.put("data", data);
         root.put("groups", groupMaps);
-        root.put("timestamp", buildTimestamp);
-        root.put("version", absoluteVersion);
+        root.put("timestamp", getBuildTimeStamp());
+        root.put("version", getBuildVersion());
 
         return root;
     }
@@ -451,7 +466,7 @@ public class HelpDoclet {
         try {
             // Merge data-model with template
             Template template = cfg.getTemplate(workUnit.getTemplateName());
-            File outputPath = new File(destinationDir + "/" + workUnit.getTargetFileName());
+            File outputPath = new File(getDestinationDir() + "/" + workUnit.getTargetFileName());
             try (final Writer out = new OutputStreamWriter(new FileOutputStream(outputPath))) {
                 template.process(workUnit.getRootMap(), out);
             }
@@ -473,7 +488,7 @@ public class HelpDoclet {
         );
 
         // Convert object to JSON and write JSON entry to file
-        File outputPathForJSON = new File(destinationDir + "/" + workUnit.getTargetFileName() + ".json");
+        File outputPathForJSON = new File(getDestinationDir() + "/" + workUnit.getTargetFileName() + ".json");
 
         try (final BufferedWriter jsonWriter = new BufferedWriter(new FileWriter(outputPathForJSON))) {
             Gson gson = new GsonBuilder()
