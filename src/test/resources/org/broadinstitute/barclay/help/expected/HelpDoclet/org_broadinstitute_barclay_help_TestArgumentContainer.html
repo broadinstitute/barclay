@@ -24,6 +24,19 @@
             }
         </style>
         <ul class="nav nav-pills nav-stacked" id="sidenav">
+				<li><a data-toggle="collapse" data-parent="#sidenav" href="#markdown">markdown</a>
+					<div id="markdown"
+					<?php echo ($group == 'markdown')? 'class="accordion-body collapse in"'.chr(62) : 'class="accordion-body collapse"'.chr(62);?>
+					<ul>
+								<li>
+									<a href="org_broadinstitute_barclay_help_ClpWithMarkdownDocs.html">ClpWithMarkdownDocs</a>
+								</li>
+								<li>
+									<a href="org_broadinstitute_barclay_help_MarkdownDocumentedFeature.html">MarkdownDocumentedFeature</a>
+								</li>
+					</ul>
+					</div>
+				</li>
 				<li><a data-toggle="collapse" data-parent="#sidenav" href="#Testextradocsgroupname">Test extra docs group name</a>
 					<div id="Testextradocsgroupname"
 					<?php echo ($group == 'Test extra docs group name')? 'class="accordion-body collapse in"'.chr(62) : 'class="accordion-body collapse"'.chr(62);?>
@@ -61,14 +74,10 @@
 			</h3>
 		<hr>
 		<h2>Overview</h2>
-		Argument container class for testing documentation generation. Contains an argument
- for each @Argument, @ArgumentCollection, and @DocumentedFeature property that should
- be tested.
-
- Test custom tag:
- testType
-
- <p>
+		<p>Argument container class for testing documentation generation. Contains an argument
+for each @Argument, @ArgumentCollection, and @DocumentedFeature property that should
+be tested.</p>
+<p>Test custom tag:</p>testType <p>
  The purpose of this paragraph is to test embedded html formatting.
  <ol>
      <li>This is point number 1</li>
