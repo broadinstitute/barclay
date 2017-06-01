@@ -92,6 +92,7 @@ public class HelpDoclet {
      * {@link #startProcessDocs(RootDoc)}.
      */
      public static boolean start(final RootDoc rootDoc) throws IOException {
+         System.out.println(Arrays.toString(rootDoc.options()));
          return new HelpDoclet().startProcessDocs(rootDoc);
      }
 
@@ -146,7 +147,8 @@ public class HelpDoclet {
             option.equals(DESTINATION_DIR_OPTION) ||
             option.equals(BUILD_TIMESTAMP_OPTION) ||
             option.equals(ABSOLUTE_VERSION_OPTION) ||
-            option.equals(OUTPUT_FILE_EXTENSION_OPTION)) {
+            option.equals(OUTPUT_FILE_EXTENSION_OPTION) ||
+            option.equals(INDEX_FILE_EXTENSION_OPTION)) {
             return 2;
         } else if (option.equals(QUIET_OPTION)) {
             return 1;

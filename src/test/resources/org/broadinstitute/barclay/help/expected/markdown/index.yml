@@ -1,0 +1,14 @@
+- Documentation:
+    - version: 11.1
+    - timestamp: 2016/01/01 01:01:01
+- Features:
+    - Test extra docs group name:
+        - summary: 
+        - components:
+            - TestExtraDocs:
+                - summary: Class for testing extraDocs property in docgen.
+    - Test feature group name:
+        - summary: Test program group used for testing
+        - components:
+            - TestArgumentContainer:
+                - summary: Argument container class for testing documentation generation.

@@ -1,0 +1,19 @@
+<#-- This is a template for an yml index, but the doclet requires that it is named generic.index.template.html -->
+<#macro emitGroup group>
+    - ${group.name}:
+        - summary: ${group.summary}
+        - components:
+        <#list data as datum>
+            <#if datum.group == group.name>
+            - ${datum.name}:
+                - summary: ${datum.summary}
+            </#if>
+        </#list>
+</#macro>
+- Documentation:
+    - version: ${version}
+    - timestamp: ${timestamp}
+- Features:
+<#list groups?sort_by("name") as group>
+<@emitGroup group=group/>
+</#list>
