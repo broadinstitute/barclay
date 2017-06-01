@@ -715,6 +715,30 @@ public final class CommandLineArgumentParserTest {
         return out.toString();
     }
 
+    @CommandLineProgramProperties(
+            summary = "Tool with [Markdown](https://daringfireball.net/projects/markdown/) formatted docs",
+            oneLineSummary = "Tool with Markdown formatted docs",
+            programGroup = TestProgramGroup.class
+    )
+    public class MarkdownFormattedDocs {
+        @Argument(doc = "`String` **BOLD** __argument__", optional = true)
+        public String bold = "";
+
+        @Argument(doc = "`String` *ITALIC* _argument_", optional = true)
+        public String italic = "";
+    }
+
+    @Test
+    public void testMarkdownToTextUsage() {
+        final CommandLineArgumentParser clp = new CommandLineArgumentParser(new MarkdownFormattedDocs());
+        final String usage = clp.usage(false, false);
+        // [text](link) is rendered as quoted text plus link in parenthesis
+        Assert.assertTrue(usage.contains("Tool with \"Markdown\" (https://daringfireball.net/projects/markdown/) formatted docs"));
+        // Italic/Bold is rendered as normal text, backtick is rendered as quoted string
+        Assert.assertTrue(usage.contains("\"String\" BOLD argument"));
+        Assert.assertTrue(usage.contains("\"String\" ITALIC argument"));
+    }
+
 
     @CommandLineProgramProperties(
             summary = "tool with nullable arguments",

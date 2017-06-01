@@ -12,6 +12,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.broadinstitute.barclay.utils.Utils;
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.text.TextContentRenderer;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -73,6 +75,11 @@ public final class CommandLineArgumentParser implements CommandLineParser {
 
     // Keeps a map of tagged arguments for just-in-time retrieval at field population time
     private TaggedArgumentParser tagParser = new TaggedArgumentParser();
+
+    // default parser/renderer for Markdown formatted documentation
+    // TODO: allow customization of Markdown parser
+    private Parser markdownParser = Parser.builder().build();
+    private TextContentRenderer markdownToText = TextContentRenderer.builder().build();
 
     // Return the plugin instance corresponding to the targetDescriptor class
     @Override
@@ -136,7 +143,8 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     private String getUsagePreamble() {
         String usagePreamble = "";
         if (null != programProperties) {
-            usagePreamble += programProperties.summary();
+            // render as plain text to markdown
+            usagePreamble += markdownToText.render(markdownParser.parse(programProperties.summary()));
         } else if (positionalArguments == null) {
             usagePreamble += defaultUsagePreamble;
         } else {
@@ -805,7 +813,8 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     private String makeArgumentDescription(final ArgumentDefinition argumentDefinition) {
         final StringBuilder sb = new StringBuilder();
         if (!argumentDefinition.doc.isEmpty()) {
-            sb.append(argumentDefinition.doc);
+            // render markdown to text
+            markdownToText.render(markdownParser.parse(argumentDefinition.doc), sb);
             sb.append("  ");
         }
         if (argumentDefinition.isCollection) {
