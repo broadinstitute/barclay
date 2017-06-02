@@ -1,0 +1,68 @@
+{
+  "summary": "Tool where the documentation is formatted with \u003ca href\u003d\"https://daringfireball.net/projects/markdown/\"\u003eMarkdown\u003c/a\u003e \u003ccode\u003eString\u003c/code\u003e.",
+  "arguments": [
+    {
+      "summary": "This is a \u003cstrong\u003ebold\u003c/strong\u003e \u003ccode\u003eString\u003c/code\u003e \u003cstrong\u003eargument\u003c/strong\u003e",
+      "name": "--bold",
+      "synonyms": "-",
+      "type": "String",
+      "required": "no",
+      "fulltext": "",
+      "defaultValue": "\"\"",
+      "minValue": "NA",
+      "maxValue": "NA",
+      "minRecValue": "NA",
+      "maxRecValue": "NA",
+      "kind": "optional",
+      "options": []
+    },
+    {
+      "summary": "This is an \u003ccode\u003edouble\u003c/code\u003e argument with markdown formatted doc",
+      "name": "--DOUBLE",
+      "synonyms": "-",
+      "type": "double",
+      "required": "no",
+      "fulltext": "",
+      "defaultValue": "0.0",
+      "minValue": "-Infinity",
+      "maxValue": "Infinity",
+      "minRecValue": "NA",
+      "maxRecValue": "NA",
+      "kind": "optional",
+      "options": []
+    },
+    {
+      "summary": "This is an \u003ccode\u003eint\u003c/code\u003e argument with markdown formatted doc",
+      "name": "--INT",
+      "synonyms": "-",
+      "type": "int",
+      "required": "no",
+      "fulltext": "",
+      "defaultValue": "0",
+      "minValue": "-Infinity",
+      "maxValue": "Infinity",
+      "minRecValue": "NA",
+      "maxRecValue": "NA",
+      "kind": "optional",
+      "options": []
+    },
+    {
+      "summary": "This is a \u003cem\u003eitalic\u003c/em\u003e \u003ccode\u003eString\u003c/code\u003e \u003cem\u003eargument\u003c/em\u003e",
+      "name": "--italic",
+      "synonyms": "-",
+      "type": "String",
+      "required": "no",
+      "fulltext": "",
+      "defaultValue": "\"\"",
+      "minValue": "NA",
+      "maxValue": "NA",
+      "minRecValue": "NA",
+      "maxRecValue": "NA",
+      "kind": "optional",
+      "options": []
+    }
+  ],
+  "description": "\u003cp\u003eDocumentation of this tool is written in Markdown and rendered as HTML.\u003c/p\u003e\n\u003ch2\u003eJavadoc formatted with Markdown\u003c/h2\u003e\n\u003cp\u003eThe purpose of this paragraph is to test embedded \u003ca href\u003d\"https://daringfireball.net/projects/markdown/\"\u003eMarkdown\u003c/a\u003e formatting:\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003eFirst element of list (\u003cstrong\u003ebold\u003c/strong\u003e)\u003c/li\u003e\n\u003cli\u003eSecond element of list (\u003cem\u003eitalic\u003c/em\u003e)\u003c/li\u003e\n\u003c/ul\u003e",
+  "name": "ClpWithMarkdownDocs",
+  "group": "markdown"
+}

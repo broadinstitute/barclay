@@ -1,0 +1,6 @@
+{
+  "summary": "Documented feature formatted with \u003ca href\u003d\"https://daringfireball.net/projects/markdown/\"\u003eMarkdown\u003c/a\u003e.",
+  "description": "Documentation of this feature is written in Markdown and rendered as HTML.",
+  "name": "MarkdownDocumentedFeature",
+  "group": "markdown"
+}

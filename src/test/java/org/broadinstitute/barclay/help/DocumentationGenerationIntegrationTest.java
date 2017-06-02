@@ -30,6 +30,13 @@ public class DocumentationGenerationIntegrationTest {
             "-cp", System.getProperty("java.class.path")
     );
 
+    private static final List<String> PHP_DOCUMENTED_CLASS_NAMES = Arrays.asList(
+            "org_broadinstitute_barclay_help_TestArgumentContainer",
+            "org_broadinstitute_barclay_help_TestExtraDocs",
+            "org_broadinstitute_barclay_help_MarkdownDocumentedFeature",
+            "org_broadinstitute_barclay_help_ClpWithMarkdownDocs"
+    );
+
     private static String[] docArgList(final Class<?> docletClass, final File templatesFolder, final File outputDir) {
         // set the common arguments
         final List<String> docArgList = new ArrayList<>(COMMON_DOC_ARG_LIST);
@@ -66,14 +73,12 @@ public class DocumentationGenerationIntegrationTest {
 
         // Compare output files
         Assert.assertTrue(filesContentsIdentical(outputDir, expectedDir, "index.html"));
-        Assert.assertTrue(filesContentsIdentical(outputDir, expectedDir,
-                "org_broadinstitute_barclay_help_TestArgumentContainer.html"));
-        Assert.assertTrue(filesContentsIdentical(outputDir, expectedDir,
-                "org_broadinstitute_barclay_help_TestArgumentContainer.html.json"));
-        Assert.assertTrue(filesContentsIdentical(outputDir, expectedDir,
-                "org_broadinstitute_barclay_help_TestExtraDocs.html"));
-        Assert.assertTrue(filesContentsIdentical(outputDir, expectedDir,
-                "org_broadinstitute_barclay_help_TestExtraDocs.html.json"));
+        for (final String documentedClass: PHP_DOCUMENTED_CLASS_NAMES) {
+            Assert.assertTrue(filesContentsIdentical(outputDir, expectedDir,
+                    documentedClass +".html"));
+            Assert.assertTrue(filesContentsIdentical(outputDir, expectedDir,
+                    documentedClass +".html.json"));
+        }
     }
 
     private boolean filesContentsIdentical(
