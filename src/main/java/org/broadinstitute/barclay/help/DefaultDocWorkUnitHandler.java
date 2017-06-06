@@ -329,7 +329,8 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
         }
     }
 
-    private String getTagPrefix() {
+    /** Gets the tag prefix as formatted in the javadoc; {@code null} if there is no user-defined prefix. */
+    public final  String getTagPrefix() {
         String customPrefix = getTagFilterPrefix();
         return customPrefix == null ?
                 customPrefix : "@" + customPrefix + ".";
