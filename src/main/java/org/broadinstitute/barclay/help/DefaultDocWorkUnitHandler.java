@@ -243,7 +243,7 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
      */
     protected void addCustomBindings(final DocWorkUnit currentWorkUnit) {
         final String tagFilterPrefix = getTagPrefix();
-        Arrays.stream(currentWorkUnit.getClassDoc().inlineTags())
+        Arrays.stream(currentWorkUnit.getClassDoc().tags())
                 .filter(t -> t.name().startsWith(tagFilterPrefix))
                 .forEach(t -> currentWorkUnit.setProperty(t.name().substring(tagFilterPrefix.length()), t.text()));
     }

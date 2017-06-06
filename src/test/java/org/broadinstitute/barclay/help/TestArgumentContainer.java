@@ -23,6 +23,8 @@ import java.util.*;
  *     <li>This is point number 2</li>
  * </ol>
  * </p>
+ *
+ * @MyTag.other this tag is not inline and will not appear in the description text.
  */
 @CommandLineProgramProperties(
         summary = "Test tool summary",
