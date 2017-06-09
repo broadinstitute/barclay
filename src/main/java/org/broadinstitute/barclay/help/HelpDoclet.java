@@ -92,7 +92,6 @@ public class HelpDoclet {
      * {@link #startProcessDocs(RootDoc)}.
      */
      public static boolean start(final RootDoc rootDoc) throws IOException {
-         System.out.println(Arrays.toString(rootDoc.options()));
          return new HelpDoclet().startProcessDocs(rootDoc);
      }
 

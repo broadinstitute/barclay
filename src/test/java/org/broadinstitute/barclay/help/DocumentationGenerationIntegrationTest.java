@@ -29,6 +29,13 @@ public class DocumentationGenerationIntegrationTest {
             "-cp", System.getProperty("java.class.path")
     );
 
+    private static final List<String> DOCUMENTED_PHP_NAMES_WITHOUT_EXTENSION = Arrays.asList(
+            "org_broadinstitute_barclay_help_TestArgumentContainer.",
+            "org_broadinstitute_barclay_help_TestArgumentContainer.",
+            "org_broadinstitute_barclay_help_TestExtraDocs.",
+            "org_broadinstitute_barclay_help_TestExtraDocs."
+    );
+
     private static String[] docArgList(final Class<?> docletClass, final File templatesFolder, final File outputDir,
             final String indexFileExtension, final String outputFileExtension) {
         // set the common arguments
@@ -56,9 +63,7 @@ public class DocumentationGenerationIntegrationTest {
                 // default doclet and templates
                 {HelpDoclet.class, new File("src/main/resources/org/broadinstitute/barclay/helpTemplates/"), new File("src/test/resources/org/broadinstitute/barclay/help/expected/HelpDoclet"), "html", "html"},
                 // custom doclet and templates
-                {TestDoclet.class, new File("src/test/resources/org/broadinstitute/barclay/help/templates/TestDoclet"), new File("src/test/resources/org/broadinstitute/barclay/help/expected/TestDoclet"), "html", "html"},
-                // custom templates with different extension
-                {HelpDoclet.class, new File("src/test/resources/org/broadinstitute/barclay/help/templates/markdown/"), new File("src/test/resources/org/broadinstitute/barclay/help/expected/markdown"), "yml", "md"}
+                {TestDoclet.class, new File("src/test/resources/org/broadinstitute/barclay/help/templates/TestDoclet"), new File("src/test/resources/org/broadinstitute/barclay/help/expected/TestDoclet"), "html", "html"}
         };
     }
 
@@ -72,24 +77,21 @@ public class DocumentationGenerationIntegrationTest {
         // run javadoc with the the custom doclet
         com.sun.tools.javadoc.Main.execute(docArgList(docletClass, templatesFolder, outputDir, indexFileExtension, outputFileExtension));
 
-        // Compare output files
-        Assert.assertTrue(filesContentsIdentical(outputDir, expectedDir, "index." + indexFileExtension));
-        Assert.assertTrue(filesContentsIdentical(outputDir, expectedDir,
-                "org_broadinstitute_barclay_help_TestArgumentContainer." + outputFileExtension));
-        Assert.assertTrue(filesContentsIdentical(outputDir, expectedDir,
-                "org_broadinstitute_barclay_help_TestArgumentContainer." + outputFileExtension +".json"));
-        Assert.assertTrue(filesContentsIdentical(outputDir, expectedDir,
-                "org_broadinstitute_barclay_help_TestExtraDocs." + outputFileExtension));
-        Assert.assertTrue(filesContentsIdentical(outputDir, expectedDir,
-                "org_broadinstitute_barclay_help_TestExtraDocs." + outputFileExtension +".json"));
+        // Compare index files
+        Assert.assertTrue(filesContentsIdentical(new File(expectedDir, "index." + indexFileExtension), new File(outputDir, "index.html")));
+
+        // Compare output files (json and html)
+        for (final String prefix: DOCUMENTED_PHP_NAMES_WITHOUT_EXTENSION) {
+            Assert.assertTrue(filesContentsIdentical(new File(outputDir, prefix + "html.json"), new File(expectedDir, prefix + "html.json")));
+            Assert.assertTrue(filesContentsIdentical(new File(outputDir, prefix + outputFileExtension), new File(expectedDir, prefix + "html")));
+        }
     }
 
     private boolean filesContentsIdentical(
-            final File actualDir,
-            final File expectedDir,
-            final String fileName) throws IOException {
-        byte[] actualBytes = Files.readAllBytes(new File(actualDir, fileName).toPath());
-        byte[] expectedBytes = Files.readAllBytes(new File(expectedDir, fileName).toPath());
+            final File actualFile,
+            final File expectedFile) throws IOException {
+        byte[] actualBytes = Files.readAllBytes(actualFile.toPath());
+        byte[] expectedBytes = Files.readAllBytes(expectedFile.toPath());
         return Arrays.equals(actualBytes, expectedBytes);
     }
 }
