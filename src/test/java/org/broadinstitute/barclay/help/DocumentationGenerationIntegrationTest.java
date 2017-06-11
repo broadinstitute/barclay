@@ -17,6 +17,9 @@ import java.util.List;
  */
 public class DocumentationGenerationIntegrationTest {
 
+    private static String inputResourcesDir = "src/main/resources/org/broadinstitute/barclay/";
+    private static String testResourcesDir = "src/test/resources/org/broadinstitute/barclay/";
+
     // common arguments not changed for tests
     private static final List<String> COMMON_DOC_ARG_LIST = Arrays.asList(
             "-build-timestamp", "2016/01/01 01:01:01",      // dummy, constant timestamp
@@ -29,11 +32,9 @@ public class DocumentationGenerationIntegrationTest {
             "-cp", System.getProperty("java.class.path")
     );
 
-    private static final List<String> DOCUMENTED_PHP_NAMES_WITHOUT_EXTENSION = Arrays.asList(
-            "org_broadinstitute_barclay_help_TestArgumentContainer.",
-            "org_broadinstitute_barclay_help_TestArgumentContainer.",
-            "org_broadinstitute_barclay_help_TestExtraDocs.",
-            "org_broadinstitute_barclay_help_TestExtraDocs."
+    private static final List<String> EXPECTED_OUTPUT_FILE_NAME_PREFIXES = Arrays.asList(
+            "org_broadinstitute_barclay_help_TestArgumentContainer",
+            "org_broadinstitute_barclay_help_TestExtraDocs"
     );
 
     private static String[] docArgList(final Class<?> docletClass, final File templatesFolder, final File outputDir,
@@ -61,37 +62,83 @@ public class DocumentationGenerationIntegrationTest {
     public Object[][] getDocGenTestParams() {
         return new Object[][] {
                 // default doclet and templates
-                {HelpDoclet.class, new File("src/main/resources/org/broadinstitute/barclay/helpTemplates/"), new File("src/test/resources/org/broadinstitute/barclay/help/expected/HelpDoclet"), "html", "html"},
+                {HelpDoclet.class,
+                        new File(inputResourcesDir + "helpTemplates/"),
+                        new File(testResourcesDir + "help/expected/HelpDoclet"),
+                        "html", // testIndexFileExtension
+                        "html", // testOutputFileExtension
+                        "html", // requestedIndexFileExtension
+                        "html"  // requestedOutputFileExtension
+                },
+                // defaut doclet and templates using alternate index extension
+                {HelpDoclet.class,
+                        new File(inputResourcesDir + "helpTemplates/"),
+                        new File(testResourcesDir + "help/expected/HelpDoclet"),
+                        "html",  // testIndexFileExtension
+                        "html",  // testOutputFileExtension
+                        "xhtml", // requestedIndexFileExtension
+                        "html"   // requestedOutputFileExtension
+                },
                 // custom doclet and templates
-                {TestDoclet.class, new File("src/test/resources/org/broadinstitute/barclay/help/templates/TestDoclet"), new File("src/test/resources/org/broadinstitute/barclay/help/expected/TestDoclet"), "html", "html"}
+                {TestDoclet.class,
+                        new File(testResourcesDir + "help/templates/TestDoclet/"),
+                        new File(testResourcesDir + "help/expected/TestDoclet"),
+                        "html", // testIndexFileExtension
+                        "html", // testOutputFileExtension
+                        "html", // requestedIndexFileExtension
+                        "html"  // requestedOutputFileExtension
+                }
         };
     }
 
     @Test(dataProvider = "getDocGenTestParams")
-    public void testDocGenRoundTrip(final Class<?> docletClass, final File templatesFolder, final File expectedDir,
-            final String indexFileExtension, final String outputFileExtension) throws IOException {
+    public void testDocGenRoundTrip(
+            final Class<?> docletClass,
+            final File inputTemplatesFolder,
+            final File expectedDir,
+            final String testIndexFileExtension,
+            final String testOutputFileExtension,
+            final String requestedIndexFileExtension,
+            final String requestedOutputFileExtension
+    ) throws IOException
+    {
         // creates a temp output directory
         final File outputDir = Files.createTempDirectory(docletClass.getName()).toAbsolutePath().toFile();
         outputDir.deleteOnExit();
 
-        // run javadoc with the the custom doclet
-        com.sun.tools.javadoc.Main.execute(docArgList(docletClass, templatesFolder, outputDir, indexFileExtension, outputFileExtension));
+        // run javadoc with the custom doclet
+        com.sun.tools.javadoc.Main.execute(
+                docArgList(docletClass, inputTemplatesFolder, outputDir, requestedIndexFileExtension, requestedOutputFileExtension)
+        );
+
+        final String indexFileName = "index";
+        final String jsonFileExtension = ".json";
 
         // Compare index files
-        Assert.assertTrue(filesContentsIdentical(new File(expectedDir, "index." + indexFileExtension), new File(outputDir, "index.html")));
+        assertFileContentsIdentical(
+                new File(outputDir, indexFileName + "." + requestedIndexFileExtension),
+                new File(expectedDir, indexFileName + "." + testIndexFileExtension));
 
-        // Compare output files (json and html)
-        for (final String prefix: DOCUMENTED_PHP_NAMES_WITHOUT_EXTENSION) {
-            Assert.assertTrue(filesContentsIdentical(new File(outputDir, prefix + "html.json"), new File(expectedDir, prefix + "html.json")));
-            Assert.assertTrue(filesContentsIdentical(new File(outputDir, prefix + outputFileExtension), new File(expectedDir, prefix + "html")));
+        // Compare output files (json and workunit)
+        for (final String workUnitFileNamePrefix: EXPECTED_OUTPUT_FILE_NAME_PREFIXES) {
+            //check json file
+            assertFileContentsIdentical(
+                    //TODO: its a bug that we include the requestedOutputFileExtension in the json file extension; the file
+                    // name should really just be workUnitName.json instead of workUnitName.extension.json
+                    new File(outputDir, workUnitFileNamePrefix + "." + requestedOutputFileExtension + jsonFileExtension),
+                    new File(expectedDir, workUnitFileNamePrefix + "." + testOutputFileExtension + jsonFileExtension));
+            // check workunit output file
+            assertFileContentsIdentical(
+                    new File(outputDir, workUnitFileNamePrefix + "." + requestedOutputFileExtension),
+                    new File(expectedDir, workUnitFileNamePrefix + "." + testOutputFileExtension));
         }
     }
 
-    private boolean filesContentsIdentical(
+    private void assertFileContentsIdentical(
             final File actualFile,
             final File expectedFile) throws IOException {
         byte[] actualBytes = Files.readAllBytes(actualFile.toPath());
         byte[] expectedBytes = Files.readAllBytes(expectedFile.toPath());
-        return Arrays.equals(actualBytes, expectedBytes);
+        Assert.assertEquals(actualBytes, expectedBytes);
     }
 }
