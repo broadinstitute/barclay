@@ -20,6 +20,9 @@ public class DocumentationGenerationIntegrationTest {
     private static String inputResourcesDir = "src/main/resources/org/broadinstitute/barclay/";
     private static String testResourcesDir = "src/test/resources/org/broadinstitute/barclay/";
 
+    private static final String indexFileName = "index";
+    private static final String jsonFileExtension = ".json";
+
     // common arguments not changed for tests
     private static final List<String> COMMON_DOC_ARG_LIST = Arrays.asList(
             "-build-timestamp", "2016/01/01 01:01:01",      // dummy, constant timestamp
@@ -110,9 +113,6 @@ public class DocumentationGenerationIntegrationTest {
         com.sun.tools.javadoc.Main.execute(
                 docArgList(docletClass, inputTemplatesFolder, outputDir, requestedIndexFileExtension, requestedOutputFileExtension)
         );
-
-        final String indexFileName = "index";
-        final String jsonFileExtension = ".json";
 
         // Compare index files
         assertFileContentsIdentical(
