@@ -146,7 +146,8 @@ public class HelpDoclet {
             option.equals(DESTINATION_DIR_OPTION) ||
             option.equals(BUILD_TIMESTAMP_OPTION) ||
             option.equals(ABSOLUTE_VERSION_OPTION) ||
-            option.equals(OUTPUT_FILE_EXTENSION_OPTION)) {
+            option.equals(OUTPUT_FILE_EXTENSION_OPTION) ||
+            option.equals(INDEX_FILE_EXTENSION_OPTION)) {
             return 2;
         } else if (option.equals(QUIET_OPTION)) {
             return 1;
