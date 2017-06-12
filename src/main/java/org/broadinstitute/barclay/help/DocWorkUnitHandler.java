@@ -56,6 +56,13 @@ public abstract class DocWorkUnitHandler {
     }
 
     /**
+     * Returns the destination prefix (no paths) that the handler would like
+     */
+    public String getJsonFilename(final DocWorkUnit workUnit) {
+        return DocletUtils.phpFilenameForClass(workUnit.getClazz(), "json");
+    }
+
+    /**
      * Apply any fallback rules to determine the summary line that should be used for the work unit.
      * Default implementation uses the value from the DocumentedFeature annotation.
      * @param workUnit

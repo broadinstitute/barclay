@@ -123,10 +123,8 @@ public class DocumentationGenerationIntegrationTest {
         for (final String workUnitFileNamePrefix: EXPECTED_OUTPUT_FILE_NAME_PREFIXES) {
             //check json file
             assertFileContentsIdentical(
-                    //TODO: its a bug that we include the requestedOutputFileExtension in the json file extension; the file
-                    // name should really just be workUnitName.json instead of workUnitName.extension.json
-                    new File(outputDir, workUnitFileNamePrefix + "." + requestedOutputFileExtension + jsonFileExtension),
-                    new File(expectedDir, workUnitFileNamePrefix + "." + testOutputFileExtension + jsonFileExtension));
+                    new File(outputDir, workUnitFileNamePrefix  + jsonFileExtension),
+                    new File(expectedDir, workUnitFileNamePrefix  + jsonFileExtension));
             // check workunit output file
             assertFileContentsIdentical(
                     new File(outputDir, workUnitFileNamePrefix + "." + requestedOutputFileExtension),
