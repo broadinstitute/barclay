@@ -104,22 +104,7 @@ public class HelpDoclet {
      */
     protected boolean startProcessDocs(final RootDoc rootDoc) throws IOException {
         for (String[] options : rootDoc.options()) {
-            if (options[0].equals(SETTINGS_DIR_OPTION))
-                settingsDir = new File(options[1]);
-            if (options[0].equals(DESTINATION_DIR_OPTION))
-                destinationDir = new File(options[1]);
-            if (options[0].equals(BUILD_TIMESTAMP_OPTION))
-                buildTimestamp = options[1];
-            if (options[0].equals(ABSOLUTE_VERSION_OPTION))
-                absoluteVersion = options[1];
-            if (options[0].equals(INCLUDE_HIDDEN_OPTION))
-                showHiddenFeatures = true;
-            if (options[0].equals(OUTPUT_FILE_EXTENSION_OPTION)) {
-                outputFileExtension = options[1];
-            }
-            if (options[0].equals(INDEX_FILE_EXTENSION_OPTION)) {
-                indexFileExtension = options[1];
-            }
+            parseOption(options);
         }
 
         if (!settingsDir.exists())
@@ -132,7 +117,39 @@ public class HelpDoclet {
     }
 
     /**
+     * Parse the options for the javadoc command line. The first item is the option name, and the
+     * following the number of items returned by {@link #optionLength(String)} for that option.
+     *
+     * Implementations should override this method and call it to parse the required options.
+     * In addition, to support custom options {@link #optionLength(String)} may be implemented.
+     *
+     * @param options
+     */
+    protected void parseOption(final String[] options) {
+        if (options[0].equals(SETTINGS_DIR_OPTION))
+            settingsDir = new File(options[1]);
+        if (options[0].equals(DESTINATION_DIR_OPTION))
+            destinationDir = new File(options[1]);
+        if (options[0].equals(BUILD_TIMESTAMP_OPTION))
+            buildTimestamp = options[1];
+        if (options[0].equals(ABSOLUTE_VERSION_OPTION))
+            absoluteVersion = options[1];
+        if (options[0].equals(INCLUDE_HIDDEN_OPTION))
+            showHiddenFeatures = true;
+        if (options[0].equals(OUTPUT_FILE_EXTENSION_OPTION)) {
+            outputFileExtension = options[1];
+        }
+        if (options[0].equals(INDEX_FILE_EXTENSION_OPTION)) {
+            indexFileExtension = options[1];
+        }
+    }
+
+    /**
      * Validate the given options against options supported by this doclet.
+     *
+     * <p>Note: for custom options, doclets should implement a similar static method and call the
+     * one from {@link HelpDoclet} to maintain required options. In addition, custom options should
+     * be handled by {@link #parseOption(String[])}.
      *
      * @param option Option to validate.
      * @return Number of potential parameters; 0 if not supported.
