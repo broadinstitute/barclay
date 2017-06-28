@@ -277,9 +277,9 @@ public class HelpDoclet {
         try {
             /* ------------------------------------------------------------------- */
             /* You should do this ONLY ONCE in the whole application life-cycle:   */
-            final Configuration cfg = new Configuration();
+            final Configuration cfg = new Configuration(Configuration.VERSION_2_3_23);
             cfg.setDirectoryForTemplateLoading(settingsDir); // where the template files come from
-            cfg.setObjectWrapper(new DefaultObjectWrapper());
+            cfg.setObjectWrapper(new DefaultObjectWrapper(Configuration.VERSION_2_3_23));
 
             // Generate one template file for each work unit
             workUnits.stream().forEach(workUnit -> processWorkUnitTemplate(cfg, workUnit, groupMaps, featureMaps));
