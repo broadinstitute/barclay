@@ -56,9 +56,9 @@ public abstract class DocWorkUnitHandler {
     }
 
     /**
-     * Returns the destination prefix (no paths) that the handler would like
+     * Returns the JSON output file name.
      */
-    public String getJsonFilename(final DocWorkUnit workUnit) {
+    public String getJSONFilename(final DocWorkUnit workUnit) {
         return DocletUtils.phpFilenameForClass(workUnit.getClazz(), "json");
     }
 
