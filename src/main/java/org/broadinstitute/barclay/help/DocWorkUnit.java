@@ -155,6 +155,8 @@ public class DocWorkUnit implements Comparable<DocWorkUnit> {
 
     public String getTargetFileName() { return workUnitHandler.getDestinationFilename(this); }
 
+    public String getJSONFileName() { return workUnitHandler.getJSONFilename(this); }
+
     /**
      * Get the CommandLineProgramProperties annotation for this work unit.
      * @return CommandLineProgramProperties object for this work unit. May be null for features that are not

@@ -489,7 +489,7 @@ public class HelpDoclet {
         );
 
         // Convert object to JSON and write JSON entry to file
-        File outputPathForJSON = new File(getDestinationDir() + "/" + workUnit.getTargetFileName() + ".json");
+        File outputPathForJSON = new File(getDestinationDir() + "/" + workUnit.getJSONFileName());
 
         try (final BufferedWriter jsonWriter = new BufferedWriter(new FileWriter(outputPathForJSON))) {
             Gson gson = new GsonBuilder()
