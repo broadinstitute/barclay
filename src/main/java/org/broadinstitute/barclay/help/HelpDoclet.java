@@ -117,13 +117,16 @@ public class HelpDoclet {
     }
 
     /**
-     * Parse the options for the javadoc command line. The first item is the option name, and the
-     * following the number of items returned by {@link #optionLength(String)} for that option.
+     * Handles javadoc command line options. The first entry in the {@code options} array is the
+     * option name. Subsequent entries contain the option's arguments, the number of which is
+     * determined by the value returned from {@link #optionLength(String)} for that option.
      *
-     * Implementations should override this method and call it to parse the required options.
-     * In addition, to support custom options {@link #optionLength(String)} may be implemented.
+     * <p>Custom Barclay doclets that want to have custom command line options should override this
+     * method, and also provide an implementation of the static method {@link #optionLength}).
+     * Both methods should handle the custom options, and then delegate back to the base class
+     * methods defined here to allow default handling of builtin options.
      *
-     * @param options
+     * @param options Options to parse.
      */
     protected void parseOption(final String[] options) {
         if (options[0].equals(SETTINGS_DIR_OPTION))
@@ -145,11 +148,12 @@ public class HelpDoclet {
     }
 
     /**
-     * Validate the given options against options supported by this doclet.
+     * Validates the given options against options supported by this doclet.
      *
-     * <p>Note: for custom options, doclets should implement a similar static method and call the
-     * one from {@link HelpDoclet} to maintain required options. In addition, custom options should
-     * be handled by {@link #parseOption(String[])}.
+     * <p>Custom Barclay doclets that want to have custom command line options should provide an
+     * implementation of this static method, and also override override {@link #parseOption}).
+     * Both methods should handle the custom options, delegating back to the base class methods
+     * defined here to allow default handling of builtin options.
      *
      * @param option Option to validate.
      * @return Number of potential parameters; 0 if not supported.
