@@ -104,22 +104,7 @@ public class HelpDoclet {
      */
     protected boolean startProcessDocs(final RootDoc rootDoc) throws IOException {
         for (String[] options : rootDoc.options()) {
-            if (options[0].equals(SETTINGS_DIR_OPTION))
-                settingsDir = new File(options[1]);
-            if (options[0].equals(DESTINATION_DIR_OPTION))
-                destinationDir = new File(options[1]);
-            if (options[0].equals(BUILD_TIMESTAMP_OPTION))
-                buildTimestamp = options[1];
-            if (options[0].equals(ABSOLUTE_VERSION_OPTION))
-                absoluteVersion = options[1];
-            if (options[0].equals(INCLUDE_HIDDEN_OPTION))
-                showHiddenFeatures = true;
-            if (options[0].equals(OUTPUT_FILE_EXTENSION_OPTION)) {
-                outputFileExtension = options[1];
-            }
-            if (options[0].equals(INDEX_FILE_EXTENSION_OPTION)) {
-                indexFileExtension = options[1];
-            }
+            parseOption(options);
         }
 
         if (!settingsDir.exists())
@@ -132,7 +117,43 @@ public class HelpDoclet {
     }
 
     /**
-     * Validate the given options against options supported by this doclet.
+     * Handles javadoc command line options. The first entry in the {@code options} array is the
+     * option name. Subsequent entries contain the option's arguments, the number of which is
+     * determined by the value returned from {@link #optionLength(String)} for that option.
+     *
+     * <p>Custom Barclay doclets that want to have custom command line options should override this
+     * method, and also provide an implementation of the static method {@link #optionLength}).
+     * Both methods should handle the custom options, and then delegate back to the base class
+     * methods defined here to allow default handling of builtin options.
+     *
+     * @param options Options to parse.
+     */
+    protected void parseOption(final String[] options) {
+        if (options[0].equals(SETTINGS_DIR_OPTION))
+            settingsDir = new File(options[1]);
+        if (options[0].equals(DESTINATION_DIR_OPTION))
+            destinationDir = new File(options[1]);
+        if (options[0].equals(BUILD_TIMESTAMP_OPTION))
+            buildTimestamp = options[1];
+        if (options[0].equals(ABSOLUTE_VERSION_OPTION))
+            absoluteVersion = options[1];
+        if (options[0].equals(INCLUDE_HIDDEN_OPTION))
+            showHiddenFeatures = true;
+        if (options[0].equals(OUTPUT_FILE_EXTENSION_OPTION)) {
+            outputFileExtension = options[1];
+        }
+        if (options[0].equals(INDEX_FILE_EXTENSION_OPTION)) {
+            indexFileExtension = options[1];
+        }
+    }
+
+    /**
+     * Validates the given options against options supported by this doclet.
+     *
+     * <p>Custom Barclay doclets that want to have custom command line options should provide an
+     * implementation of this static method, and also override override {@link #parseOption}).
+     * Both methods should handle the custom options, delegating back to the base class methods
+     * defined here to allow default handling of builtin options.
      *
      * @param option Option to validate.
      * @return Number of potential parameters; 0 if not supported.
