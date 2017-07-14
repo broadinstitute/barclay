@@ -400,6 +400,11 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
                 argBindings.put("minRecValue", "NA");
                 argBindings.put("maxRecValue", "NA");
             }
+
+            // Add in the number of times you can specify it:
+            argBindings.put("minElements", argDef.field.getAnnotation(Argument.class).minElements());
+            argBindings.put("maxElements", argDef.field.getAnnotation(Argument.class).maxElements());
+
             // if its a plugin descriptor arg, get the allowed values
             processPluginDescriptorArgument(argDef, argBindings);
 
@@ -456,6 +461,8 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
             argBindings.put("minValue", "NA");
             argBindings.put("maxValue", "NA");
             argBindings.put("defaultValue", "NA");
+            argBindings.put("minElements", posArgs.minElements());
+            argBindings.put("maxElements", posArgs.maxElements());
 
             args.get("positional").add(argBindings);
             args.get("all").add(argBindings);
@@ -667,8 +674,8 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
      *         synonymous name.
      */
     private Pair<String, String> displayNames(String s1, String s2) {
-        s1 = s1 == null ? null : "-" + s1;
-        s2 = s2 == null ? null : "--" + s2;
+        s1 = ((s1 == null) || (s1.length() == 0)) ? null : "-" + s1;
+        s2 = ((s2 == null) || (s2.length() == 0)) ? null : "--" + s2;
 
         if (s1 == null) return Pair.of(s2, null);
         if (s2 == null) return Pair.of(s1, null);
