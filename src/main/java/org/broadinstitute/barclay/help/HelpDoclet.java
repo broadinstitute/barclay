@@ -371,7 +371,7 @@ public class HelpDoclet {
      * @param groupMaps
      * @throws IOException
      */
-    private void processIndexTemplate(
+    protected void processIndexTemplate(
             final Configuration cfg,
             final List<DocWorkUnit> workUnitList,
             final List<Map<String, String>> groupMaps

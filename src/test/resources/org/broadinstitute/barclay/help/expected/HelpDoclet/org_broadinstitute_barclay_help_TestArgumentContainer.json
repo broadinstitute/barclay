@@ -307,7 +307,7 @@
     {
       "summary": "Undocumented option",
       "name": "--testPlugin",
-      "synonyms": "-",
+      "synonyms": "NA",
       "type": "List[String]",
       "required": "no",
       "fulltext": "",
@@ -322,7 +322,7 @@
     {
       "summary": "Use field name if no name in annotation.",
       "name": "--usesFieldNameForArgName",
-      "synonyms": "-",
+      "synonyms": "NA",
       "type": "String",
       "required": "yes",
       "fulltext": "",
