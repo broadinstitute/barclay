@@ -9,7 +9,7 @@
 
 <div class='span9'>
 
-<#include "common.html"/>
+<#include "common.ftl"/>
 
 <#macro emitGroup group>
     <div class="accordion-group">
@@ -48,15 +48,9 @@
     <small>${version}</small>
 </h1>
 <div class="accordion" id="index">
-    <#assign seq = ["engine", "tools", "other", "utilities"]>
-	<#list seq as supercat>
-		<br />
-		<#list groups?sort_by("name") as group>
-			<#if group.supercat == supercat>
-				<@emitGroup group=group/>
-			</#if>
-		</#list>
-	</#list>
+    <#list groups?sort_by("name") as group>
+        <@emitGroup group=group/>
+    </#list>
 </div>
 
 <@footerInfo />

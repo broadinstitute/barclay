@@ -24,7 +24,7 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
     final protected static Logger logger = LogManager.getLogger(DefaultDocWorkUnitHandler.class);
 
     private static final String NAME_FOR_POSITIONAL_ARGS = "[NA - Positional]";
-    private static final String DEFAULT_FREEMARKER_TEMPLATE_NAME = "generic.template.html";
+    private static final String DEFAULT_FREEMARKER_TEMPLATE_NAME = "generic.ftl";
 
     /**
      * @param doclet for this documentation run. May not be null.
