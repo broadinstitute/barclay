@@ -9,7 +9,7 @@
 
 <div class='span9'>
 
-<#include "common.ftl"/>
+<#include "common.html.ftl"/>
 
 <#macro emitGroup group>
     <div class="accordion-group">

@@ -4,7 +4,7 @@
 
 <div class='row-fluid' id="top">
 
-	<#include "common.ftl"/>
+	<#include "common.html.ftl"/>
 
 	<#macro argumentlist name myargs>
 		<#if myargs?size != 0>
