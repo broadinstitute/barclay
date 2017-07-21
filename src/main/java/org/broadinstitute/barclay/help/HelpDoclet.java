@@ -267,7 +267,7 @@ public class HelpDoclet {
     /**
      * @return the name of the index template to be used for this doclet
      */
-    public String getIndexTemplateName() { return "generic.index.template.html"; }
+    public String getIndexTemplateName() { return "generic.index.html.ftl"; }
 
     /**
      * @return the file where the files will be output
