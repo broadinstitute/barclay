@@ -4,10 +4,17 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.sun.javadoc.ClassDoc;
 import com.sun.javadoc.RootDoc;
+
+import freemarker.cache.TemplateLoader;
+import freemarker.cache.FileTemplateLoader;
+import freemarker.cache.ClassTemplateLoader;
+import freemarker.cache.MultiTemplateLoader;
+
 import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.broadinstitute.barclay.argparser.Hidden;
@@ -59,9 +66,11 @@ public class HelpDoclet {
     final private static String INCLUDE_HIDDEN_OPTION = "-hidden-version";
     final private static String OUTPUT_FILE_EXTENSION_OPTION = "-output-file-extension";
     final private static String INDEX_FILE_EXTENSION_OPTION = "-index-file-extension";
+    final private static String USE_DEFAULT_TEMPLATES_OPTION = "-use-default-templates";
 
     // Where we find the help FreeMarker templates
     final private static File DEFAULT_SETTINGS_DIR = new File("settings/helpTemplates");
+    final private static String DEFAULT_SETTINGS_CLASSPATH = "/org/broadinstitute/barclay/helpTemplates";
     // Where we write the output
     final private static File DEFAULT_DESTINATION_DIR = new File("barclaydocs");
     // Default output file extension
@@ -73,15 +82,18 @@ public class HelpDoclet {
     //
     // ----------------------------------------------------------------------
     protected static File settingsDir = DEFAULT_SETTINGS_DIR;
+    protected boolean isSettingsDirSet = false;
     protected static File destinationDir = DEFAULT_DESTINATION_DIR;
     protected static String outputFileExtension = DEFAULT_OUTPUT_FILE_EXTENSION;
     protected static String indexFileExtension = DEFAULT_OUTPUT_FILE_EXTENSION;
     protected static String buildTimestamp = "[no timestamp available]";
     protected static String absoluteVersion = "[no version available]";
     protected static boolean showHiddenFeatures = false;
+    protected boolean useDefaultTemplates = false;
 
+    // Variables to store data for Freemarker:
     private RootDoc rootDoc;                // The javadoc root doc
-    private Set<DocWorkUnit> workUnits;     // Set of all things we are going to document
+    protected Set<DocWorkUnit> workUnits;     // Set of all things we are going to document
 
     /**
      * The entry point for javadoc generation. Default implementation creates an instance of
@@ -96,6 +108,29 @@ public class HelpDoclet {
      }
 
     /**
+     * Ensure that {@link #settingsDir} exists and is a directory.
+     * Throws a {@link RuntimeException} if {@link #settingsDir} is invalid.
+     */
+    private void validateSettingsDir() {
+         if (!settingsDir.exists()) {
+             throw new RuntimeException(SETTINGS_DIR_OPTION + " : " + settingsDir.getPath() + " does not exist!");
+         }
+         else if (!settingsDir.isDirectory()) {
+             throw new RuntimeException(SETTINGS_DIR_OPTION + " : " + settingsDir.getPath() + " is not a directory!");
+         }
+     }
+
+    /**
+     * This method exists to allow child classes to do input argument / state checking.
+     * Designed to be overridden in child classes.
+     *
+     * Child classes should do internal validation and throw if there are issues.
+     */
+    protected void validateDocletStartingState() {
+
+    }
+
+    /**
      * Extracts the contents of certain types of javadoc and adds them to an output file.
      *
      * @param rootDoc The documentation root.
@@ -107,10 +142,23 @@ public class HelpDoclet {
             parseOption(options);
         }
 
-        if (!settingsDir.exists())
-            throw new RuntimeException(SETTINGS_DIR_OPTION + " :" + settingsDir.getPath() + " does not exist");
-        else if (!settingsDir.isDirectory())
-            throw new RuntimeException(SETTINGS_DIR_OPTION + " :" + settingsDir.getPath() + " is not a directory");
+        // Make sure the user specified a settings directory OR that we should use the defaults.
+        // Both are not allowed.
+        // Neither are not allowed.
+        if ( (useDefaultTemplates && isSettingsDirSet) ||
+                (!useDefaultTemplates && !isSettingsDirSet)) {
+            throw new RuntimeException("ERROR: must specify only ONE of: " + USE_DEFAULT_TEMPLATES_OPTION + " , " + SETTINGS_DIR_OPTION);
+        }
+
+        // Make sure we can use the directory for settings we have set:
+        if (!useDefaultTemplates) {
+            validateSettingsDir();
+        }
+
+        // Make sure we're in a good state to run:
+        validateDocletStartingState();
+
+
 
         processDocs(rootDoc);
         return true;
@@ -127,26 +175,48 @@ public class HelpDoclet {
      * methods defined here to allow default handling of builtin options.
      *
      * @param options Options to parse.
+     * @return True if {@code options} was parsed, False otherwise.
      */
-    protected void parseOption(final String[] options) {
-        if (options[0].equals(SETTINGS_DIR_OPTION))
-            settingsDir = new File(options[1]);
-        if (options[0].equals(DESTINATION_DIR_OPTION))
-            destinationDir = new File(options[1]);
-        if (options[0].equals(BUILD_TIMESTAMP_OPTION))
-            buildTimestamp = options[1];
-        if (options[0].equals(ABSOLUTE_VERSION_OPTION))
-            absoluteVersion = options[1];
-        if (options[0].equals(INCLUDE_HIDDEN_OPTION))
-            showHiddenFeatures = true;
-        if (options[0].equals(OUTPUT_FILE_EXTENSION_OPTION)) {
-            outputFileExtension = options[1];
-        }
-        if (options[0].equals(INDEX_FILE_EXTENSION_OPTION)) {
-            indexFileExtension = options[1];
-        }
-    }
+    protected boolean parseOption(final String[] options) {
 
+        boolean hasParsedOption = false;
+
+        if (options[0].equals(SETTINGS_DIR_OPTION)) {
+            settingsDir = new File(options[1]);
+            isSettingsDirSet = true;
+            hasParsedOption = true;
+        }
+        else if (options[0].equals(DESTINATION_DIR_OPTION)) {
+            destinationDir = new File(options[1]);
+            hasParsedOption = true;
+        }
+        else if (options[0].equals(BUILD_TIMESTAMP_OPTION)) {
+            buildTimestamp = options[1];
+            hasParsedOption = true;
+        }
+        else if (options[0].equals(ABSOLUTE_VERSION_OPTION)) {
+            absoluteVersion = options[1];
+            hasParsedOption = true;
+        }
+        else if (options[0].equals(INCLUDE_HIDDEN_OPTION)) {
+            showHiddenFeatures = true;
+            hasParsedOption = true;
+        }
+        else if (options[0].equals(OUTPUT_FILE_EXTENSION_OPTION)) {
+            outputFileExtension = options[1];
+            hasParsedOption = true;
+        }
+        else if (options[0].equals(INDEX_FILE_EXTENSION_OPTION)) {
+            indexFileExtension = options[1];
+            hasParsedOption = true;
+        }
+        else if (options[0].equals(USE_DEFAULT_TEMPLATES_OPTION)) {
+            useDefaultTemplates = true;
+            hasParsedOption = true;
+        }
+
+        return hasParsedOption;
+    }
     /**
      * Validates the given options against options supported by this doclet.
      *
@@ -170,7 +240,8 @@ public class HelpDoclet {
             option.equals(OUTPUT_FILE_EXTENSION_OPTION) ||
             option.equals(INDEX_FILE_EXTENSION_OPTION)) {
             return 2;
-        } else if (option.equals(QUIET_OPTION)) {
+        } else if (option.equals(QUIET_OPTION) ||
+                   option.equals(USE_DEFAULT_TEMPLATES_OPTION)) {
             return 1;
         } else {
             logger.error("The Javadoc command line option is not recognized by the Barclay doclet: " + option);
@@ -270,6 +341,11 @@ public class HelpDoclet {
     public String getIndexTemplateName() { return "generic.index.html.ftl"; }
 
     /**
+     * @return The base filename for the index file associated with this doclet.
+     */
+    public String getIndexBaseFileName() { return "index"; }
+
+    /**
      * @return the file where the files will be output
      */
     public File getDestinationDir() { return  destinationDir; }
@@ -299,8 +375,20 @@ public class HelpDoclet {
             /* ------------------------------------------------------------------- */
             /* You should do this ONLY ONCE in the whole application life-cycle:   */
             final Configuration cfg = new Configuration(Configuration.VERSION_2_3_23);
-            cfg.setDirectoryForTemplateLoading(settingsDir); // where the template files come from
             cfg.setObjectWrapper(new DefaultObjectWrapper(Configuration.VERSION_2_3_23));
+
+            // We need to set up a scheme to load our settings from wherever they may live.
+            // This means we need to set up a multi-loader including the classpath and any specified options:
+
+            TemplateLoader templateLoader =  new FileTemplateLoader(new File(settingsDir.getPath()));
+
+            // Only add the settings directory if we're supposed to:
+            if ( useDefaultTemplates ) {
+                templateLoader = new ClassTemplateLoader(getClass(), DEFAULT_SETTINGS_CLASSPATH);
+            }
+
+            // Tell freemarker to load our templates as we specified above:
+            cfg.setTemplateLoader(templateLoader);
 
             // Generate one template file for each work unit
             workUnits.stream().forEach(workUnit -> processWorkUnitTemplate(cfg, workUnit, groupMaps, featureMaps));
@@ -378,7 +466,11 @@ public class HelpDoclet {
    ) throws IOException {
         // Get or create a template and merge in the data
         final Template template = cfg.getTemplate(getIndexTemplateName());
-        final File indexFile = new File(getDestinationDir() + "/index." + getIndexFileExtension());
+
+        final File indexFile = new File(getDestinationDir(),
+                            getIndexBaseFileName() + '.' + getIndexFileExtension()
+        );
+
         try (final FileOutputStream fileOutStream = new FileOutputStream(indexFile);
              final OutputStreamWriter outWriter = new OutputStreamWriter(fileOutStream)) {
             template.process(groupIndexMap(workUnitList, groupMaps), outWriter);
@@ -488,7 +580,7 @@ public class HelpDoclet {
         try {
             // Merge data-model with template
             Template template = cfg.getTemplate(workUnit.getTemplateName());
-            File outputPath = new File(getDestinationDir() + "/" + workUnit.getTargetFileName());
+            File outputPath = new File(getDestinationDir(), workUnit.getTargetFileName());
             try (final Writer out = new OutputStreamWriter(new FileOutputStream(outputPath))) {
                 template.process(workUnit.getRootMap(), out);
             }
@@ -510,7 +602,7 @@ public class HelpDoclet {
         );
 
         // Convert object to JSON and write JSON entry to file
-        File outputPathForJSON = new File(getDestinationDir() + "/" + workUnit.getJSONFileName());
+        File outputPathForJSON = new File(getDestinationDir(), workUnit.getJSONFileName());
 
         try (final BufferedWriter jsonWriter = new BufferedWriter(new FileWriter(outputPathForJSON))) {
             Gson gson = new GsonBuilder()
