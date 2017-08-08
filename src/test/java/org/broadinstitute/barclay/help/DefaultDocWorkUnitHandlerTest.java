@@ -1,5 +1,7 @@
 package org.broadinstitute.barclay.help;
 
+import org.broadinstitute.barclay.help.testinputs.TestArgumentContainer;
+import org.broadinstitute.barclay.help.testinputs.TestExtraDocs;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;

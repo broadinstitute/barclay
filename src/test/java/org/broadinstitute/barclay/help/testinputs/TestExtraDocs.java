@@ -1,6 +1,7 @@
-package org.broadinstitute.barclay.help;
+package org.broadinstitute.barclay.help.testinputs;
 
 import org.broadinstitute.barclay.argparser.Argument;
+import org.broadinstitute.barclay.help.DocumentedFeature;
 
 /**
  * Class for testing extraDocs property in docgen.

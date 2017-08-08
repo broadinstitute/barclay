@@ -24,26 +24,30 @@
             }
         </style>
         <ul class="nav nav-pills nav-stacked" id="sidenav">
-				<li><a data-toggle="collapse" data-parent="#sidenav" href="#Testextradocsgroupname">Test extra docs group name</a>
-					<div id="Testextradocsgroupname"
-					<?php echo ($group == 'Test extra docs group name')? 'class="accordion-body collapse in"'.chr(62) : 'class="accordion-body collapse"'.chr(62);?>
-					<ul>
-								<li>
-									<a href="org_broadinstitute_barclay_help_TestExtraDocs.html">TestExtraDocs</a>
-								</li>
-					</ul>
-					</div>
-				</li>
-				<li><a data-toggle="collapse" data-parent="#sidenav" href="#Testfeaturegroupname">Test feature group name</a>
-					<div id="Testfeaturegroupname"
-					<?php echo ($group == 'Test feature group name')? 'class="accordion-body collapse in"'.chr(62) : 'class="accordion-body collapse"'.chr(62);?>
-					<ul>
-								<li>
-									<a href="org_broadinstitute_barclay_help_TestArgumentContainer.html">TestArgumentContainer</a>
-								</li>
-					</ul>
-					</div>
-				</li>
+        		<hr>
+        		<hr>
+        		<hr>
+						<li><a data-toggle="collapse" data-parent="#sidenav" href="#Testextradocsgroupname">Test extra docs group name</a>
+							<div id="Testextradocsgroupname"
+								<?php echo ($group == 'Test extra docs group name')? 'class="accordion-body collapse in"'.chr(62) : 'class="accordion-body collapse"'.chr(62);?>
+								<ul>
+											<li>
+												<a href="org_broadinstitute_barclay_help_testinputs_TestExtraDocs.html">TestExtraDocs</a>
+											</li>
+								</ul>
+							</div>
+						</li>
+						<li><a data-toggle="collapse" data-parent="#sidenav" href="#Testfeaturegroupname">Test feature group name</a>
+							<div id="Testfeaturegroupname"
+								<?php echo ($group == 'Test feature group name')? 'class="accordion-body collapse in"'.chr(62) : 'class="accordion-body collapse"'.chr(62);?>
+								<ul>
+											<li>
+												<a href="org_broadinstitute_barclay_help_testinputs_TestArgumentContainer.html">TestArgumentContainer</a>
+											</li>
+								</ul>
+							</div>
+						</li>
+        		<hr>
         </ul>
 		</aside>
 		<?php getForumPosts( 'TestArgumentContainer' ) ?>
@@ -66,7 +70,7 @@
  be tested.
 
  Test custom tag:
- testType
+ 
 
  <p>
  The purpose of this paragraph is to test embedded html formatting.
@@ -77,12 +81,20 @@
  </p>
 
 				<hr>
+				<h2>Additional Information</h2>
+				<p></p>
+				<h3>Test Plugins</h3>
+					<p>This Test Plugin is automatically applied to the data by the Engine before processing by TestArgumentContainer.</p>
+				<ul>
+						<li><a href="org_broadinstitute_barclay_argparser_CommandLinePluginUnitTest$TestDefaultPlugin.html">TestDefaultPlugin</a></li>
+				</ul>
+				<hr>
 				<h2>Command-line Arguments</h2>
 				<p></p>
 				<h3>Additional References</h3>
 				<p>See these additional references for more information.</p>
 				<ul>
-						<li><a href="org_broadinstitute_barclay_help_TestExtraDocs.html">TestExtraDocs</a></li>
+						<li><a href="org_broadinstitute_barclay_help_testinputs_TestExtraDocs.html">TestExtraDocs</a></li>
 				</ul>
 
 				<h3>TestArgumentContainer specific arguments</h3>

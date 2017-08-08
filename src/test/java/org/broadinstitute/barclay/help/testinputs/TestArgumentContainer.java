@@ -1,9 +1,10 @@
-package org.broadinstitute.barclay.help;
+package org.broadinstitute.barclay.help.testinputs;
 
 
 import org.broadinstitute.barclay.argparser.*;
 import org.broadinstitute.barclay.argparser.CommandLinePluginProvider;
 import org.broadinstitute.barclay.argparser.CommandLinePluginUnitTest;
+import org.broadinstitute.barclay.help.DocumentedFeature;
 
 import java.io.File;
 import java.util.*;

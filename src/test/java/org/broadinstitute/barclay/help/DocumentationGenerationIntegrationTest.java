@@ -31,15 +31,15 @@ public class DocumentationGenerationIntegrationTest {
             "-absolute-version", "11.1",                    // dummy version
             "-docletpath", "build/libs",
             "-sourcepath", "src/test/java",
-            "org.broadinstitute.barclay.help",
+            "org.broadinstitute.barclay.help.testinputs",
             "org.broadinstitute.barclay.argparser",
             "-verbose",
             "-cp", System.getProperty("java.class.path")
     );
 
     private static final List<String> EXPECTED_OUTPUT_FILE_NAME_PREFIXES = Arrays.asList(
-            "org_broadinstitute_barclay_help_TestArgumentContainer",
-            "org_broadinstitute_barclay_help_TestExtraDocs"
+            "org_broadinstitute_barclay_help_testinputs_TestArgumentContainer",
+            "org_broadinstitute_barclay_help_testinputs_TestExtraDocs"
     );
 
     private static List<String> docArgList(final Class<?> docletClass, final File templatesFolder, final File outputDir,
