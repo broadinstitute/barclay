@@ -1,4 +1,8 @@
-package org.broadinstitute.barclay.help;
+package org.broadinstitute.barclay.help.testdoclets;
+
+import org.broadinstitute.barclay.help.DefaultDocWorkUnitHandler;
+import org.broadinstitute.barclay.help.DocWorkUnit;
+import org.broadinstitute.barclay.help.HelpDoclet;
 
 import java.util.*;
 

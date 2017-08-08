@@ -1,15 +1,13 @@
 package org.broadinstitute.barclay.help;
 
-
+import org.broadinstitute.barclay.help.testdoclets.TestDoclet;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.nio.file.Files;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

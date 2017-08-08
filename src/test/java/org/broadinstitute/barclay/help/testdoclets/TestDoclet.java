@@ -1,8 +1,11 @@
-package org.broadinstitute.barclay.help;
+package org.broadinstitute.barclay.help.testdoclets;
 
 import com.sun.javadoc.ClassDoc;
 import com.sun.javadoc.RootDoc;
-import org.broadinstitute.barclay.argparser.CommandLineProgramProperties;
+import org.broadinstitute.barclay.help.DocException;
+import org.broadinstitute.barclay.help.DocWorkUnit;
+import org.broadinstitute.barclay.help.DocumentedFeature;
+import org.broadinstitute.barclay.help.HelpDoclet;
 
 import java.io.IOException;
 import java.util.Map;
