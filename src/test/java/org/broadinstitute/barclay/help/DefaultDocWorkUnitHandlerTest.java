@@ -11,20 +11,23 @@ import java.util.Collections;
 /**
  * @author Daniel Gomez-Sanchez (magicDGS)
  */
-public class DefaultDocWorkUnitHandlerTest extends DocGenBaseTest {
+public class DefaultDocWorkUnitHandlerTest {
+
+    private final static DefaultDocWorkUnitHandler DEFAULT_DOC_WORK_UNIT_HANDLER =
+            new DefaultDocWorkUnitHandler(new HelpDoclet());
 
     @DataProvider
     public Object[][] workUnitForDocStrings() throws Exception {
         return new Object[][] {
-                {createDocWorkUnit(TestArgumentContainer.class),
+                {DocGenMocking.createDocWorkUnit(DEFAULT_DOC_WORK_UNIT_HANDLER, TestArgumentContainer.class),
                         "", "Argument container class for testing documentation generation.",
                         "Test feature group name", "Test program group used for testing"},
-                {createDocWorkUnit(TestExtraDocs.class, mockClassDoc("Javadoc description")),
+                {DocGenMocking.createDocWorkUnit(DEFAULT_DOC_WORK_UNIT_HANDLER, TestExtraDocs.class, DocGenMocking.mockClassDoc("Javadoc description")),
                         "", "Javadoc description",
                         "Test extra docs group name", ""},
                 // TODO: because DefaultWorkUnitHandler does not have an extra tag, the mocked class doc uses an empty tag name for the inline tag
                 // TODO: perhaps Barclay should include a default inline tag prefix for being able to re-use between different toolkits
-                {createDocWorkUnit(TestExtraDocs.class, mockClassDoc("Javadoc description \nin two lines", Collections.singletonMap("", "Inline tag"))),
+                {DocGenMocking.createDocWorkUnit(DEFAULT_DOC_WORK_UNIT_HANDLER, TestExtraDocs.class, DocGenMocking.mockClassDoc("Javadoc description \nin two lines", Collections.singletonMap("", "Inline tag"))),
                         "Inline tag", "Javadoc description in two lines",
                         "Test extra docs group name", ""}
         };

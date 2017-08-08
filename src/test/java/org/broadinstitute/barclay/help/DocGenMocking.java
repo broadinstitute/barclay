@@ -11,23 +11,19 @@ import java.util.Map;
 /**
  * @author Daniel Gomez-Sanchez (magicDGS)
  */
-public class DocGenBaseTest {
-
-    protected final static HelpDoclet HELP_DOCLET = new HelpDoclet();
-    protected final static DefaultDocWorkUnitHandler DEFAULT_DOC_WORK_UNIT_HANDLER =
-            new DefaultDocWorkUnitHandler(HELP_DOCLET);
+public class DocGenMocking {
 
     /**
      * Generates an empty ClassDoc (mocked).
      */
-    protected ClassDoc emptyClassDoc() {
+    public static ClassDoc emptyClassDoc() {
         return mockClassDoc("");
     }
 
     /**
      * Generates an ClassDoc with the javadoc text
      */
-    protected ClassDoc mockClassDoc(final String javadocText) {
+    public static ClassDoc mockClassDoc(final String javadocText) {
         return mockClassDoc(javadocText, Collections.emptyMap());
     }
 
@@ -37,7 +33,7 @@ public class DocGenBaseTest {
      *
      * @return mocked class doc.
      */
-    protected ClassDoc mockClassDoc(final String javadocText,
+    public static ClassDoc mockClassDoc(final String javadocText,
             final Map<String, String> inlineTags) {
         // mock class
         final ClassDoc mockedClassDoc = Mockito.mock(ClassDoc.class);
@@ -54,23 +50,24 @@ public class DocGenBaseTest {
     }
 
 
-    private Tag mockTag(final String name, final String text) {
+    private static Tag mockTag(final String name, final String text) {
         final Tag tag = Mockito.mock(Tag.class);
         Mockito.when(tag.name()).thenReturn(name);
         Mockito.when(tag.text()).thenReturn(text);
         return tag;
     }
 
-    protected DocWorkUnit createDocWorkUnit(final Class<?> clazz, final ClassDoc classDoc) {
+    public static DocWorkUnit createDocWorkUnit(final DocWorkUnitHandler docWorkUnitHandler,
+            final Class<?> clazz, final ClassDoc classDoc) {
         return new DocWorkUnit(
-                DEFAULT_DOC_WORK_UNIT_HANDLER,
+                docWorkUnitHandler,
                 clazz.getAnnotation(DocumentedFeature.class),
                 classDoc,
                 clazz
         );
     }
 
-    protected DocWorkUnit createDocWorkUnit(final Class<?> clazz) {
-        return createDocWorkUnit(clazz, emptyClassDoc());
+    public static DocWorkUnit createDocWorkUnit(final DocWorkUnitHandler docWorkUnitHandler, final Class<?> clazz) {
+        return createDocWorkUnit(docWorkUnitHandler, clazz, emptyClassDoc());
     }
 }
