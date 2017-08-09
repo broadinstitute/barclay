@@ -380,11 +380,14 @@ public class HelpDoclet {
             // We need to set up a scheme to load our settings from wherever they may live.
             // This means we need to set up a multi-loader including the classpath and any specified options:
 
-            TemplateLoader templateLoader =  new FileTemplateLoader(new File(settingsDir.getPath()));
+            TemplateLoader templateLoader;
 
             // Only add the settings directory if we're supposed to:
             if ( useDefaultTemplates ) {
                 templateLoader = new ClassTemplateLoader(getClass(), DEFAULT_SETTINGS_CLASSPATH);
+            }
+            else {
+                templateLoader = new FileTemplateLoader(new File(settingsDir.getPath()));
             }
 
             // Tell freemarker to load our templates as we specified above:
