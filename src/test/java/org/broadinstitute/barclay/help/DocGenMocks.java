@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * @author Daniel Gomez-Sanchez (magicDGS)
  */
-public class DocGenMocking {
+public class DocGenMocks {
 
     /**
      * Generates an empty ClassDoc (mocked).
@@ -26,7 +26,6 @@ public class DocGenMocking {
     public static ClassDoc mockClassDoc(final String javadocText) {
         return mockClassDoc(javadocText, Collections.emptyMap());
     }
-
 
     /**
      * @param inlineTags map of (custom) tag names in javadoc to its text.
@@ -48,7 +47,6 @@ public class DocGenMocking {
         Mockito.when(mockedClassDoc.inlineTags()).thenReturn(inline);
         return mockedClassDoc;
     }
-
 
     private static Tag mockTag(final String name, final String text) {
         final Tag tag = Mockito.mock(Tag.class);

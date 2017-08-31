@@ -26,12 +26,16 @@ import java.util.*;
  * </p>
  */
 @CommandLineProgramProperties(
-        summary = "Test tool summary",
-        oneLineSummary = "Argument container class for testing documentation generation.",
+        summary = TestArgumentContainer.SUMMARY,
+        oneLineSummary = TestArgumentContainer.ONE_LINE_SUMMARY,
         programGroup = TestProgramGroup.class)
 @BetaFeature
-@DocumentedFeature(groupName = "Test feature group name", extraDocs = TestExtraDocs.class)
+@DocumentedFeature(groupName = TestArgumentContainer.GROUP_NAME, extraDocs = TestExtraDocs.class)
 public class TestArgumentContainer implements CommandLinePluginProvider {
+
+    public static final String SUMMARY = "Test tool summary";
+    public static final String ONE_LINE_SUMMARY = "Argument container class for testing documentation generation.";
+    public static final String GROUP_NAME = "Test feature group name";
 
     /**
      * Positional arguments

@@ -6,8 +6,10 @@ import org.broadinstitute.barclay.help.DocumentedFeature;
 /**
  * Class for testing extraDocs property in docgen.
  */
-@DocumentedFeature(groupName = "Test extra docs group name")
+@DocumentedFeature(groupName = TestExtraDocs.GROUP_NAME)
 public class TestExtraDocs {
+
+    public static final String GROUP_NAME = "Test extra docs group name";
 
     @Argument(fullName = "extraDocsArgument",
             shortName = "extDocArg",
