@@ -468,10 +468,10 @@ public final class CommandLineArgumentParser implements CommandLineParser {
                     @SuppressWarnings("rawtypes")
                     final Collection c = (Collection) argumentDefinition.getFieldValue();
                     if (c.isEmpty() && mutextArgumentNames.length() == 0) {
-                       throw new CommandLineException.MissingArgument(fullName, getOneOfMutexRequiredErrorMessage(argumentDefinition));
+                       throw new CommandLineException.MissingArgument(fullName, getArgRequiredErrorMessage(argumentDefinition));
                     }
                 } else if (!argumentDefinition.optional && !argumentDefinition.hasBeenSet && mutextArgumentNames.length() == 0) {
-                    throw new CommandLineException.MissingArgument(fullName, getOneOfMutexRequiredErrorMessage(argumentDefinition));
+                    throw new CommandLineException.MissingArgument(fullName, getArgRequiredErrorMessage(argumentDefinition));
                 }
             }
             if (positionalArguments != null) {
@@ -489,11 +489,11 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     }
 
     // Error message for when mutex args are mutually required (meaning one of them must be specified) but none was
-    private String getOneOfMutexRequiredErrorMessage(ArgumentDefinition argumentDefinition) {
+    private String getArgRequiredErrorMessage(ArgumentDefinition argumentDefinition) {
         return "Argument '" + argumentDefinition.getLongName() + "' is required" +
                 (argumentDefinition.mutuallyExclusive.isEmpty() ?
                         "." :
-                        " unless any of " + argumentDefinition.mutuallyExclusive) + " are specified.";
+                        " unless any of " + argumentDefinition.mutuallyExclusive + " are specified.");
     }
 
     // Once all command line args have been processed, go through the argument definitions and
