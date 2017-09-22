@@ -196,6 +196,23 @@ public class CollectionArgumentUnitTests {
         Assert.assertEquals(o.LIST, makeList(expectedList));
     }
 
+    @Test
+    public void testDoNotExpandCollectionListFile() {
+        final CollectionForListFileArguments o = new CollectionForListFileArguments();
+        final CommandLineParser clp = new CommandLineArgumentParser(
+                o,
+                Collections.emptyList(),
+                Collections.singleton(CommandLineParserOptions.DO_NOT_EXPAND_COLLECTION_LIST_FILE)
+        );
+
+        final String noListFile = "no_arg_list_file" + CommandLineArgumentParser.COLLECTION_LIST_FILE_EXTENSION;
+
+        final String[] args =  {"--LIST", noListFile};
+        Assert.assertTrue(clp.parseArguments(System.err, args));
+
+        Assert.assertEquals(o.LIST, makeList(noListFile));
+    }
+
     @DataProvider(name="mixedListFileArguments")
     public Object[][] mixedListFileArguments() {
         final String[] inputArgList1 = { "shmiggle0", "shmiggle1", "shmiggle2" };

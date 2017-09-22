@@ -17,5 +17,15 @@ public enum CommandLineParserOptions  {
      * initial values of the collection, and allows the special value "null" to be used first to clear the initial
      * values.
      */
-    APPEND_TO_COLLECTIONS    // default behavior is "replace"
+    APPEND_TO_COLLECTIONS,    // default behavior is "replace"
+
+    /**
+     * The default behavior for the parser is to load options for argument collections from a file
+     * if it ends with {@link CommandLineArgumentParser#COLLECTION_LIST_FILE_EXTENSION}.
+     *
+     * Specifying "DO_NOT_EXPAND_COLLECTION_LIST_FILE" changes the behavior so that any collection arguments are
+     * treated as values independently of the format.
+     */
+    DO_NOT_EXPAND_COLLECTION_LIST_FILE // default behavior is "expand"
+
 }

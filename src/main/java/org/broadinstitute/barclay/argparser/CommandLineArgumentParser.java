@@ -717,7 +717,8 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     private List<String> expandListFile(final List<String> originalValues) {
         List<String> expandedValues = new ArrayList<>(originalValues.size());
         for (String stringValue: originalValues) {
-            if (stringValue.endsWith(COLLECTION_LIST_FILE_EXTENSION)) {
+            if (!parserOptions.contains(CommandLineParserOptions.DO_NOT_EXPAND_COLLECTION_LIST_FILE)
+                    && stringValue.endsWith(COLLECTION_LIST_FILE_EXTENSION)) {
                 expandedValues.addAll(loadCollectionListFile(stringValue));
             }
             else {
