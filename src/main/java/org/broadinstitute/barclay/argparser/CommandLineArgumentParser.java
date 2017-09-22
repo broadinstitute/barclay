@@ -62,8 +62,10 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     public static final String COMMENT = "#";
     public static final String POSITIONAL_ARGUMENTS_NAME = "Positional Argument";
 
-    // Extension for collection argument list files
-    private static final String COLLECTION_LIST_FILE_EXTENSION = ".list";
+    /**
+     * Extension for collection argument list files.
+     */
+    public static final String COLLECTION_LIST_FILE_EXTENSION = ".args";
 
     private static final Logger logger = LogManager.getLogger();
 
