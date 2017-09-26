@@ -243,7 +243,7 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
      */
     protected void addCustomBindings(final DocWorkUnit currentWorkUnit) {
         final String tagFilterPrefix = getTagPrefix();
-        Arrays.stream(currentWorkUnit.getClassDoc().inlineTags())
+        Arrays.stream(currentWorkUnit.getClassDoc().tags())
                 .filter(t -> t.name().startsWith(tagFilterPrefix))
                 .forEach(t -> currentWorkUnit.setProperty(t.name().substring(tagFilterPrefix.length()), t.text()));
     }
@@ -329,7 +329,8 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
         }
     }
 
-    private String getTagPrefix() {
+    /** Gets the tag prefix as formatted in the javadoc; {@code null} if there is no user-defined prefix. */
+    public final  String getTagPrefix() {
         String customPrefix = getTagFilterPrefix();
         return customPrefix == null ?
                 customPrefix : "@" + customPrefix + ".";
