@@ -1,9 +1,9 @@
-package org.broadinstitute.barclay.argparser;
+package org.broadinstitute.barclay.argparser.parseropt;
 
 /**
- * Options used to control command line parser behavior.
+ * Options to switch behaviour from the default parser.
  */
-public enum CommandLineParserOptions  {
+public enum SwitchCommandLineParserOptions implements CommandLineParserOption {
 
     /**
      * The default behavior for the parser is to:
@@ -18,14 +18,4 @@ public enum CommandLineParserOptions  {
      * values.
      */
     APPEND_TO_COLLECTIONS,    // default behavior is "replace"
-
-    /**
-     * The default behavior for the parser is to load options for argument collections from a file
-     * if it ends with {@link CommandLineArgumentParser#COLLECTION_LIST_FILE_EXTENSION}.
-     *
-     * Specifying "DO_NOT_EXPAND_COLLECTION_LIST_FILE" changes the behavior so that any collection arguments are
-     * treated as values independently of the format.
-     */
-    DO_NOT_EXPAND_COLLECTION_LIST_FILE // default behavior is "expand"
-
 }

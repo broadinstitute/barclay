@@ -1,5 +1,8 @@
 package org.broadinstitute.barclay.argparser;
 
+import org.broadinstitute.barclay.argparser.parseropt.CommandLineParserOption;
+import org.broadinstitute.barclay.argparser.parseropt.ExpandCollectionExtensionOption;
+import org.broadinstitute.barclay.argparser.parseropt.SwitchCommandLineParserOptions;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -8,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Tests for arguments that are collections (not to be confused with ArgumentCollection).
@@ -46,7 +50,7 @@ public class CollectionArgumentUnitTests {
                 },
                 {
                         inputArgs,
-                        Collections.singleton(CommandLineParserOptions.APPEND_TO_COLLECTIONS), // append mode
+                        Collections.singleton(SwitchCommandLineParserOptions.APPEND_TO_COLLECTIONS), // append mode
                         makeList("L1", "L2"),
                         makeList("S1"),
                         makeList("HS1"),
@@ -58,7 +62,7 @@ public class CollectionArgumentUnitTests {
     @Test(dataProvider="uninitializedCollections")
     public void testUninitializedCollections(
             final String[] args,
-            final Set<CommandLineParserOptions> parserOptions,
+            final Set<CommandLineParserOption> parserOptions,
             final List<String> expectedList,
             final List<String> expectedArrayList,
             final List<String> expectedHashSet,
@@ -87,7 +91,7 @@ public class CollectionArgumentUnitTests {
         return new Object[][]{
                 {
                     inputArgs,
-                    Collections.singleton(CommandLineParserOptions.APPEND_TO_COLLECTIONS),
+                    Collections.singleton(SwitchCommandLineParserOptions.APPEND_TO_COLLECTIONS),
                     makeList("foo", "bar", "baz", "frob")       // original values retained
                 },
                 {
@@ -97,7 +101,7 @@ public class CollectionArgumentUnitTests {
                 },
                 {
                     inputArgsWithNullAtStart,
-                    Collections.singleton(CommandLineParserOptions.APPEND_TO_COLLECTIONS),
+                    Collections.singleton(SwitchCommandLineParserOptions.APPEND_TO_COLLECTIONS),
                     makeList("baz", "frob")                     // original values replaced
                 },
                 {
@@ -107,7 +111,7 @@ public class CollectionArgumentUnitTests {
                 },
                 {
                     inputArgsWithNullMidStream,
-                    Collections.singleton(CommandLineParserOptions.APPEND_TO_COLLECTIONS),
+                    Collections.singleton(SwitchCommandLineParserOptions.APPEND_TO_COLLECTIONS),
                     makeList("frob")                            // reset mid-stream via midstream null
                 },
                 {
@@ -117,7 +121,7 @@ public class CollectionArgumentUnitTests {
                 },
                 {
                     new String[]{},
-                    Collections.singleton(CommandLineParserOptions.APPEND_TO_COLLECTIONS),
+                    Collections.singleton(SwitchCommandLineParserOptions.APPEND_TO_COLLECTIONS),
                     makeList("foo", "bar")
                 },
                 {
@@ -131,7 +135,7 @@ public class CollectionArgumentUnitTests {
     @Test(dataProvider="initializedCollections")
     public void testInitializedCollections(
             final String[] args,
-            final Set<CommandLineParserOptions> parserOptions,
+            final Set<CommandLineParserOption> parserOptions,
             final List<String> expectedResult) {
         final InitializedCollections o = new InitializedCollections();
         final CommandLineParser clp = new CommandLineArgumentParser(
@@ -157,16 +161,21 @@ public class CollectionArgumentUnitTests {
     @DataProvider(name="listFileArguments")
     public Object[][] listFileArguments() {
         final String[] inputArgs = new String[] { "shmiggle0", "shmiggle1", "shmiggle2" };
+
+        final CommandLineParserOption defaultExpandCollection = new ExpandCollectionExtensionOption();
+
         return new Object[][] {
                 {
                         // replace mode
-                        Collections.EMPTY_SET,                                                  // parser options
-                        inputArgs,                                                              // args
-                        new String[] {"shmiggle0", "shmiggle1", "shmiggle2"},                   // expected result
+                        Collections.singleton(defaultExpandCollection),                          // parser options
+                        inputArgs,                                                               // args
+                        new String[] {"shmiggle0", "shmiggle1", "shmiggle2"},                    // expected result
                 },
                 {
                         // append mode
-                        Collections.singleton(CommandLineParserOptions.APPEND_TO_COLLECTIONS),  // parser options
+                        new HashSet<>(Arrays.asList(
+                                defaultExpandCollection,
+                                SwitchCommandLineParserOptions.APPEND_TO_COLLECTIONS)),         // parser options
                         inputArgs,                                                              // args
                         new String[] {"foo", "bar", "shmiggle0", "shmiggle1", "shmiggle2"},     // expected result
                 },
@@ -176,7 +185,7 @@ public class CollectionArgumentUnitTests {
     // Test that .list files populate collections with file contents, both mpdes
     @Test(dataProvider="listFileArguments")
     public void testCollectionFromListFile(
-            final Set<CommandLineParserOptions> parserOptions,
+            final Set<CommandLineParserOption> parserOptions,
             final String [] argList,
             final String[] expectedList) throws IOException
     {
@@ -202,10 +211,10 @@ public class CollectionArgumentUnitTests {
         final CommandLineParser clp = new CommandLineArgumentParser(
                 o,
                 Collections.emptyList(),
-                Collections.singleton(CommandLineParserOptions.DO_NOT_EXPAND_COLLECTION_LIST_FILE)
+                Collections.emptySet()
         );
 
-        final String noListFile = "no_arg_list_file" + CommandLineArgumentParser.COLLECTION_LIST_FILE_EXTENSION;
+        final String noListFile = "no_arg_list_file" + ExpandCollectionExtensionOption.DEFAULT_COLLECTION_LIST_FILE_EXTENSION;
 
         final String[] args =  {"--LIST", noListFile};
         Assert.assertTrue(clp.parseArguments(System.err, args));
@@ -217,10 +226,13 @@ public class CollectionArgumentUnitTests {
     public Object[][] mixedListFileArguments() {
         final String[] inputArgList1 = { "shmiggle0", "shmiggle1", "shmiggle2" };
         final String[] inputArgList2 = { "test2_shmiggle0", "test2_shmiggle1", "test2_shmiggle2" };
+
+        final CommandLineParserOption defaultExpandCollection = new ExpandCollectionExtensionOption();
+
         return new Object[][] {
                 {
                         // replace mode
-                        Collections.EMPTY_SET,                                  // parser options
+                        Collections.singleton(defaultExpandCollection),         // parser options
                         inputArgList1,                                          // args list 1
                         inputArgList2,                                          // args list 2
                         new String[] {"shmiggle0", "shmiggle1", "shmiggle2"},   // expected result list 1
@@ -234,7 +246,9 @@ public class CollectionArgumentUnitTests {
                 },
                 {
                         // append mode
-                        Collections.singleton(CommandLineParserOptions.APPEND_TO_COLLECTIONS),  // parser options
+                        new HashSet<>(Arrays.asList(
+                                defaultExpandCollection,
+                                SwitchCommandLineParserOptions.APPEND_TO_COLLECTIONS)),         // parser options
                         inputArgList1,                                                          // args list 1
                         inputArgList2,                                                          // args list 2
                         new String[] {"foo", "bar", "shmiggle0", "shmiggle1", "shmiggle2"},     // expected result list 1
@@ -253,7 +267,7 @@ public class CollectionArgumentUnitTests {
     // Test that .list files intermixed with explicit command line values populate collections correctly, both mpdes
     @Test(dataProvider="mixedListFileArguments")
     public void testCollectionFromListFileMixed(
-            final Set<CommandLineParserOptions> parserOptions,
+            final Set<CommandLineParserOption> parserOptions,
             final String [] argList1,
             final String [] argList2,
             final String[] expectedList1,

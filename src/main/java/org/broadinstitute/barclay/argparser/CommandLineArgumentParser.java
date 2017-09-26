@@ -11,6 +11,9 @@ import org.apache.commons.lang3.text.WordUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.broadinstitute.barclay.argparser.parseropt.CommandLineParserOption;
+import org.broadinstitute.barclay.argparser.parseropt.ExpandCollectionExtensionOption;
+import org.broadinstitute.barclay.argparser.parseropt.SwitchCommandLineParserOptions;
 import org.broadinstitute.barclay.utils.Utils;
 
 import java.io.BufferedReader;
@@ -63,9 +66,9 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     public static final String POSITIONAL_ARGUMENTS_NAME = "Positional Argument";
 
     /**
-     * Extension for collection argument list files.
+     * Default options for the parser.
      */
-    public static final String COLLECTION_LIST_FILE_EXTENSION = ".args";
+    public static final Set<CommandLineParserOption> DEFAULT_PARSER_OPTIONS = Collections.singleton(new ExpandCollectionExtensionOption());
 
     private static final Logger logger = LogManager.getLogger();
 
@@ -117,7 +120,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     // and into which the values will be assigned.
     private final Object callerArguments;
 
-    private final Set<CommandLineParserOptions> parserOptions;
+    private final Set<CommandLineParserOption> parserOptions;
 
     // null if no @PositionalArguments annotation
     private Field positionalArguments;
@@ -148,6 +151,8 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     }
 
     /**
+     * <p>Note: uses {@link #DEFAULT_PARSER_OPTIONS}.
+     *
      * @param callerArguments The object containing the command line arguments to be populated by
      *                        this command line parser.
      */
@@ -155,7 +160,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         this(
                 callerArguments,
                 Collections.<CommandLinePluginDescriptor<?>>emptyList(),
-                Collections.<CommandLineParserOptions>emptySet()
+                DEFAULT_PARSER_OPTIONS
         );
     }
 
@@ -170,7 +175,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     public CommandLineArgumentParser(
             final Object callerArguments,
             final List<? extends CommandLinePluginDescriptor<?>> pluginDescriptors,
-            final Set<CommandLineParserOptions> parserOptions) {
+            final Set<CommandLineParserOption> parserOptions) {
         Utils.nonNull(callerArguments, "The object with command line arguments cannot be null");
         Utils.nonNull(pluginDescriptors, "The list of pluginDescriptors cannot be null");
         Utils.nonNull(parserOptions, "The set of parser options cannot be null");
@@ -620,7 +625,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
             throw new CommandLineException("Argument '" + argumentDefinition.getNames() + "' cannot be specified more than once.");
         }
         if (argumentDefinition.isCollection) {
-            if (!parserOptions.contains(CommandLineParserOptions.APPEND_TO_COLLECTIONS)) {
+            if (!parserOptions.contains(SwitchCommandLineParserOptions.APPEND_TO_COLLECTIONS)) {
                 // if this is a collection then we only want to clear it once at the beginning, before we process
                 // any of the values, unless we're in APPEND_TO_COLLECTIONS mode, in which case we leave the initial
                 // and append to it
@@ -716,9 +721,16 @@ public final class CommandLineArgumentParser implements CommandLineParser {
      */
     private List<String> expandListFile(final List<String> originalValues) {
         List<String> expandedValues = new ArrayList<>(originalValues.size());
+
+        // TODO - assume that there is only one ExpandCollectionExtensionOption?
+        final ExpandCollectionExtensionOption expandOption = new ExpandCollectionExtensionOption(
+                parserOptions.stream()
+                        .filter(s -> s instanceof ExpandCollectionExtensionOption)
+                        .flatMap(s -> ((ExpandCollectionExtensionOption) s).getExtensions().stream())
+                        .collect(Collectors.toSet()));
+
         for (String stringValue: originalValues) {
-            if (!parserOptions.contains(CommandLineParserOptions.DO_NOT_EXPAND_COLLECTION_LIST_FILE)
-                    && stringValue.endsWith(COLLECTION_LIST_FILE_EXTENSION)) {
+            if (expandOption.getExtensions().stream().anyMatch(stringValue::endsWith)) {
                 expandedValues.addAll(loadCollectionListFile(stringValue));
             }
             else {
