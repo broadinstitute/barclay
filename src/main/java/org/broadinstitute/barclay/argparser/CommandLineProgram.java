@@ -58,7 +58,7 @@ public interface CommandLineProgram {
      *     <li>Return the result of the tool.</li>
      * </ul>
      *
-     * <p>Note: Most exceptions should be cached by the caller.
+     * <p>Note: Most exceptions should be caught by the caller.
      *
      * @param argv arguments to pass to the {@link CommandLineParser}.
      *
