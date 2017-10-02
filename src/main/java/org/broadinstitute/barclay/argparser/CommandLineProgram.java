@@ -20,7 +20,7 @@ package org.broadinstitute.barclay.argparser;
  *     </li>
  *     <li>
  *         Mark the class with {@link CommandLineProgramProperties} to include information for the
- *         tool. Users may consider to annotate with {@link BetaFeature} tools tat are in experimental
+ *         tool. Users may consider to annotate with {@link BetaFeature} tools that are in experimental
  *         phase.
  *     </li>
  *     <li>
