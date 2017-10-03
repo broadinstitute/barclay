@@ -191,18 +191,19 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
         // Ex: We may want to document an input or output file format by adding @DocumentedFeature
         // to the format's reader/writer class (i.e. TableReader), and then reference that feature
         // in the extraDocs attribute in a CommandLineProgram that reads/writes that format.
-        if (workUnit.getCommandLineProperties() != null) {
-            try {
-                final Object argumentContainer = workUnit.getClazz().newInstance();
-                if (argumentContainer instanceof CommandLinePluginProvider ) {
-                    pluginDescriptors = ((CommandLinePluginProvider) argumentContainer).getPluginDescriptors();
-                    clp = new CommandLineArgumentParser(
-                            argumentContainer, pluginDescriptors, Collections.emptySet()
-                    );
-                } else {
-                    clp = new CommandLineArgumentParser(argumentContainer);
-                }
-            } catch (IllegalAccessException | InstantiationException e) {
+        try {
+            final Object argumentContainer = workUnit.getClazz().newInstance();
+            if (argumentContainer instanceof CommandLinePluginProvider) {
+                pluginDescriptors = ((CommandLinePluginProvider) argumentContainer).getPluginDescriptors();
+                clp = new CommandLineArgumentParser(
+                        argumentContainer, pluginDescriptors, Collections.emptySet()
+                );
+            } else {
+                clp = new CommandLineArgumentParser(argumentContainer);
+            }
+        } catch (IllegalAccessException | InstantiationException e) {
+            // only throw if the command line properties is set - CLP always require a non-arg constructor
+            if (workUnit.getCommandLineProperties() != null) {
                 throw new RuntimeException(e);
             }
         }
