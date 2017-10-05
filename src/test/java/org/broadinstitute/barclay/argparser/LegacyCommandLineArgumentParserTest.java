@@ -564,16 +564,35 @@ public class LegacyCommandLineArgumentParserTest {
         Assert.assertEquals(o.COLLECTION.size(), 2);
     }
 
-    class UninitializedCollectionThatCannotBeAutoInitializedOptions {
-        @Argument
-        public Set<String> SET;
+    class CollectionThatCannotBeAutoInitializedOptions {
+        @Argument(optional=false)
+        public Set<File> SET;
     }
 
     @Test(expectedExceptions = CommandLineException.CommandLineParserInternalException.class)
     public void testCollectionThatCannotBeAutoInitialized() {
-        final UninitializedCollectionThatCannotBeAutoInitializedOptions o = new UninitializedCollectionThatCannotBeAutoInitializedOptions();
+        // the legacy command line parser will instantiate a collection object for a collection argument
+        // if its type is instantiable, or if its type is compatible with List, but not for any other type of
+        // collection (such as a Set)
+        final CollectionThatCannotBeAutoInitializedOptions o = new CollectionThatCannotBeAutoInitializedOptions();
         new LegacyCommandLineArgumentParser(o);
         Assert.fail("Exception should have been thrown");
+    }
+
+    class CollectionThatCanBeAutoInitializedOptions {
+        // the legacy command line parser will instantiate a collection object for a collection argument
+        // if its type is instantiable, or if its type is compatible with List, but not for any other type of
+        // collection (such as a Set)
+        @Argument(optional=false)
+        public List<File> list;
+    }
+
+    @Test
+    public void testListThatCanBeAutoInitialized() {
+        // Although the list will be auto-initialized, the argument is required but not provided, so parseArgs will fail
+        final CollectionThatCanBeAutoInitializedOptions o = new CollectionThatCanBeAutoInitializedOptions();
+        final LegacyCommandLineArgumentParser clp = new LegacyCommandLineArgumentParser(o);
+        Assert.assertNotEquals(clp.parseArguments(System.err, new String[]{}), 0, "Should fail due to missing Argument");
     }
 
     class CollectionWithDefaultValuesOptions {

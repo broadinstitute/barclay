@@ -423,13 +423,16 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
                 }
                 if (optionDefinition.isCollection) {
                     final Collection<?> c = (Collection<?>) optionDefinition.field.get(optionDefinition.parent);
+                    if (c.size() == 0 && !optionDefinition.optional) {
+                        messageStream.print("ERROR: Option '" + fullName + "' is required");
+                        return false;
+                    }
                     if (c.size() < optionDefinition.minElements) {
                         messageStream.println("ERROR: Option '" + fullName + "' must be specified at least " +
                                 optionDefinition.minElements + " times.");
                         return false;
                     }
-                } else if (!optionDefinition.optional && !optionDefinition.hasBeenSet &&
-                        !optionDefinition.hasBeenSetFromParent && mutextOptionNames.length() == 0) {
+                } else if (!optionDefinition.optional && !optionDefinition.hasBeenSet && mutextOptionNames.length() == 0) {
                     messageStream.print("ERROR: Option '" + fullName + "' is required");
                     if (optionDefinition.mutuallyExclusive.isEmpty()) {
                         messageStream.println(".");
@@ -968,7 +971,6 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
         final boolean isCommon;
         boolean hasBeenSet = false;
         boolean hasBeenSetFromOptionsFile = false;
-        boolean hasBeenSetFromParent = false;
         final Set<String> mutuallyExclusive;
 
         private OptionDefinition(final Field field, final Object parent,final String name, final String shortName, final String doc,
