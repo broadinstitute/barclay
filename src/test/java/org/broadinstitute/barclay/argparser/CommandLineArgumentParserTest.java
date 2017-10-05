@@ -239,7 +239,7 @@ public final class CommandLineArgumentParserTest {
         // Although the list will be auto-initialized, the argument is required but not provided, so parseArgs will fail
         final CollectionThatCanBeAutoInitializedOptions o = new CollectionThatCanBeAutoInitializedOptions();
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
-        Assert.assertNotEquals(clp.parseArguments(System.err, new String[]{}), 0, "Should fail due to missing Argument");
+        Assert.assertEquals(clp.parseArguments(System.err, new String[]{}), false, "Should fail due to missing Argument");
     }
 
     @Test
