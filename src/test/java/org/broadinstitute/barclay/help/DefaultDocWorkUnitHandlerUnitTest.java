@@ -46,7 +46,7 @@ public class DefaultDocWorkUnitHandlerUnitTest {
     public static Object[][] workUnitGroupSummary() {
         return new Object[][] {
                 {TestArgumentContainer.class, TestProgramGroup.DESCRIPTION},
-                {TestExtraDocs.class, Collections.EMPTY_MAP, ""},
+                {TestExtraDocs.class, ""},
         };
     }
 
@@ -66,21 +66,25 @@ public class DefaultDocWorkUnitHandlerUnitTest {
 
     @Test(dataProvider = "workUnitGroupName")
     public void testGetGroupNameForWorkUnit(final Class<?> docWorkUnitClazz, final String expectedGroupName) {
-        final DocWorkUnit mockWorkUnit = DocGenMocks.createDocWorkUnit(
-                getDefaultWorkUnitHandlerInstance(), docWorkUnitClazz);
+        final DocWorkUnit mockWorkUnit = createMockWorkUnit(docWorkUnitClazz, "", Collections.emptyMap());
         Assert.assertEquals(getDefaultWorkUnitHandlerInstance().getGroupNameForWorkUnit(mockWorkUnit), expectedGroupName);
     }
 
     @Test(dataProvider = "workUnitGroupSummary")
     public void testGetGroupSummaryForWorkUnit(final Class<?> docWorkUnitClazz, final String expectedGroupSummary) {
-        final DocWorkUnit mockWorkUnit = DocGenMocks.createDocWorkUnit(
-                getDefaultWorkUnitHandlerInstance(), docWorkUnitClazz);
+        final DocWorkUnit mockWorkUnit = createMockWorkUnit(docWorkUnitClazz, "", Collections.emptyMap());
         Assert.assertEquals(getDefaultWorkUnitHandlerInstance().getGroupSummaryForWorkUnit(mockWorkUnit), expectedGroupSummary);
     }
 
     private static DocWorkUnit createMockWorkUnit(final Class<?> docWorkUnitClazz, final String javadocText, final Map<String, String> inlineTags) {
         final ClassDoc mockClassDoc = DocGenMocks.mockClassDoc(javadocText, inlineTags);
-        return DocGenMocks.createDocWorkUnit(getDefaultWorkUnitHandlerInstance(), docWorkUnitClazz, mockClassDoc);
+        return new DocWorkUnit(
+                getDefaultWorkUnitHandlerInstance(),
+                docWorkUnitClazz.getAnnotation(DocumentedFeature.class),
+                mockClassDoc,
+                docWorkUnitClazz
+        );
+
     }
 
     private static DefaultDocWorkUnitHandler getDefaultWorkUnitHandlerInstance() {

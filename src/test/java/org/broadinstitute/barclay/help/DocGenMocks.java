@@ -14,20 +14,6 @@ import java.util.Map;
 public class DocGenMocks {
 
     /**
-     * Generates an empty ClassDoc (mocked).
-     */
-    public static ClassDoc emptyClassDoc() {
-        return mockClassDoc("");
-    }
-
-    /**
-     * Generates an ClassDoc with the javadoc text
-     */
-    public static ClassDoc mockClassDoc(final String javadocText) {
-        return mockClassDoc(javadocText, Collections.emptyMap());
-    }
-
-    /**
      * @param inlineTags map of (custom) tag names in javadoc to its text.
      *
      * @return mocked class doc.
@@ -53,19 +39,5 @@ public class DocGenMocks {
         Mockito.when(tag.name()).thenReturn(name);
         Mockito.when(tag.text()).thenReturn(text);
         return tag;
-    }
-
-    public static DocWorkUnit createDocWorkUnit(final DocWorkUnitHandler docWorkUnitHandler,
-            final Class<?> clazz, final ClassDoc classDoc) {
-        return new DocWorkUnit(
-                docWorkUnitHandler,
-                clazz.getAnnotation(DocumentedFeature.class),
-                classDoc,
-                clazz
-        );
-    }
-
-    public static DocWorkUnit createDocWorkUnit(final DocWorkUnitHandler docWorkUnitHandler, final Class<?> clazz) {
-        return createDocWorkUnit(docWorkUnitHandler, clazz, emptyClassDoc());
     }
 }
