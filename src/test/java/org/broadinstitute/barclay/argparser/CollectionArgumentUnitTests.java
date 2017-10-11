@@ -277,6 +277,17 @@ public class CollectionArgumentUnitTests {
         new CommandLineArgumentParser(o);
     }
 
+    class ImmutableCollectionArguments {
+        @Argument
+        public List<String> LIST = Collections.emptyList();
+    }
+
+    @Test(expectedExceptions = CommandLineException.CommandLineParserInternalException.class)
+    public void testCollectionThatIsImmmutable() {
+        final ImmutableCollectionArguments o = new ImmutableCollectionArguments();
+        new CommandLineArgumentParser(o).parseArguments(System.err, new String[]{"--LIST", "A"});
+    }
+
     //////////////////////////////////////////////////////////////////
     // Helper methods
 

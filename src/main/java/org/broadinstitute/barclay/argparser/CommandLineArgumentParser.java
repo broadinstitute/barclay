@@ -684,11 +684,17 @@ public final class CommandLineArgumentParser implements CommandLineParser {
             if (argumentDefinition.isCollection) {
                 @SuppressWarnings("rawtypes")
                 final Collection c = (Collection) argumentDefinition.getFieldValue();
-                if (value == null) {
-                    //user specified this arg=null which is interpreted as empty list
-                    c.clear();
-                } else {
-                    c.add(value);
+                try {
+                    if (value == null) {
+                        //user specified this arg=null which is interpreted as empty list
+                        c.clear();
+                    } else {
+                        c.add(value);
+                    }
+                } catch (UnsupportedOperationException e) {
+                    throw new CommandLineException.CommandLineParserInternalException(String.format("Collection arguments seems immutable: \"%s\". Initialized collection should support the clear and add methods, but %s does not.",
+                            argumentDefinition.getLongName(),
+                            c.getClass().getName()));
                 }
                 argumentDefinition.hasBeenSet = true;
             } else {
