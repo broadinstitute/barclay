@@ -53,33 +53,37 @@ public class DefaultDocWorkUnitHandlerUnitTest {
     @Test(dataProvider = "workUnitDescriptions")
     public void testGetDescription(final Class<?> docWorkUnitClazz, final String javadocText, final Map<String, String> inlineTags,
             final String expectedDescription) {
-        final DocWorkUnit mockWorkUnit = createMockWorkUnit(docWorkUnitClazz, javadocText, inlineTags);
-        Assert.assertEquals(getDefaultWorkUnitHandlerInstance().getDescription(mockWorkUnit), expectedDescription);
+        final DefaultDocWorkUnitHandler handler = getDefaultWorkUnitHandlerInstance();
+        final DocWorkUnit mockWorkUnit = createMockWorkUnit(handler, docWorkUnitClazz, javadocText, inlineTags);
+        Assert.assertEquals(handler.getDescription(mockWorkUnit), expectedDescription);
     }
 
     @Test(dataProvider = "workUnitSummary")
     public void testGetSummaryForWorkUnit(final Class<?> docWorkUnitClazz, final String javadocText, final Map<String, String> inlineTags,
             final String expectedSummary) {
-        final DocWorkUnit mockWorkUnit = createMockWorkUnit(docWorkUnitClazz, javadocText, inlineTags);
-        Assert.assertEquals(getDefaultWorkUnitHandlerInstance().getSummaryForWorkUnit(mockWorkUnit), expectedSummary);
+        final DefaultDocWorkUnitHandler handler = getDefaultWorkUnitHandlerInstance();
+        final DocWorkUnit mockWorkUnit = createMockWorkUnit(handler, docWorkUnitClazz, javadocText, inlineTags);
+        Assert.assertEquals(handler.getSummaryForWorkUnit(mockWorkUnit), expectedSummary);
     }
 
     @Test(dataProvider = "workUnitGroupName")
     public void testGetGroupNameForWorkUnit(final Class<?> docWorkUnitClazz, final String expectedGroupName) {
-        final DocWorkUnit mockWorkUnit = createMockWorkUnit(docWorkUnitClazz, "", Collections.emptyMap());
-        Assert.assertEquals(getDefaultWorkUnitHandlerInstance().getGroupNameForWorkUnit(mockWorkUnit), expectedGroupName);
+        final DefaultDocWorkUnitHandler handler = getDefaultWorkUnitHandlerInstance();
+        final DocWorkUnit mockWorkUnit = createMockWorkUnit(handler, docWorkUnitClazz, "", Collections.emptyMap());
+        Assert.assertEquals(handler.getGroupNameForWorkUnit(mockWorkUnit), expectedGroupName);
     }
 
     @Test(dataProvider = "workUnitGroupSummary")
     public void testGetGroupSummaryForWorkUnit(final Class<?> docWorkUnitClazz, final String expectedGroupSummary) {
-        final DocWorkUnit mockWorkUnit = createMockWorkUnit(docWorkUnitClazz, "", Collections.emptyMap());
-        Assert.assertEquals(getDefaultWorkUnitHandlerInstance().getGroupSummaryForWorkUnit(mockWorkUnit), expectedGroupSummary);
+        final DefaultDocWorkUnitHandler handler = getDefaultWorkUnitHandlerInstance();
+        final DocWorkUnit mockWorkUnit = createMockWorkUnit(handler, docWorkUnitClazz, "", Collections.emptyMap());
+        Assert.assertEquals(handler.getGroupSummaryForWorkUnit(mockWorkUnit), expectedGroupSummary);
     }
 
-    private static DocWorkUnit createMockWorkUnit(final Class<?> docWorkUnitClazz, final String javadocText, final Map<String, String> inlineTags) {
+    private static DocWorkUnit createMockWorkUnit(final DefaultDocWorkUnitHandler handler, final Class<?> docWorkUnitClazz, final String javadocText, final Map<String, String> inlineTags) {
         final ClassDoc mockClassDoc = DocGenMocks.mockClassDoc(javadocText, inlineTags);
         return new DocWorkUnit(
-                getDefaultWorkUnitHandlerInstance(),
+                handler,
                 docWorkUnitClazz.getAnnotation(DocumentedFeature.class),
                 mockClassDoc,
                 docWorkUnitClazz
