@@ -62,9 +62,6 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     public static final String COMMENT = "#";
     public static final String POSITIONAL_ARGUMENTS_NAME = "Positional Argument";
 
-    // Extension for collection argument list files
-    private static final String COLLECTION_LIST_FILE_EXTENSION = ".list";
-
     private static final Logger logger = LogManager.getLogger();
 
     // Map from (full class) name of each CommandLinePluginDescriptor requested and
@@ -115,7 +112,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     // and into which the values will be assigned.
     private final Object callerArguments;
 
-    private final Set<CommandLineParserOptions> parserOptions;
+    private final CommandLineParserConfig config;
 
     // null if no @PositionalArguments annotation
     private Field positionalArguments;
@@ -153,7 +150,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         this(
                 callerArguments,
                 Collections.<CommandLinePluginDescriptor<?>>emptyList(),
-                Collections.<CommandLineParserOptions>emptySet()
+                new CommandLineParserConfig() {}
         );
     }
 
@@ -164,17 +161,18 @@ public final class CommandLineArgumentParser implements CommandLineParser {
      *                          should be used by this command line parser to extend the list of
      *                          command line arguments with dynamically discovered plugins. If
      *                          null, no descriptors are loaded.
+     * @param parserConfig configuration for the behaviour of the parser.
      */
     public CommandLineArgumentParser(
             final Object callerArguments,
             final List<? extends CommandLinePluginDescriptor<?>> pluginDescriptors,
-            final Set<CommandLineParserOptions> parserOptions) {
+            final CommandLineParserConfig parserConfig) {
         Utils.nonNull(callerArguments, "The object with command line arguments cannot be null");
         Utils.nonNull(pluginDescriptors, "The list of pluginDescriptors cannot be null");
-        Utils.nonNull(parserOptions, "The set of parser options cannot be null");
+        Utils.nonNull(parserConfig, "The parser configuration cannot be null");
 
         this.callerArguments = callerArguments;
-        this.parserOptions = parserOptions;
+        this.config = parserConfig;
 
         createArgumentDefinitions(callerArguments, null);
         createCommandLinePluginArgumentDefinitions(pluginDescriptors);
@@ -618,7 +616,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
             throw new CommandLineException("Argument '" + argumentDefinition.getNames() + "' cannot be specified more than once.");
         }
         if (argumentDefinition.isCollection) {
-            if (!parserOptions.contains(CommandLineParserOptions.APPEND_TO_COLLECTIONS)) {
+            if (!config.getAppendToCollections()) {
                 // if this is a collection then we only want to clear it once at the beginning, before we process
                 // any of the values, unless we're in APPEND_TO_COLLECTIONS mode, in which case we leave the initial
                 // and append to it
@@ -714,8 +712,9 @@ public final class CommandLineArgumentParser implements CommandLineParser {
      */
     private List<String> expandListFile(final List<String> originalValues) {
         List<String> expandedValues = new ArrayList<>(originalValues.size());
+
         for (String stringValue: originalValues) {
-            if (stringValue.endsWith(COLLECTION_LIST_FILE_EXTENSION)) {
+            if (config.getExpansionFileExtensions().stream().anyMatch(stringValue::endsWith)) {
                 expandedValues.addAll(loadCollectionListFile(stringValue));
             }
             else {
