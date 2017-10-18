@@ -213,7 +213,7 @@ public class CommandLinePluginUnitTest {
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(
                 plugInTest,
                 Collections.singletonList(new TestPluginDescriptor(Collections.singletonList(new TestDefaultPlugin()))),
-                Collections.emptySet());
+                new CommandLineParserConfig() {});
 
         Assert.assertTrue(clp.parseArguments(System.err, args));
 
@@ -231,7 +231,7 @@ public class CommandLinePluginUnitTest {
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(
                 plugInTest,
                 Collections.singletonList(new TestPluginDescriptor(Collections.singletonList(new TestDefaultPlugin()))),
-                Collections.emptySet());
+                new CommandLineParserConfig() {});
         final String out = clp.usage(true, false); // with common args, without hidden
 
         TestPluginDescriptor pid = clp.getPluginDescriptor(TestPluginDescriptor.class);
@@ -261,7 +261,7 @@ public class CommandLinePluginUnitTest {
     {
         CommandLineParser clp = new CommandLineArgumentParser(new Object(),
                 Collections.singletonList(new TestPluginDescriptor(Collections.singletonList(new TestDefaultPlugin()))),
-                Collections.emptySet());
+                new CommandLineParserConfig() {});
         String[] args = {
                 "--" + TestPluginDescriptor.testPluginArgumentName, plugin  // no args, just enable plugin
         };
@@ -286,7 +286,7 @@ public class CommandLinePluginUnitTest {
     {
         CommandLineParser clp = new CommandLineArgumentParser(new Object(),
                 Collections.singletonList(new TestPluginDescriptor(Collections.singletonList(new TestDefaultPlugin()))),
-                Collections.emptySet());
+                new CommandLineParserConfig() {});
 
         String[] args = { argName, argValue }; // plugin args are specified but no plugin actually specified
 
@@ -297,7 +297,7 @@ public class CommandLinePluginUnitTest {
     public void testNoPluginsSpecified() {
         CommandLineParser clp = new CommandLineArgumentParser(new Object(),
                 Collections.singletonList(new TestPluginDescriptor(Collections.singletonList(new TestDefaultPlugin()))),
-                Collections.emptySet());
+                new CommandLineParserConfig() {});
         clp.parseArguments(System.out, new String[]{});
 
         // get the command line read plugins
@@ -310,7 +310,7 @@ public class CommandLinePluginUnitTest {
     public void testEnableMultiplePlugins() {
         CommandLineParser clp = new CommandLineArgumentParser(new Object(),
                 Collections.singletonList(new TestPluginDescriptor(Collections.singletonList(new TestDefaultPlugin()))),
-                Collections.emptySet());
+                new CommandLineParserConfig() {});
         String[] args = {
                 "--" + TestPluginDescriptor.testPluginArgumentName, TestPluginWithRequiredArg.class.getSimpleName(),
                 "--" + TestPluginWithRequiredArg.requiredArgName, "fake",
@@ -331,7 +331,7 @@ public class CommandLinePluginUnitTest {
     public void testEnableNonExistentPlugin() {
         CommandLineParser clp = new CommandLineArgumentParser(new Object(),
                 Collections.singletonList(new TestPluginDescriptor(Collections.singletonList(new TestDefaultPlugin()))),
-                Collections.emptySet());
+                new CommandLineParserConfig() {});
         clp.parseArguments(System.out, new String[] {"--" + TestPluginDescriptor.testPluginArgumentName, "nonExistentPlugin"});
     }
 
@@ -451,7 +451,7 @@ public class CommandLinePluginUnitTest {
         new CommandLineArgumentParser(
                 PlugInTestObject,
                 Collections.singletonList(new TestPluginArgCollisionDescriptor()),
-                Collections.emptySet());
+                new CommandLineParserConfig() {});
     }
 
 }

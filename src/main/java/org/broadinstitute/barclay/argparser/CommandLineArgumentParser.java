@@ -11,9 +11,6 @@ import org.apache.commons.lang3.text.WordUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.broadinstitute.barclay.argparser.parseropt.CommandLineParserOption;
-import org.broadinstitute.barclay.argparser.parseropt.ExpandCollectionExtensionOption;
-import org.broadinstitute.barclay.argparser.parseropt.SwitchCommandLineParserOptions;
 import org.broadinstitute.barclay.utils.Utils;
 
 import java.io.BufferedReader;
@@ -65,11 +62,6 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     public static final String COMMENT = "#";
     public static final String POSITIONAL_ARGUMENTS_NAME = "Positional Argument";
 
-    /**
-     * Default options for the parser.
-     */
-    public static final Set<CommandLineParserOption> DEFAULT_PARSER_OPTIONS = Collections.singleton(new ExpandCollectionExtensionOption());
-
     private static final Logger logger = LogManager.getLogger();
 
     // Map from (full class) name of each CommandLinePluginDescriptor requested and
@@ -120,7 +112,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     // and into which the values will be assigned.
     private final Object callerArguments;
 
-    private final Set<CommandLineParserOption> parserOptions;
+    private final CommandLineParserConfig config;
 
     // null if no @PositionalArguments annotation
     private Field positionalArguments;
@@ -151,8 +143,6 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     }
 
     /**
-     * <p>Note: uses {@link #DEFAULT_PARSER_OPTIONS}.
-     *
      * @param callerArguments The object containing the command line arguments to be populated by
      *                        this command line parser.
      */
@@ -160,7 +150,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         this(
                 callerArguments,
                 Collections.<CommandLinePluginDescriptor<?>>emptyList(),
-                DEFAULT_PARSER_OPTIONS
+                new CommandLineParserConfig() {}
         );
     }
 
@@ -171,17 +161,18 @@ public final class CommandLineArgumentParser implements CommandLineParser {
      *                          should be used by this command line parser to extend the list of
      *                          command line arguments with dynamically discovered plugins. If
      *                          null, no descriptors are loaded.
+     * @param parserConfig configuration for the behaviour of the parser.
      */
     public CommandLineArgumentParser(
             final Object callerArguments,
             final List<? extends CommandLinePluginDescriptor<?>> pluginDescriptors,
-            final Set<CommandLineParserOption> parserOptions) {
+            final CommandLineParserConfig parserConfig) {
         Utils.nonNull(callerArguments, "The object with command line arguments cannot be null");
         Utils.nonNull(pluginDescriptors, "The list of pluginDescriptors cannot be null");
-        Utils.nonNull(parserOptions, "The set of parser options cannot be null");
+        Utils.nonNull(parserConfig, "The parser configuration cannot be null");
 
         this.callerArguments = callerArguments;
-        this.parserOptions = parserOptions;
+        this.config = parserConfig;
 
         createArgumentDefinitions(callerArguments, null);
         createCommandLinePluginArgumentDefinitions(pluginDescriptors);
@@ -625,7 +616,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
             throw new CommandLineException("Argument '" + argumentDefinition.getNames() + "' cannot be specified more than once.");
         }
         if (argumentDefinition.isCollection) {
-            if (!parserOptions.contains(SwitchCommandLineParserOptions.APPEND_TO_COLLECTIONS)) {
+            if (!config.getAppendToCollections()) {
                 // if this is a collection then we only want to clear it once at the beginning, before we process
                 // any of the values, unless we're in APPEND_TO_COLLECTIONS mode, in which case we leave the initial
                 // and append to it
@@ -722,15 +713,8 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     private List<String> expandListFile(final List<String> originalValues) {
         List<String> expandedValues = new ArrayList<>(originalValues.size());
 
-        // TODO - assume that there is only one ExpandCollectionExtensionOption?
-        final ExpandCollectionExtensionOption expandOption = new ExpandCollectionExtensionOption(
-                parserOptions.stream()
-                        .filter(s -> s instanceof ExpandCollectionExtensionOption)
-                        .flatMap(s -> ((ExpandCollectionExtensionOption) s).getExtensions().stream())
-                        .collect(Collectors.toSet()));
-
         for (String stringValue: originalValues) {
-            if (expandOption.getExtensions().stream().anyMatch(stringValue::endsWith)) {
+            if (config.getExpansionFileExtensions().stream().anyMatch(stringValue::endsWith)) {
                 expandedValues.addAll(loadCollectionListFile(stringValue));
             }
             else {
