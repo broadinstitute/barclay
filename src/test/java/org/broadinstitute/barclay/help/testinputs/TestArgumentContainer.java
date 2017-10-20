@@ -37,6 +37,21 @@ public class TestArgumentContainer implements CommandLinePluginProvider {
     public static final String ONE_LINE_SUMMARY = "Argument container class for testing documentation generation.";
     public static final String GROUP_NAME = "Test feature group name";
 
+    public TestArgumentContainer() {
+        argBaseClass = new TestBaseArgumentType() {
+
+            /**
+             * Note: Javadoc ignores comments for anonymous/inner classes, so this comment does not
+             * get propagated to the fulltext for this argument.
+             */
+            @Argument(shortName="anonymousClassArg", fullName="fullAnonymousArgName", optional=true, doc="Test anonymous class arg")
+            public List<File> anonymousClassArg;
+        };
+    }
+
+    @ArgumentCollection
+    public TestBaseArgumentType argBaseClass;
+
     /**
      * Positional arguments
      */
