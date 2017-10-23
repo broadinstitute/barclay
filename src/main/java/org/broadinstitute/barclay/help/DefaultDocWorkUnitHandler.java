@@ -204,7 +204,7 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
         } catch (IllegalAccessException | InstantiationException e) {
             // only throw if the command line properties is set - CLP always require a non-arg constructor
             if (workUnit.getCommandLineProperties() != null) {
-                throw new RuntimeException(e);
+                throw new RuntimeException(workUnit.getClazz() + " requires a non-arg constructor, because it is annotated with CommandLineProgramProperties ", e);
             }
         }
 
