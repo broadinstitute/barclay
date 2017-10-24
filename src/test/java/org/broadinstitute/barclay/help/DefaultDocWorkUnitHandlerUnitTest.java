@@ -1,10 +1,12 @@
 package org.broadinstitute.barclay.help;
 
 import com.sun.javadoc.ClassDoc;
+import com.sun.javadoc.FieldDoc;
 import org.broadinstitute.barclay.argparser.CommandLineProgramProperties;
 import org.broadinstitute.barclay.argparser.TestProgramGroup;
 import org.broadinstitute.barclay.help.testinputs.TestArgumentContainer;
 import org.broadinstitute.barclay.help.testinputs.TestExtraDocs;
+import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -92,6 +94,26 @@ public class DefaultDocWorkUnitHandlerUnitTest {
         final DefaultDocWorkUnitHandler handler = getDefaultWorkUnitHandlerInstance();
         final DocWorkUnit workUnit = createMockWorkUnit(handler, ClpWithoutNoArgsConstructor.class, "", Collections.emptyMap());
         handler.processWorkUnit(workUnit, Collections.emptyList(), Collections.emptyList());
+    }
+
+    @DataProvider
+    public Object[][] processWorkUnitData() {
+        return new Object[][]{
+                {TestArgumentContainer.class},
+                {TestExtraDocs.class}
+        };
+    }
+
+    @Test(dataProvider = "processWorkUnitData")
+    public void testProcessWorkUnit(final Class<?> docWorkUnitClazz) {
+        final DefaultDocWorkUnitHandler handler = getDefaultWorkUnitHandlerInstance();
+        final DocWorkUnit workUnit = createMockWorkUnit(handler, docWorkUnitClazz, "", Collections.emptyMap());
+
+        // mock the class doc to return an empty FieldDoc array to use while populating arguments
+        Mockito.when(workUnit.getClassDoc().fields(Mockito.anyBoolean())).thenReturn(new FieldDoc[]{});
+        handler.processWorkUnit(workUnit, Collections.emptyList(), Collections.emptyList());
+        // assert that the property map is not empty
+        Assert.assertFalse(workUnit.getRootMap().isEmpty());
     }
 
     private static DocWorkUnit createMockWorkUnit(final DefaultDocWorkUnitHandler handler, final Class<?> docWorkUnitClazz, final String javadocText, final Map<String, String> inlineTags) {
