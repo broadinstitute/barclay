@@ -104,7 +104,7 @@ public class DefaultDocWorkUnitHandlerUnitTest {
         };
     }
 
-    @Test(dataProvider = "processWorkUnitData")
+    @Test(dataProvider = "processWorkUnitData", enabled = false)
     public void testProcessWorkUnit(final Class<?> docWorkUnitClazz) {
         final DefaultDocWorkUnitHandler handler = getDefaultWorkUnitHandlerInstance();
         final DocWorkUnit workUnit = createMockWorkUnit(handler, docWorkUnitClazz, "", Collections.emptyMap());
