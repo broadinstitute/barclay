@@ -4,10 +4,6 @@ import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import java.io.IOException;
-
-import static java.util.Arrays.asList;
-
 public class UtilsUnitTest {
 
     @Test(expectedExceptions = IllegalArgumentException.class)
@@ -45,14 +41,17 @@ public class UtilsUnitTest {
                 {"hello \nhello hello hello hello", "hello \nhello hello hello\nhello", 20},
                 {"hello \nhello hello hello hello\n", "hello \nhello hello hello\nhello\n", 20},
                 {"hello \nhello hello hello hello\n\n", "hello \nhello hello hello\nhello\n\n", 20},
+                {"", "", 20},
+                {" ", "", 20},
+                {"\n", "\n", 20},
+
         };
 
     }
 
     @Test(dataProvider = "testWrapParagraphData")
-    void testWrapParagraph( final String input, final String expectedOutput, final int width) {
-
-        Assert.assertEquals(Utils.wrapParagraph(input,width),expectedOutput);
+    void testWrapParagraph(final String input, final String expectedOutput, final int width) {
+        Assert.assertEquals(Utils.wrapParagraph(input, width), expectedOutput);
     }
 
 }

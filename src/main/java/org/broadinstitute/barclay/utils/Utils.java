@@ -141,6 +141,15 @@ public class Utils {
         return lhs == null && rhs == null || lhs != null && lhs.equals(rhs);
     }
 
+    /**
+     * a utility method to wrap multiple lines of text, while respecting the original
+     * newlines.
+     *
+     * @param input the String of text to wrap
+     * @param width the width in characters into which to wrap the text
+     * @return the original string with newlines added, and starting spaces trimmed
+     * so that the resulting lines fit inside a column of with characters.
+     */
     public static String wrapParagraph(final String input, final int width)  {
         final StringBuilder out = new StringBuilder();
         String line;
@@ -153,7 +162,10 @@ public class Utils {
             throw new RuntimeException(e);
         }
 
-        if (!input.substring(input.length()-1).equals("\n")) out.delete(out.length() - 1, out.length());
+        //unless the original string ends in a newline, we need to remove the last newline that was added.
+        if (input.length() > 0 && !input.substring(input.length()-1).equals("\n")){
+            out.delete(out.length() - 1, out.length());
+        }
         return out.toString();
     }
 }
