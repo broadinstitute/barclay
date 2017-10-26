@@ -1,5 +1,10 @@
 package org.broadinstitute.barclay.utils;
 
+import org.apache.commons.lang3.text.WordUtils;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -136,4 +141,19 @@ public class Utils {
         return lhs == null && rhs == null || lhs != null && lhs.equals(rhs);
     }
 
+    public static String wrapParagraph(final String input, final int width)  {
+        final StringBuilder out = new StringBuilder();
+        String line;
+        try(final BufferedReader bufReader = new BufferedReader(new StringReader(input))) {
+            while ((line = bufReader.readLine()) != null) {
+                out.append(WordUtils.wrap(line, width));
+                out.append("\n");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        if (!input.substring(input.length()-1).equals("\n")) out.delete(out.length() - 1, out.length());
+        return out.toString();
+    }
 }

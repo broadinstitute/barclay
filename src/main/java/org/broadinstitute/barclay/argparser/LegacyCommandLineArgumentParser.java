@@ -26,6 +26,7 @@ package org.broadinstitute.barclay.argparser;
 import org.apache.commons.lang3.text.WordUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.broadinstitute.barclay.utils.Utils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -649,7 +650,7 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
         }
         printSpaces(sb, numSpaces);
         checkForNonASCII(optionDescription, name);
-        final String wrappedDescription = WordUtils.wrap(convertFromHtml(optionDescription), DESCRIPTION_COLUMN_WIDTH);
+        final String wrappedDescription = Utils.wrapParagraph(convertFromHtml(optionDescription), DESCRIPTION_COLUMN_WIDTH);
         final String[] descriptionLines = wrappedDescription.split("\n");
         for (int i = 0; i < descriptionLines.length; ++i) {
             if (i > 0) {

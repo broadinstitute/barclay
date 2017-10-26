@@ -790,7 +790,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
             numSpaces = ARGUMENT_COLUMN_WIDTH;
         }
         printSpaces(sb, numSpaces);
-        final String wrappedDescription = WordUtils.wrap(argumentDescription, DESCRIPTION_COLUMN_WIDTH);
+        final String wrappedDescription = Utils.wrapParagraph(argumentDescription, DESCRIPTION_COLUMN_WIDTH);
         final String[] descriptionLines = wrappedDescription.split("\n");
         for (int i = 0; i < descriptionLines.length; ++i) {
             if (i > 0) {
