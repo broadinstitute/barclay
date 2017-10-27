@@ -1,9 +1,8 @@
 package org.broadinstitute.barclay.utils;
 
 import org.testng.Assert;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-
-import static java.util.Arrays.asList;
 
 public class UtilsUnitTest {
 
@@ -30,4 +29,34 @@ public class UtilsUnitTest {
         Assert.assertSame(Utils.nonNull(testObject, "some message"), testObject);
     }
 
+    @DataProvider
+    public Object[][] testWrapParagraphData(){
+        return new Object[][]{
+                {"hello \nhello hello hello hello", "hello \nhello hello\nhello hello", 12},
+                {"hello \nhello hello hello hello", "hello \nhello hello\nhello hello", 11},
+                {"hello \nhello hello hello hello", "hello \nhello\nhello\nhello\nhello", 10},
+                {"hello \n\n\n\nhello hello hello hello", "hello \n\n\n\nhello\nhello\nhello\nhello", 10},
+
+                {"hello \nhello hello hello hello", "hello \nhello hello hello\nhello", 20},
+                {"hello \nhello hello hello hello\n", "hello \nhello hello hello\nhello\n", 20},
+                {"hello \nhello hello hello hello\n\n", "hello \nhello hello hello\nhello\n\n", 20},
+
+                {"", "", 20},
+                {" ", "", 20},
+                {"\n", "\n", 20},
+                {null, null, 20},
+
+                {"hello","hello",0},
+                {"hello","hello",-1},
+                {"a b c d e f g","a\nb\nc\nd\ne\nf\ng",1},
+                {"a b c d e f g","a\nb\nc\nd\ne\nf\ng",0},
+                {"a b c d e f g","a\nb\nc\nd\ne\nf\ng",-1},
+                {"a b c d e f g","a\nb\nc\nd\ne\nf\ng",-1000}
+        };
+    }
+
+    @Test(dataProvider = "testWrapParagraphData")
+    void testWrapParagraph(final String input, final String expectedOutput, final int width) {
+        Assert.assertEquals(Utils.wrapParagraph(input, width), expectedOutput);
+    }
 }

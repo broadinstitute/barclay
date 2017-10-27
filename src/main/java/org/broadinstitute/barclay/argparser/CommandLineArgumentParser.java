@@ -1,13 +1,7 @@
 package org.broadinstitute.barclay.argparser;
 
-import joptsimple.OptionException;
-import joptsimple.OptionParser;
-import joptsimple.OptionSet;
-import joptsimple.OptionSpec;
-import joptsimple.OptionSpecBuilder;
+import joptsimple.*;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.text.WordUtils;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -790,7 +784,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
             numSpaces = ARGUMENT_COLUMN_WIDTH;
         }
         printSpaces(sb, numSpaces);
-        final String wrappedDescription = WordUtils.wrap(argumentDescription, DESCRIPTION_COLUMN_WIDTH);
+        final String wrappedDescription = Utils.wrapParagraph(argumentDescription, DESCRIPTION_COLUMN_WIDTH);
         final String[] descriptionLines = wrappedDescription.split("\n");
         for (int i = 0; i < descriptionLines.length; ++i) {
             if (i > 0) {

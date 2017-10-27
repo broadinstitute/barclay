@@ -1,5 +1,10 @@
 package org.broadinstitute.barclay.utils;
 
+import org.apache.commons.lang3.text.WordUtils;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -136,4 +141,35 @@ public class Utils {
         return lhs == null && rhs == null || lhs != null && lhs.equals(rhs);
     }
 
+    /**
+     * A utility method to wrap multiple lines of text, while respecting the original
+     * newlines.
+     *
+     * @param input the String of text to wrap
+     * @param width the width in characters into which to wrap the text. Less than 1 is treated as 1
+     * @return the original string with newlines added, and starting spaces trimmed
+     * so that the resulting lines fit inside a column of with characters.
+     */
+    public static String wrapParagraph(final String input, final int width) {
+        if (input == null || input.isEmpty()) {
+            return input;
+        }
+        final StringBuilder out = new StringBuilder();
+        String line;
+        try (final BufferedReader bufReader = new BufferedReader(new StringReader(input))) {
+            while ((line = bufReader.readLine()) != null) {
+                out.append(WordUtils.wrap(line, width));
+                out.append("\n");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Unreachable Statement.\nHow did the Buffered reader throw when it was " +
+                    "wrapping a StringReader?", e);
+        }
+
+        //unless the original string ends in a newline, we need to remove the last newline that was added.
+        if (input.charAt(input.length() - 1) != '\n') {
+            out.deleteCharAt(out.length() - 1);
+        }
+        return out.toString();
+    }
 }
