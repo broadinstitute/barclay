@@ -44,6 +44,14 @@ public class UtilsUnitTest {
                 {"", "", 20},
                 {" ", "", 20},
                 {"\n", "\n", 20},
+                {null, null, 20},
+                {"hello","hello",0},
+                {"hello","hello",-1},
+                {"a b c d e f g","a\nb\nc\nd\ne\nf\ng",1},
+                {"a b c d e f g","a\nb\nc\nd\ne\nf\ng",0},
+                {"a b c d e f g","a\nb\nc\nd\ne\nf\ng",-1},
+                {"a b c d e f g","a\nb\nc\nd\ne\nf\ng",-1000},
+
 
         };
 
@@ -53,5 +61,6 @@ public class UtilsUnitTest {
     void testWrapParagraph(final String input, final String expectedOutput, final int width) {
         Assert.assertEquals(Utils.wrapParagraph(input, width), expectedOutput);
     }
+
 
 }
