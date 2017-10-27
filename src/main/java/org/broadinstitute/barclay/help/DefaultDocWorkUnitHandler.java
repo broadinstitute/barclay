@@ -191,19 +191,20 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
         // Ex: We may want to document an input or output file format by adding @DocumentedFeature
         // to the format's reader/writer class (i.e. TableReader), and then reference that feature
         // in the extraDocs attribute in a CommandLineProgram that reads/writes that format.
-        if (workUnit.getCommandLineProperties() != null) {
-            try {
-                final Object argumentContainer = workUnit.getClazz().newInstance();
-                if (argumentContainer instanceof CommandLinePluginProvider ) {
-                    pluginDescriptors = ((CommandLinePluginProvider) argumentContainer).getPluginDescriptors();
-                    clp = new CommandLineArgumentParser(
-                            argumentContainer, pluginDescriptors, Collections.emptySet()
-                    );
-                } else {
-                    clp = new CommandLineArgumentParser(argumentContainer);
-                }
-            } catch (IllegalAccessException | InstantiationException e) {
-                throw new RuntimeException(e);
+        try {
+            final Object argumentContainer = workUnit.getClazz().newInstance();
+            if (argumentContainer instanceof CommandLinePluginProvider) {
+                pluginDescriptors = ((CommandLinePluginProvider) argumentContainer).getPluginDescriptors();
+                clp = new CommandLineArgumentParser(
+                        argumentContainer, pluginDescriptors, Collections.emptySet()
+                );
+            } else {
+                clp = new CommandLineArgumentParser(argumentContainer);
+            }
+        } catch (IllegalAccessException | InstantiationException e) {
+            // DocumentedFeature does not assume a no-arg constructor unless it is also annotated with CommandLineProgramProperties
+            if (workUnit.getCommandLineProperties() != null) {
+                throw new RuntimeException(workUnit.getClazz() + " requires a non-arg constructor, because it is annotated with CommandLineProgramProperties ", e);
             }
         }
 

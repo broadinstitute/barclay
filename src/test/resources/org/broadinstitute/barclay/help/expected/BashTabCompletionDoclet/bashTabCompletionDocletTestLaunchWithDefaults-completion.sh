@@ -426,13 +426,13 @@ _bashTabCompletionDocletTestLaunchWithDefaults_masterCompletionFunction()
 
         # Set up the completion information for this tool:
         DEPENDENT_ARGUMENTS=()
-        NORMAL_COMPLETION_ARGUMENTS=()
+        NORMAL_COMPLETION_ARGUMENTS=(--extraDocsArgument )
         MUTUALLY_EXCLUSIVE_ARGS=()
-        SYNONYMOUS_ARGS=()
-        MIN_OCCURRENCES=()
-        MAX_OCCURRENCES=()
-        ALL_LEGAL_ARGUMENTS=()
-        ALL_ARGUMENT_VALUE_TYPES=()
+        SYNONYMOUS_ARGS=("--extraDocsArgument;-extDocArg" )
+        MIN_OCCURRENCES=(0 )
+        MAX_OCCURRENCES=(2147483647 )
+        ALL_LEGAL_ARGUMENTS=(--extraDocsArgument )
+        ALL_ARGUMENT_VALUE_TYPES=("String" )
 
         # Complete the arguments for this tool:
         _bashTabCompletionDocletTestLaunchWithDefaults_handleArgs

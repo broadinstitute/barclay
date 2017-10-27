@@ -1,9 +1,12 @@
 package org.broadinstitute.barclay.help;
 
 import com.sun.javadoc.ClassDoc;
+import com.sun.javadoc.FieldDoc;
+import org.broadinstitute.barclay.argparser.CommandLineProgramProperties;
 import org.broadinstitute.barclay.argparser.TestProgramGroup;
 import org.broadinstitute.barclay.help.testinputs.TestArgumentContainer;
 import org.broadinstitute.barclay.help.testinputs.TestExtraDocs;
+import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -78,6 +81,19 @@ public class DefaultDocWorkUnitHandlerUnitTest {
         final DefaultDocWorkUnitHandler handler = getDefaultWorkUnitHandlerInstance();
         final DocWorkUnit mockWorkUnit = createMockWorkUnit(handler, docWorkUnitClazz, "", Collections.emptyMap());
         Assert.assertEquals(handler.getGroupSummaryForWorkUnit(mockWorkUnit), expectedGroupSummary);
+    }
+
+    @DocumentedFeature
+    @CommandLineProgramProperties(summary = "CLP without no-args constructor", oneLineSummary = "CLP without no-args constructor", programGroup = TestProgramGroup.class)
+    private final class ClpWithoutNoArgsConstructor {
+        public ClpWithoutNoArgsConstructor(final int arg) { }
+    }
+
+    @Test(expectedExceptions = RuntimeException.class)
+    public void testProcessWorkUnitWithoutNoArgsConstructorClpThrows() {
+        final DefaultDocWorkUnitHandler handler = getDefaultWorkUnitHandlerInstance();
+        final DocWorkUnit workUnit = createMockWorkUnit(handler, ClpWithoutNoArgsConstructor.class, "", Collections.emptyMap());
+        handler.processWorkUnit(workUnit, Collections.emptyList(), Collections.emptyList());
     }
 
     private static DocWorkUnit createMockWorkUnit(final DefaultDocWorkUnitHandler handler, final Class<?> docWorkUnitClazz, final String javadocText, final Map<String, String> inlineTags) {
