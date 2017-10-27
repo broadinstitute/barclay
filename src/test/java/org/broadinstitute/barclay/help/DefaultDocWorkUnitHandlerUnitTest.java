@@ -96,26 +96,6 @@ public class DefaultDocWorkUnitHandlerUnitTest {
         handler.processWorkUnit(workUnit, Collections.emptyList(), Collections.emptyList());
     }
 
-    @DataProvider
-    public Object[][] processWorkUnitData() {
-        return new Object[][]{
-                {TestArgumentContainer.class},
-                {TestExtraDocs.class}
-        };
-    }
-
-    @Test(dataProvider = "processWorkUnitData", enabled = false)
-    public void testProcessWorkUnit(final Class<?> docWorkUnitClazz) {
-        final DefaultDocWorkUnitHandler handler = getDefaultWorkUnitHandlerInstance();
-        final DocWorkUnit workUnit = createMockWorkUnit(handler, docWorkUnitClazz, "", Collections.emptyMap());
-
-        // mock the class doc to return an empty FieldDoc array to use while populating arguments
-        Mockito.when(workUnit.getClassDoc().fields(Mockito.anyBoolean())).thenReturn(new FieldDoc[]{});
-        handler.processWorkUnit(workUnit, Collections.emptyList(), Collections.emptyList());
-        // assert that the property map is not empty
-        Assert.assertFalse(workUnit.getRootMap().isEmpty());
-    }
-
     private static DocWorkUnit createMockWorkUnit(final DefaultDocWorkUnitHandler handler, final Class<?> docWorkUnitClazz, final String javadocText, final Map<String, String> inlineTags) {
         final ClassDoc mockClassDoc = DocGenMocks.mockClassDoc(javadocText, inlineTags);
         return new DocWorkUnit(
