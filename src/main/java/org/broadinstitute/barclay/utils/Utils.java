@@ -157,9 +157,16 @@ public class Utils {
         final StringBuilder out = new StringBuilder();
         String line;
         try (final BufferedReader bufReader = new BufferedReader(new StringReader(input))) {
-            while ((line = bufReader.readLine()) != null) {
+            line = bufReader.readLine();
+            while (true) {
                 out.append(WordUtils.wrap(line, width));
-                out.append("\n");
+
+                line = bufReader.readLine();
+                if(line != null) {
+                    out.append("\n");
+                } else {
+                    break;
+                }
             }
         } catch (IOException e) {
             throw new RuntimeException("Unreachable Statement.\nHow did the Buffered reader throw when it was " +
@@ -167,8 +174,8 @@ public class Utils {
         }
 
         //unless the original string ends in a newline, we need to remove the last newline that was added.
-        if (input.charAt(input.length() - 1) != '\n') {
-            out.deleteCharAt(out.length() - 1);
+        if (input.charAt(input.length() - 1) == '\n') {
+            out.append('\n');
         }
         return out.toString();
     }

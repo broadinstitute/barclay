@@ -70,7 +70,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
 
     // Return the plugin instance corresponding to the targetDescriptor class
     @Override
-    public <T> T getPluginDescriptor(Class<T> targetDescriptor) {
+    public <T> T getPluginDescriptor(final Class<T> targetDescriptor) {
         return targetDescriptor.cast(pluginDescriptors.get(targetDescriptor.getName()));
     }
 
@@ -146,8 +146,8 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     public CommandLineArgumentParser(final Object callerArguments) {
         this(
                 callerArguments,
-                Collections.<CommandLinePluginDescriptor<?>>emptyList(),
-                Collections.<CommandLineParserOptions>emptySet()
+                Collections.emptyList(),
+                Collections.emptySet()
         );
     }
 
@@ -274,7 +274,8 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     public String usage(final boolean printCommon, final boolean printHidden) {
         final StringBuilder sb = new StringBuilder();
 
-        sb.append(getStandardUsagePreamble(callerArguments.getClass()) + getUsagePreamble());
+        final String preamble = getStandardUsagePreamble(callerArguments.getClass()) + getUsagePreamble();
+        sb.append(Utils.wrapParagraph(preamble,DESCRIPTION_COLUMN_WIDTH + ARGUMENT_COLUMN_WIDTH));
         sb.append("\n" + getVersion() + "\n");
 
         // filter on common and partition on plugin-controlled
@@ -304,7 +305,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         }
 
         // now the conditional/dependent args (those controlled by a plugin descriptor)
-        List<ArgumentDefinition> conditionalArgs = allArgsMap.get(false);
+        final List<ArgumentDefinition> conditionalArgs = allArgsMap.get(false);
         if (null != conditionalArgs && !conditionalArgs.isEmpty()) {
             // group all of the conditional argdefs by the name of their controlling pluginDescriptor class
             final Map<CommandLinePluginDescriptor<?>, List<ArgumentDefinition>> argsByControllingDescriptor =
@@ -357,9 +358,9 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         // the key when the fields's values are set.
         args = tagParser.preprocessTaggedOptions(args);
 
-        OptionParser parser = new OptionParser(false);
+        final OptionParser parser = new OptionParser(false);
 
-        for (ArgumentDefinition arg : argumentDefinitions){
+        for (final ArgumentDefinition arg : argumentDefinitions){
             OptionSpecBuilder bld = parser.acceptsAll(arg.getNames(), arg.doc);
             if (arg.isFlag()) {
                 bld.withOptionalArg().withValuesConvertedBy(new StrictBooleanConverter());
@@ -371,7 +372,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
             parser.nonOptions();
         }
 
-        OptionSet parsedArguments;
+        final OptionSet parsedArguments;
         try {
             parsedArguments = parser.parse(args);
         } catch (final OptionException e) {
@@ -380,11 +381,11 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         //Check for the special arguments file flag
         //if it's seen, read arguments from that file and recursively call parseArguments()
         if (parsedArguments.has(SpecialArgumentsCollection.ARGUMENTS_FILE_FULLNAME)) {
-            List<String> argfiles = parsedArguments.valuesOf(SpecialArgumentsCollection.ARGUMENTS_FILE_FULLNAME).stream()
+            final List<String> argfiles = parsedArguments.valuesOf(SpecialArgumentsCollection.ARGUMENTS_FILE_FULLNAME).stream()
                     .map(f -> (String)f)
                     .collect(Collectors.toList());
 
-            List<String> newargs = argfiles.stream()
+            final List<String> newargs = argfiles.stream()
                     .distinct()
                     .filter(file -> !argumentsFilesLoadedAlready.contains(file))
                     .flatMap(file -> loadArgumentsFile(file).stream())
@@ -413,7 +414,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
             }
         }
 
-        for (Object arg : parsedArguments.nonOptionArguments()) {
+        for (final Object arg : parsedArguments.nonOptionArguments()) {
             setPositionalArgument((String) arg);
         }
 
@@ -1190,11 +1191,11 @@ public final class CommandLineArgumentParser implements CommandLineParser {
             }
         }
 
-        public Object getFieldValue(){
+        public Object getFieldValue() {
             try {
                 field.setAccessible(true);
                 return field.get(parent);
-            } catch (IllegalAccessException e) {
+            } catch (final IllegalAccessException e) {
                 throw new CommandLineException.ShouldNeverReachHereException("This shouldn't happen since we setAccessible(true).", e);
             }
         }
@@ -1203,7 +1204,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
             try {
                 field.setAccessible(true);
                 field.set(parent, value);
-            } catch (IllegalAccessException e) {
+            } catch (final IllegalAccessException e) {
                 throw new CommandLineException.ShouldNeverReachHereException("BUG: couldn't set field value. For "
                         + fieldName +" in " + parent.toString() + " with value " + value.toString()
                         + " This shouldn't happen since we setAccessible(true)", e);
@@ -1230,12 +1231,12 @@ public final class CommandLineArgumentParser implements CommandLineParser {
          */
         public boolean isControlledByPlugin() { return controllingDescriptor != null; }
 
-        public List<String> getNames(){
+        public List<String> getNames() {
             List<String> names = new ArrayList<>();
-            if (!shortName.isEmpty()){
+            if (!shortName.isEmpty()) {
                 names.add(shortName);
             }
-            if (!fullName.isEmpty()){
+            if (!fullName.isEmpty()) {
                 names.add(fullName);
             } else {
                 names.add(fieldName);
@@ -1250,11 +1251,8 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         /**
          * Comparator for sorting ArgumentDefinitions in alphabetical order b y longName
          */
-        public static Comparator<ArgumentDefinition> sortByLongName = new Comparator<ArgumentDefinition>() {
-            public int compare(ArgumentDefinition argDef1, ArgumentDefinition argDef2) {
-                return String.CASE_INSENSITIVE_ORDER.compare(argDef1.getLongName(), argDef2.getLongName());
-            }
-        };
+        public static Comparator<ArgumentDefinition> sortByLongName =
+                (argDef1, argDef2) -> String.CASE_INSENSITIVE_ORDER.compare(argDef1.getLongName(), argDef2.getLongName());
 
         /**
          * Helper for pretty printing this option.
@@ -1263,12 +1261,12 @@ public final class CommandLineArgumentParser implements CommandLineParser {
          *
          */
         private String prettyNameValue(Object value) {
-            if(value != null){
-                if (isSensitive){
+            if (value != null) {
+                if (isSensitive) {
                     return String.format("--%s ***********", getLongName());
                 } else {
                     if (value instanceof TaggedArgument) {
-                        TaggedArgument taggedArg = (TaggedArgument) value;
+                        final TaggedArgument taggedArg = (TaggedArgument) value;
                         return String.format("--%s %s", TaggedArgumentParser.getDisplayString(getLongName(), taggedArg), value);
                     } else {
                         return String.format("--%s %s", getLongName(), value);
@@ -1283,7 +1281,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
          * back as a command line argument
          */
         public String toCommandLineString(){
-            Object value = getFieldValue();
+            final Object value = getFieldValue();
             if (this.isCollection){
                 Collection<?> collect = (Collection<?>)value;
                 return collect.stream()

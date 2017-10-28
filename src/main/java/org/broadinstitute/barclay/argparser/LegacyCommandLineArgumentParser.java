@@ -261,7 +261,7 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
         if (prefix.isEmpty()) {
             final String preamble = htmlUnescape(convertFromHtml(getStandardUsagePreamble(callerOptions.getClass()) + getUsagePreamble()));
             checkForNonASCII(preamble, "Tool description");
-            sb.append(preamble);
+            sb.append(Utils.wrapParagraph(preamble,OPTION_COLUMN_WIDTH + DESCRIPTION_COLUMN_WIDTH));
             sb.append("\nVersion: " + getVersion());
             sb.append("\n");
             sb.append("\n\nOptions:\n\n");
