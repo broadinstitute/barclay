@@ -278,14 +278,33 @@ public class CollectionArgumentUnitTests {
     }
 
     class ImmutableCollectionArguments {
-        @Argument
-        public List<String> LIST = Collections.emptyList();
+        @Argument(optional = true)
+        public List<String> LIST = Arrays.asList("T");
     }
 
-    @Test(expectedExceptions = CommandLineException.CommandLineParserInternalException.class)
-    public void testCollectionThatIsImmmutable() {
+    @DataProvider
+    public Object[][] argsForImmmutableCollectionTest() {
+        return new Object[][] {
+                // replace mode
+                {Collections.EMPTY_SET,                                                 // parser options
+                        new String[]{"--LIST", "A"}},                                   // arguments (real)
+                // replace mode
+                {Collections.EMPTY_SET,                                                 // parser options
+                        new String[]{"--LIST", "null"}},                                // arguments (null)
+
+                // append mode
+                {Collections.singleton(CommandLineParserOptions.APPEND_TO_COLLECTIONS), // parser options
+                        new String[]{"--LIST", "A"}},                                   // arguments (real)
+                // append mode
+                {Collections.singleton(CommandLineParserOptions.APPEND_TO_COLLECTIONS), // parser options
+                        new String[]{"--LIST", "null"}},                                // arguments (null)
+        };
+    }
+
+    @Test(dataProvider = "argsForImmmutableCollectionTest", expectedExceptions = CommandLineException.CommandLineParserInternalException.class)
+    public void testCollectionThatIsImmmutable(final Set<CommandLineParserOptions> opts, final String[] args) {
         final ImmutableCollectionArguments o = new ImmutableCollectionArguments();
-        new CommandLineArgumentParser(o).parseArguments(System.err, new String[]{"--LIST", "A"});
+        new CommandLineArgumentParser(o, Collections.emptyList(), opts).parseArguments(System.err, args);
     }
 
     //////////////////////////////////////////////////////////////////
