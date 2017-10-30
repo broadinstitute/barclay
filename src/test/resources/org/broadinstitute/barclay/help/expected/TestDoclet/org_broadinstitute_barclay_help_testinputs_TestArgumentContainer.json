@@ -47,6 +47,21 @@
       "options": []
     },
     {
+      "summary": "Test anonymous class arg",
+      "name": "--fullAnonymousArgName",
+      "synonyms": "-anonymousClassArg",
+      "type": "List[File]",
+      "required": "no",
+      "fulltext": "",
+      "defaultValue": "[]",
+      "minValue": "NA",
+      "maxValue": "NA",
+      "minRecValue": "NA",
+      "maxRecValue": "NA",
+      "kind": "optional",
+      "options": []
+    },
+    {
       "summary": "Undocumented option",
       "name": "--mutexArg",
       "synonyms": "-mutexArg",

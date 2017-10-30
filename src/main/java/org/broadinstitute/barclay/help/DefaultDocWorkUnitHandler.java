@@ -417,23 +417,51 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
 
     private FieldDoc getFieldDocForCommandLineArgument(
             final DocWorkUnit currentWorkUnit,
-            final CommandLineArgumentParser.ArgumentDefinition argDef) {
-        FieldDoc fieldDoc = getFieldDoc(currentWorkUnit.getClassDoc(), argDef.field.getName());
-        if (fieldDoc == null) {
-            for (final ClassDoc classDoc : getDoclet().getRootDoc().classes()) {
-                fieldDoc = getFieldDoc(classDoc, argDef.field.getName());
-                if (fieldDoc != null) {
-                    break;
-                }
-            }
+            final CommandLineArgumentParser.ArgumentDefinition argDef)
+    {
+        // Retrieve the ClassDoc corresponding to this argument directly
+        final String declaringClassTypeName = argDef.field.getDeclaringClass().getTypeName();
+        final ClassDoc declaringClassDoc = getDoclet().getRootDoc().classNamed(declaringClassTypeName);
+
+        if (declaringClassDoc == null) {
+            throw new DocException(
+                    String.format("Can't resolve ClassDoc for declaring class for argument \"%s\" in \"%s\" with qualified name \"%s\"",
+                            argDef.field.getName(),
+                            currentWorkUnit.getClassDoc().qualifiedTypeName(),
+                            declaringClassTypeName));
         }
+
+        final FieldDoc fieldDoc = getFieldDoc(declaringClassDoc, argDef.field.getName());
+
         if (fieldDoc == null) {
             throw new DocException(
-                 String.format(
-                         "The class \"%s\" is referenced by \"%s\", and must be included in the list of target documentation classes.",
-                         argDef.field.getDeclaringClass().getCanonicalName(),
-                         currentWorkUnit.getClassDoc().qualifiedTypeName())
+                    String.format(
+                        "The class \"%s\" is referenced by \"%s\", and must be included in the list of documentation sources.",
+                        argDef.field.getDeclaringClass().getCanonicalName(),
+                        currentWorkUnit.getClassDoc().qualifiedTypeName())
             );
+        }
+
+        // Try to validate that the FieldDoc we found is the correct one. The qualified name of the argument's
+        // FieldDoc should start with the the normalized name of the argument's declaring class.
+        final String normalizedTypeName = declaringClassTypeName.replace('$', '.');
+        if (!fieldDoc.qualifiedName().startsWith(normalizedTypeName)) {
+            // The qualified name for a FieldDoc doesn't include the full path of the class if it corresponds to
+            // an argument who's declaring class is local/anonymous
+            if (argDef.field.getDeclaringClass().isLocalClass() || argDef.field.getDeclaringClass().isAnonymousClass()) {
+                logger.warn(String.format(
+                        "Field level Javadoc is ignored for local/anonymous class for member field \"%s\" in \"%s\" of type \"%s\".",
+                        argDef.field.getName(),
+                        currentWorkUnit.getClazz().getCanonicalName(),
+                        declaringClassTypeName));
+            } else {
+                logger.warn(String.format(
+                        "Can't validate FieldDoc \"%s\" for member field \"%s\" in \"%s\" of type \"%s\".",
+                        fieldDoc.qualifiedName(),
+                        argDef.field.getName(),
+                        currentWorkUnit.getClazz().getCanonicalName(),
+                        declaringClassTypeName));
+            }
         }
         return fieldDoc;
     }
@@ -607,20 +635,13 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
     }
 
     /**
-     * Gets the javadocs associated with field name in classDoc.  Throws a
-     * runtime exception if this proves impossible.
-     */
-    private FieldDoc getFieldDoc(final ClassDoc classDoc, final String name) {
-        return getFieldDoc(classDoc, name, false);
-    }
-
-    /**
      * Recursive helper routine to getFieldDoc()
      */
-    private FieldDoc getFieldDoc(final ClassDoc classDoc, final String name, final boolean primary) {
+    private FieldDoc getFieldDoc(final ClassDoc classDoc, final String argumentFieldName) {
         for (final FieldDoc fieldDoc : classDoc.fields(false)) {
-            if (fieldDoc.name().equals(name))
+            if (fieldDoc.name().equals(argumentFieldName)) {
                 return fieldDoc;
+            }
 
             // This can return null, specifically, we can encounter https://bugs.openjdk.java.net/browse/JDK-8033735,
             // which is fixed in JDK9 http://hg.openjdk.java.net/jdk9/jdk9/hotspot/rev/ba8c351b7096.
@@ -630,17 +651,18 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
                     String.format(
                         "Could not access the field definition for %s while searching for %s, presumably because the field is inaccessible",
                         fieldDoc.name(),
-                        name)
+                            argumentFieldName)
                 );
             } else if (field.isAnnotationPresent(ArgumentCollection.class)) {
                 final ClassDoc typeDoc = getDoclet().getRootDoc().classNamed(fieldDoc.type().qualifiedTypeName());
-                if (typeDoc == null)
+                if (typeDoc == null) {
                     throw new DocException("Tried to get javadocs for ArgumentCollection field " +
                             fieldDoc + " but couldn't find the class in the RootDoc");
-                else {
-                    FieldDoc result = getFieldDoc(typeDoc, name, false);
-                    if (result != null)
+                } else {
+                    FieldDoc result = getFieldDoc(typeDoc, argumentFieldName);
+                    if (result != null) {
                         return result;
+                    }
                     // else keep searching
                 }
             }
@@ -648,13 +670,10 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
 
         // if we didn't find it here, wander up to the superclass to find the field
         if (classDoc.superclass() != null) {
-            return getFieldDoc(classDoc.superclass(), name, false);
+            return getFieldDoc(classDoc.superclass(), argumentFieldName);
         }
 
-        if (primary)
-            throw new RuntimeException("No field found for expected field " + name);
-        else
-            return null;
+        return null;
     }
 
     /**
