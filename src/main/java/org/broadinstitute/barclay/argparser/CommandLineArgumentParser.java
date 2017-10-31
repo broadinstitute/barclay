@@ -600,7 +600,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         c.add(value);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private void setArgument(ArgumentDefinition argumentDefinition, List<String> values) {
         //special treatment for flags
         if (argumentDefinition.isFlag() && values.isEmpty()){
@@ -685,6 +685,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         }
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private void setParsedArgumentValue(final ArgumentDefinition argumentDefinition, final Object value) {
         if (argumentDefinition.isCollection) {
             if (value == null) {
@@ -700,6 +701,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     }
 
     // apply a function to a collection, catching UnsuportedOperationException into a more informative
+    @SuppressWarnings("rawtypes")
     private void applyToCollection(final ArgumentDefinition argumentDefinitionCollection, final Consumer<Collection> function) {
 
         final Collection c = (Collection) argumentDefinitionCollection.getFieldValue();
