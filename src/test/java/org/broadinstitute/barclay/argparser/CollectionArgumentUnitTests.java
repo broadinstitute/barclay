@@ -281,7 +281,7 @@ public class CollectionArgumentUnitTests {
     // Helper methods
 
     private File createListArgumentFile(final String fileName, final String[] argList) throws IOException {
-        final File listFile = File.createTempFile(fileName, ".list");
+        final File listFile = File.createTempFile(fileName, CommandLineArgumentParser.COLLECTION_LIST_FILE_EXTENSION);
         listFile.deleteOnExit();
         try (final PrintWriter writer = new PrintWriter(listFile)) {
             Arrays.stream(argList).forEach(arg -> writer.println(arg));
