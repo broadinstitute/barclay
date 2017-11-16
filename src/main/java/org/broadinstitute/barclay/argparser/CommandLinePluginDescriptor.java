@@ -65,7 +65,7 @@ public abstract class CommandLinePluginDescriptor<T> {
      * this class in any of the packages returned by {@link #getPackageNames} will be command line
      * accessible.
      */
-    public abstract Class<?> getPluginClass();
+    public abstract Class<? super T> getPluginClass();
 
     /**
      * List of package names from which to load command line plugin classes.
@@ -78,9 +78,12 @@ public abstract class CommandLinePluginDescriptor<T> {
     /**
      * Give this descriptor a chance to filter out any classes it doesn't want to be
      * dynamically discoverable.
+     *
+     * Default implementation uses {@link Class#isAssignableFrom(Class)}.
+     *
      * @return false if the class shouldn't be used; otherwise true
      */
-    public Predicate<Class<?>> getClassFilter() { return c -> true;}
+    public Predicate<Class<?>> getClassFilter() { return c -> c.isAssignableFrom(getPluginClass());}
 
     /**
      * Return an instance of the specified pluggable class. The descriptor should
@@ -102,7 +105,7 @@ public abstract class CommandLinePluginDescriptor<T> {
      * @throws IllegalAccessException
      * @throws InstantiationException
      */
-    public abstract Object getInstance(Class<?> pluggableClass)
+    public abstract T getInstance(Class<?> pluggableClass)
             throws IllegalAccessException, InstantiationException;
 
     /**
@@ -161,13 +164,13 @@ public abstract class CommandLinePluginDescriptor<T> {
      * @return the default plugins used for this instance of this descriptor as a list of Object. Used for
      * help/doc generation.
      */
-    public abstract List<Object> getDefaultInstances();
+    public abstract List<? super T> getDefaultInstances();
 
     /**
      * @return an ordered List of actual plugin instances that have been specified on the command
      * line, in the same order they were obtained/created by {@line #getInstance}).
      */
-    public abstract List<T> getAllInstances();
+    public abstract List<? super T> getAllInstances();
 
     /**
      * @param pluginName Name of the plugin requested
