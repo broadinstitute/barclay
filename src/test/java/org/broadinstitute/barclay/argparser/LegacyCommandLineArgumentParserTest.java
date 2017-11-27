@@ -160,6 +160,58 @@ public class LegacyCommandLineArgumentParserTest {
         clp.usage(true, true);
     }
 
+    @CommandLineProgramProperties(
+            summary = "[oscillation_frequency]\n\nResets oscillation frequency.\n",
+            oneLineSummary = "Reset oscillation frequency.",
+            programGroup = TestProgramGroup.class
+    )
+    @BetaFeature
+    public class BetaTool {
+    }
+
+    @Test
+    public void testBetaFeatureUsage() {
+        final BetaTool eo = new BetaTool();
+        final LegacyCommandLineArgumentParser clp = new LegacyCommandLineArgumentParser(eo);
+        final String out = clp.usage(false, false); // without common/hidden args
+        final int reqIndex = out.indexOf(LegacyCommandLineArgumentParser.BETA_PREFIX);
+        Assert.assertEquals(reqIndex, 0);
+    }
+
+    @CommandLineProgramProperties(
+            summary = "Experimental.\n",
+            oneLineSummary = "Experimental feature",
+            programGroup = TestProgramGroup.class
+    )
+    @ExperimentalFeature
+    public class ExperimentalTool {
+    }
+
+    @Test
+    public void testExperimentalFeatureUsage() {
+        final ExperimentalTool eo = new ExperimentalTool();
+        final LegacyCommandLineArgumentParser clp = new LegacyCommandLineArgumentParser(eo);
+        final String out = clp.usage(false, false); // without common/hidden args
+        final int reqIndex = out.indexOf(LegacyCommandLineArgumentParser.EXPERIMENTAL_PREFIX);
+        Assert.assertEquals(reqIndex, 0);
+    }
+
+    @CommandLineProgramProperties(
+            summary = "Experimental and Beta.\n",
+            oneLineSummary = "Experimental and Beta feature",
+            programGroup = TestProgramGroup.class
+    )
+    @BetaFeature
+    @ExperimentalFeature
+    public class ExperimentalAndBetaTool {
+    }
+
+    @Test(expectedExceptions= CommandLineException.CommandLineParserInternalException.class)
+    public void testBetaExperimentalMutex() {
+        final ExperimentalAndBetaTool eo = new ExperimentalAndBetaTool();
+        final LegacyCommandLineArgumentParser clp = new LegacyCommandLineArgumentParser(eo);
+    }
+
     /**
      * If the short name is set to be the same as the long name we still want the argument to appear in the commandLine.
      */

@@ -19,5 +19,7 @@
   ],
   "description": "Class for testing extraDocs property in docgen.",
   "name": "TestExtraDocs",
-  "group": "Test extra docs group name"
+  "group": "Test extra docs group name",
+  "beta": false,
+  "experimental": true
 }
