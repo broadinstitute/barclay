@@ -644,7 +644,7 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
         }
 
         int numSpaces = OPTION_COLUMN_WIDTH - optionLabel.length();
-        if (optionLabel.length() > OPTION_COLUMN_WIDTH) {
+        if (optionLabel.length() > OPTION_COLUMN_WIDTH - 1) {
             sb.append("\n");
             numSpaces = OPTION_COLUMN_WIDTH;
         }
@@ -672,7 +672,7 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
             sb.append("Default value: ");
             sb.append(optionDefinition.defaultValue);
             sb.append(". ");
-            if (!optionDefinition.defaultValue.equals("null")) {
+            if (!optionDefinition.defaultValue.equals("null") && !optionDefinition.field.getType().isPrimitive() ) {
                 sb.append("This option can be set to 'null' to clear the default value. ");
             }
         } else if (!optionDefinition.isCollection) {
