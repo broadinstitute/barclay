@@ -23,15 +23,12 @@
  */
 package org.broadinstitute.barclay.argparser;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.io.*;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class LegacyCommandLineArgumentParserTest {
 
@@ -63,40 +60,6 @@ public class LegacyCommandLineArgumentParserTest {
     }
 
     @CommandLineProgramProperties(
-            summary = "Usage: frobnicate [options] input-file output-file\n\nRead input-file, frobnicate it, " +
-                    "and write frobnicated results to output-file\n",
-            oneLineSummary = "Read input-file, frobnicate it, and write frobnicated results to output-file",
-            programGroup = TestProgramGroup.class
-    )
-    class FrobnicateOptionsWithPrimitives {
-
-        @Argument(doc = "Primitive long")
-        public long Prim_longArgument = 1L;
-
-        @Argument(doc = "Primitive int")
-        public int Prim_FROBNICATION_THRESHOLD = 20;
-
-        @Argument(doc = "Primitive short")
-        public short Prim_FROBNICATION_FLAVOR = 2;
-
-        @Argument(doc = "Primitive boolean")
-        public boolean Prim_SHMIGGLE_TYPE = false;
-
-        @Argument(doc = "Boxed Long")
-        public Long longArgument = 1L;
-
-        @Argument(doc = "Boxed Integer")
-        public Integer FROBNICATION_THRESHOLD = 20;
-
-        @Argument(doc = "Boxed Short")
-        public Short FROBNICATION_FLAVOR = 2;
-
-        @Argument(doc = "Boxed Boolean")
-        public Boolean SHMIGGLE_TYPE = false;
-    }
-
-
-    @CommandLineProgramProperties(
             summary = "Usage: frobnicate [options] input-file output-file\n\nRead input-file, frobnicate it, and write frobnicated results to output-file\n",
             oneLineSummary = "Read input-file, frobnicate it, and write frobnicated results to output-file",
             programGroup = TestProgramGroup.class
@@ -117,8 +80,6 @@ public class LegacyCommandLineArgumentParserTest {
 
         @Argument
         public Boolean TRUTHINESS;
-
-
     }
 
     @CommandLineProgramProperties(
@@ -168,42 +129,14 @@ public class LegacyCommandLineArgumentParserTest {
         public String Y;
         @Argument(mutex = {"A", "B", "M", "N"})
         public String Z;
-    }
 
+    }
 
     @Test
     public void testUsage() {
         final FrobnicateOptions fo = new FrobnicateOptions();
         final LegacyCommandLineArgumentParser clp = new LegacyCommandLineArgumentParser(fo);
         clp.usage(false, true);
-    }
-
-    @Test
-    public void testUsageWithPrimitives() {
-        final FrobnicateOptionsWithPrimitives fo = new FrobnicateOptionsWithPrimitives();
-        final LegacyCommandLineArgumentParser clp = new LegacyCommandLineArgumentParser(fo);
-        final String usage = clp.usage(false, true);
-
-        final Pattern primitiveVars = Pattern.compile(" +Primitive .*");
-        final Pattern boxedVars = Pattern.compile(" +Boxed .*");
-        final Pattern nulls = Pattern.compile("null");
-
-        final Matcher primMatcher = primitiveVars.matcher(usage);
-        int countPrimitives = 0;
-        while (primMatcher.find()) {
-            Assert.assertFalse(nulls.matcher(primMatcher.toMatchResult().group()).find());
-            countPrimitives++;
-        }
-        Assert.assertEquals(countPrimitives, 4);
-
-        final Matcher boxedMatcher = boxedVars
-                .matcher(usage);
-        int countBoxed = 0;
-        while (boxedMatcher.find()) {
-            Assert.assertTrue(nulls.matcher(boxedMatcher.toMatchResult().group()).find());
-            countBoxed++;
-        }
-        Assert.assertEquals(countBoxed, 4);
     }
 
     @Test
