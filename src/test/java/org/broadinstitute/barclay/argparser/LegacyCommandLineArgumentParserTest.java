@@ -23,7 +23,6 @@
  */
 package org.broadinstitute.barclay.argparser;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
