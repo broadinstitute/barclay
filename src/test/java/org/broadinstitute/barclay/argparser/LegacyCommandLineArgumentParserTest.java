@@ -46,7 +46,7 @@ public class LegacyCommandLineArgumentParserTest {
     class FrobnicateOptions {
 
         @PositionalArguments(minElements = 2, maxElements = 2)
-        public List<File> positionalArguments = new ArrayList<File>();
+        public List<File> positionalArguments = new ArrayList<>();
 
         @Argument(shortName = "T", doc = "Frobnication threshold setting.")
         public Integer FROBNICATION_THRESHOLD = 20;
@@ -55,7 +55,7 @@ public class LegacyCommandLineArgumentParserTest {
         public FrobnicationFlavor FROBNICATION_FLAVOR;
 
         @Argument(doc = "Allowed shmiggle types.", minElements = 1, maxElements = 3)
-        public List<String> SHMIGGLE_TYPE = new ArrayList<String>();
+        public List<String> SHMIGGLE_TYPE = new ArrayList<>();
 
         @Argument
         public Boolean TRUTHINESS;
@@ -94,7 +94,6 @@ public class LegacyCommandLineArgumentParserTest {
         public Boolean SHMIGGLE_TYPE = false;
     }
 
-
     @CommandLineProgramProperties(
             summary = "Usage: frobnicate [options] input-file output-file\n\nRead input-file, frobnicate it, and write frobnicated results to output-file\n",
             oneLineSummary = "Read input-file, frobnicate it, and write frobnicated results to output-file",
@@ -103,7 +102,7 @@ public class LegacyCommandLineArgumentParserTest {
     class FrobnicateOptionsWithNullList {
 
         @PositionalArguments(minElements = 2, maxElements = 2)
-        public List<File> positionalArguments = new ArrayList<File>();
+        public List<File> positionalArguments = new ArrayList<>();
 
         @Argument(shortName = "T", doc = "Frobnication threshold setting.")
         public Integer FROBNICATION_THRESHOLD = 20;
@@ -112,12 +111,10 @@ public class LegacyCommandLineArgumentParserTest {
         public FrobnicationFlavor FROBNICATION_FLAVOR;
 
         @Argument(doc = "Allowed shmiggle types.", minElements = 0, maxElements = 3)
-        public List<String> SHMIGGLE_TYPE = new ArrayList<String>();
+        public List<String> SHMIGGLE_TYPE = new ArrayList<>();
 
         @Argument
         public Boolean TRUTHINESS;
-
-
     }
 
     @CommandLineProgramProperties(
@@ -134,7 +131,7 @@ public class LegacyCommandLineArgumentParserTest {
         public FrobnicationFlavor FROBNICATION_FLAVOR;
 
         @Argument(doc = "Allowed shmiggle types.", minElements = 1, maxElements = 3)
-        public List<String> SHMIGGLE_TYPE = new ArrayList<String>();
+        public List<String> SHMIGGLE_TYPE = new ArrayList<>();
 
         @Argument
         public Boolean TRUTHINESS;
@@ -168,7 +165,6 @@ public class LegacyCommandLineArgumentParserTest {
         @Argument(mutex = {"A", "B", "M", "N"})
         public String Z;
     }
-
 
     @Test
     public void testUsage() {
