@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * Utility classes used by the command line parsers.
@@ -155,20 +156,20 @@ public class Utils {
             return input;
         }
         final StringBuilder out = new StringBuilder();
-        String line;
         try (final BufferedReader bufReader = new BufferedReader(new StringReader(input))) {
-            while ((line = bufReader.readLine()) != null) {
-                out.append(WordUtils.wrap(line, width));
-                out.append("\n");
-            }
+
+            out.append(bufReader.lines()
+                    .map(line -> WordUtils.wrap(line, width))
+                    .collect(Collectors.joining("\n")));
+
         } catch (IOException e) {
             throw new RuntimeException("Unreachable Statement.\nHow did the Buffered reader throw when it was " +
                     "wrapping a StringReader?", e);
         }
 
-        //unless the original string ends in a newline, we need to remove the last newline that was added.
-        if (input.charAt(input.length() - 1) != '\n') {
-            out.deleteCharAt(out.length() - 1);
+        //if the last character of the input is a newline, we need to add another newline to conserve that.
+        if (input.charAt(input.length() - 1) == '\n') {
+            out.append('\n');
         }
         return out.toString();
     }

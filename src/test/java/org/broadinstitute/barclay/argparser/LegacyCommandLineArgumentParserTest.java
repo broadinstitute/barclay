@@ -858,31 +858,65 @@ public class LegacyCommandLineArgumentParserTest {
         static public final String USAGE_SUMMARY = " X &lt; Y ";
     }
 
+    @CommandLineProgramProperties(
+            summary = TestParserLongPreamble.USAGE_SUMMARY + TestParserLongPreamble.USAGE_DETAILS,
+            oneLineSummary = TestParserLongPreamble.USAGE_SUMMARY,
+            programGroup = TestProgramGroup.class
+    )
+    protected class TestParserLongPreamble extends Object {
+
+        static public final String USAGE_DETAILS = "This is the first row but it's really long and it has " +
+                "lots of words...really big words. Because it knows the best people and really has lots of " +
+                "interesting things it needs to get across. Definitely more than can fit in 140 characters...";
+        static public final String USAGE_SUMMARY = " X &lt; Y ";
+    }
+
     @Test(expectedExceptions = AssertionError.class)
     public void testNonAsciiAssertion() {
-        LegacyCommandLineArgumentParser clp = new LegacyCommandLineArgumentParser(new TestParserFail());
+        final LegacyCommandLineArgumentParser clp = new LegacyCommandLineArgumentParser(new TestParserFail());
 
-        PrintStream stream = new PrintStream(new NullOutputStream());
+        final PrintStream stream = new PrintStream(new NullOutputStream());
         clp.parseArguments(stream, new String[]{});
         clp.usage(true, true);
     }
 
     @Test
     public void testNonAsciiConverted() {
-        LegacyCommandLineArgumentParser clp = new LegacyCommandLineArgumentParser(new TestParserSucceed());
+        final LegacyCommandLineArgumentParser clp = new LegacyCommandLineArgumentParser(new TestParserSucceed());
 
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        PrintStream stream = new PrintStream(byteArrayOutputStream);
+        final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        final PrintStream stream = new PrintStream(byteArrayOutputStream);
         clp.parseArguments(stream, new String[]{});
         stream.append(clp.usage(true, true));
 
-        String expected = "USAGE: TestParserSucceed [options]\n" +
+        final String expected = "USAGE: TestParserSucceed [options]\n" +
                 "\n" +
-                " X < Y This is the first row \n" +
+                "X < Y This is the first row \n" +
                 "And this is the second";
-        String result = byteArrayOutputStream.toString();
-        Assert.assertEquals(byteArrayOutputStream.toString().substring(0, expected.length()), expected);
+        final String result = byteArrayOutputStream.toString();
+        Assert.assertEquals(result.substring(0, expected.length()), expected);
     }
+
+
+    @Test
+    public void testLongPreamble() {
+        final LegacyCommandLineArgumentParser clp = new LegacyCommandLineArgumentParser(new TestParserLongPreamble());
+
+        final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        final PrintStream stream = new PrintStream(byteArrayOutputStream);
+        clp.parseArguments(stream, new String[]{});
+        stream.append(clp.usage(true, true));
+
+        final String expected = "USAGE: TestParserLongPreamble [options]\n" +
+                "\n" +
+                "X < Y This is the first row but it's really long and it has lots of words...really big words. Because it knows the best\n" +
+                "people and really has lots of interesting things it needs to get across. Definitely more than can fit in 140\n" +
+                "characters...";
+
+        final String result = byteArrayOutputStream.toString();
+        Assert.assertEquals(result.substring(0, expected.length()), expected);
+    }
+
 
     @Test
     public void testNonASCIIAccept() {

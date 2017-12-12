@@ -1187,6 +1187,39 @@ public final class CommandLineArgumentParserTest {
         Assert.assertEquals(gatheredArguments.get(1).getValue().getValue(), "parameterizedTypeListArgumentValue", "Wrong value for gathered argument");
     }
 
+    @CommandLineProgramProperties(
+            summary = TestParserLongPreamble.USAGE_SUMMARY + TestParserLongPreamble.USAGE_DETAILS,
+            oneLineSummary = TestParserLongPreamble.USAGE_SUMMARY,
+            programGroup = TestProgramGroup.class
+    )
+    protected class TestParserLongPreamble extends Object {
+
+        static public final String USAGE_DETAILS = "This is the first row but it's really long and it has " +
+                "lots of words...really big words. Because it knows the best people and really has lots of " +
+                "interesting things it needs to get across. Definitely more than can fit in 140 characters...";
+        static public final String USAGE_SUMMARY = " X &lt; Y ";
+    }
+
+    @Test
+    public void testLongPreamble() {
+        final CommandLineArgumentParser clp = new CommandLineArgumentParser(new CommandLineArgumentParserTest.TestParserLongPreamble());
+
+        final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        final PrintStream stream = new PrintStream(byteArrayOutputStream);
+        clp.parseArguments(stream, new String[]{});
+        stream.append(clp.usage(true, true));
+
+        final String expected = "USAGE: TestParserLongPreamble [arguments]\n" +
+                "\n" +
+                "X &lt; Y This is the first row but it's really long and it has lots of words...really big words. Because it knows the\n" +
+                "best people and really has lots of interesting things it needs to get across. Definitely more than can fit in 140\n" +
+                "characters...";
+
+        final String result = byteArrayOutputStream.toString();
+        Assert.assertEquals(result.substring(0, expected.length()), expected);
+    }
+
+
     /***************************************************************************************
      * End of tests and helper classes for CommandLineParser.gatherArgumentValuesOfType()
      ***************************************************************************************/
