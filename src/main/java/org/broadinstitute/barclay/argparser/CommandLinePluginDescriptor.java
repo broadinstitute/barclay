@@ -108,11 +108,12 @@ public abstract class CommandLinePluginDescriptor<T> {
     /**
      * Return the allowable values for the String argument of this plugin descriptor
      * that is specified by longArgName. Called by the command line parser to generate
-     * a usage string. If the value is unrecognized, the implementation should throw
-     * IllegalArgumentException.
+     * a usage string. If the value is unrecognized, the implementation should return
+     * null.
      *
      * @param longArgName
-     * @return Set<String> of allowable values, or empty set if any value is allowed
+     * @return Set<String> of allowable values, empty set if any value is allowed,
+     *         or null if the argument doesn't belong to the descriptor
      */
     public abstract Set<String> getAllowedValuesForDescriptorArgument(String longArgName);
 
