@@ -842,19 +842,19 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     private void usageForPluginDescriptorArgumentIfApplicable(final ArgumentDefinition argDef, final StringBuilder sb) {
         if (CommandLineParser.getUnderlyingType(argDef.field).equals(String.class)) {
             for (CommandLinePluginDescriptor<?> descriptor : pluginDescriptors.values()) {
-                // this argument came from a plugin descriptor; delegate to get the list of allowed values
+                // See if this this argument came from a plugin descriptor; delegate to get the list of allowed values if it is
                 final Set<String> allowedValues = descriptor.getAllowedValuesForDescriptorArgument(argDef.getLongName());
-                if (allowedValues == null) {
-                    // Do nothing because the argument doesn't belong to this descriptor
-                } else if (allowedValues.isEmpty()) {
-                    sb.append("Any value allowed");
-                    return;
-                } else {
-                    sb.append("Possible Values: {");
-                    sb.append(String.join(", ", allowedValues.stream().sorted(String::compareToIgnoreCase).collect(Collectors.toList())));
-                    sb.append("}");
+                if (allowedValues != null) {
+                    if (allowedValues.isEmpty()) {
+                        sb.append("Any value allowed");
+                    } else {
+                        sb.append("Possible Values: {");
+                        sb.append(String.join(", ", allowedValues.stream().sorted(String::compareToIgnoreCase).collect(Collectors.toList())));
+                        sb.append("}");
+                    }
                     return;
                 }
+                // Do nothing because the argument doesn't belong to this descriptor
             }
         }
         // If the argument wasn't claimed by any descriptor, treat it as a normal argument

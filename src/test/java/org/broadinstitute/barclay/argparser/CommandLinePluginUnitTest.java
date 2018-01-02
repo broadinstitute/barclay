@@ -169,7 +169,8 @@ public class CommandLinePluginUnitTest {
             if (longArgName.equals(testPluginArgumentName)) {
                 return testPlugins.keySet();
             }
-            return null; }
+            return null;
+        }
 
         /**
          * Validate the list of arguments and reduce the list of plugins to those
