@@ -288,7 +288,7 @@ public final class CommandLineArgumentParserTest {
                 "FrobnicateArguments  " +
                         "positional1 positional2 --FROBNICATION_THRESHOLD 17 --FROBNICATION_FLAVOR BAR " +
                         "--SHMIGGLE_TYPE shmiggle1 --SHMIGGLE_TYPE shmiggle2 --TRUTHINESS true  --help false " +
-                        "--version false --showHidden false");
+                        "--version false --show-hidden false");
     }
 
     private static class WithSensitiveValues {

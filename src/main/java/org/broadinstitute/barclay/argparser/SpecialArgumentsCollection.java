@@ -10,9 +10,9 @@ import java.util.List;
  */
 public final class SpecialArgumentsCollection {
     public static final String HELP_FULLNAME = "help";
-    public static final String SHOW_HIDDEN_FULLNAME = "showHidden";
+    public static final String SHOW_HIDDEN_FULLNAME = "show-hidden";
     public static final String VERSION_FULLNAME = "version";
-    public static final String ARGUMENTS_FILE_FULLNAME = "arguments_file";
+    public static final String ARGUMENTS_FILE_FULLNAME = "arguments-file";
     private static final long serialVersionUID = 1L;
 
     @Argument(shortName = "h", fullName = HELP_FULLNAME, doc= "display the help message", special = true)
