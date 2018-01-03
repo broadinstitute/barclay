@@ -8,7 +8,6 @@ import com.sun.javadoc.RootDoc;
 import freemarker.cache.TemplateLoader;
 import freemarker.cache.FileTemplateLoader;
 import freemarker.cache.ClassTemplateLoader;
-import freemarker.cache.MultiTemplateLoader;
 
 import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
@@ -539,7 +538,13 @@ public class HelpDoclet {
         propertyMap.put("summary", workUnit.getSummary());
         propertyMap.put("filename", workUnit.getTargetFileName());
         propertyMap.put("group", workUnit.getGroupName());
-        propertyMap.put("beta", Boolean.toString(workUnit.getBetaFeature()));
+
+        // Note that these properties are inserted into the toplevel FreeMarker map for the WorkUnit typed
+        // as Strings with values "true" or "false", but here the same entries are typed as Booleans in the
+        // in the index.
+        propertyMap.put("beta", Boolean.toString(workUnit.isBetaFeature()));
+        propertyMap.put("experimental", Boolean.toString(workUnit.isExperimentalFeature()));
+
         return propertyMap;
     }
 
@@ -601,7 +606,9 @@ public class HelpDoclet {
                 workUnit.getProperty("gson-arguments"),
                 workUnit.getProperty("description").toString(),
                 workUnit.getProperty("name").toString(),
-                workUnit.getProperty("group").toString()
+                workUnit.getProperty("group").toString(),
+                Boolean.valueOf(workUnit.getProperty("beta").toString()),
+                Boolean.valueOf(workUnit.getProperty("experimental").toString())
         );
 
         // Convert object to JSON and write JSON entry to file

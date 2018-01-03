@@ -110,8 +110,10 @@
 
 	<div class="span8">
 
-		<#if beta??>
+		<#if beta?? && beta == true>
 			<h1>${name} **BETA**</h1>
+		<#elseif experimental?? && experimental == true>
+            <h1>${name} **EXPERIMENTAL**</h1>
 		<#else>
 			<h1>${name}</h1>
 		</#if>

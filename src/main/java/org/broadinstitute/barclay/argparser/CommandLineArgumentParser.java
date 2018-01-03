@@ -50,7 +50,8 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     private static final String defaultUsagePreamble = "Usage: program [arguments...]\n";
     private static final String defaultUsagePreambleWithPositionalArguments =
             "Usage: program [arguments...] [positional-arguments...]\n";
-    protected static final String BETA_PREFIX = "\n\n**BETA FEATURE - FOR EVALUATION ONLY**\n\n";
+    protected static final String BETA_PREFIX = "\n\n**BETA FEATURE - WORK IN PROGRESS**\n\n";
+    protected static final String EXPERIMENTAL_PREFIX = "\n\n**EXPERIMENTAL FEATURE - USE AT YOUR OWN RISK**\n\n";
 
     private static final String NULL_STRING = "null";
     public static final String COMMENT = "#";
@@ -83,10 +84,13 @@ public final class CommandLineArgumentParser implements CommandLineParser {
      */
     @Override
     public String getStandardUsagePreamble(final Class<?> mainClass) {
-        if (mainClass.getAnnotation(BetaFeature.class) != null) {
-            return BETA_PREFIX + "USAGE: " + mainClass.getSimpleName() + " [arguments]\n\n";
+        final String preamble = "USAGE: " + mainClass.getSimpleName() + " [arguments]\n\n";
+        if (mainClass.getAnnotation(ExperimentalFeature.class) != null) {
+            return EXPERIMENTAL_PREFIX + preamble;
+        } else if (mainClass.getAnnotation(BetaFeature.class) != null) {
+            return BETA_PREFIX + preamble;
         } else {
-            return "USAGE: " + mainClass.getSimpleName() + " [arguments]\n\n";
+            return preamble;
         }
     }
 
@@ -172,6 +176,11 @@ public final class CommandLineArgumentParser implements CommandLineParser {
 
         createArgumentDefinitions(callerArguments, null);
         createCommandLinePluginArgumentDefinitions(pluginDescriptors);
+
+        if ((this.callerArguments.getClass().getAnnotation(ExperimentalFeature.class) != null) &&
+                (this.callerArguments.getClass().getAnnotation(BetaFeature.class) != null)) {
+            throw new CommandLineException.CommandLineParserInternalException("Features cannot be both Beta and Experimental");
+        }
 
         this.programProperties = this.callerArguments.getClass().getAnnotation(CommandLineProgramProperties.class);
     }

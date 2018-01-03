@@ -1,7 +1,6 @@
 package org.broadinstitute.barclay.help;
 
 import com.sun.javadoc.ClassDoc;
-import org.broadinstitute.barclay.help.testinputs.TestArgumentCollection;
 import org.broadinstitute.barclay.help.testinputs.TestArgumentContainer;
 import org.broadinstitute.barclay.help.testinputs.TestExtraDocs;
 import org.testng.Assert;
@@ -51,8 +50,22 @@ public class DocWorkUnitTest {
 
     @Test(dataProvider = "betaFeatureData")
     public void tesGetBetaFeature(final Class<?> clazz, final boolean isBetaFeature) {
-        Assert.assertEquals(createDocWorkUnitForDefaultHandler(clazz, DocGenMocks.mockClassDoc("", Collections.emptyMap())).getBetaFeature(),
+        Assert.assertEquals(createDocWorkUnitForDefaultHandler(clazz, DocGenMocks.mockClassDoc("", Collections.emptyMap())).isBetaFeature(),
                 isBetaFeature);
+    }
+
+    @DataProvider
+    public Object[][] experimentalFeatureData() {
+        return new Object[][] {
+                {TestExtraDocs.class, true},
+                {TestArgumentContainer.class, false}
+        };
+    }
+
+    @Test(dataProvider = "experimentalFeatureData")
+    public void tesGetExperimentalFeature(final Class<?> clazz, final boolean isExperimentalFeature) {
+        Assert.assertEquals(createDocWorkUnitForDefaultHandler(clazz, DocGenMocks.mockClassDoc("", Collections.emptyMap())).isExperimentalFeature(),
+                isExperimentalFeature);
     }
 
     @Test

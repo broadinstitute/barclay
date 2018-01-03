@@ -29,8 +29,10 @@
                     <#list data as datum>
                         <#if datum.group == group.name>
                             <tr>
-                                <#if datum.beta??>
+                                <#if datum.beta?? && datum.beta == "true">
                                     <td><a href="${datum.filename}">${datum.name} **BETA**</a></td>
+                                <#elseif datum.experimental?? && datum.experimental == "true">
+                                    <td><a href="${datum.filename}">${datum.name} **EXPERIMENTAL**</a></td>
                                 <#else>
                                     <td><a href="${datum.filename}">${datum.name}</a></td>
                                 </#if>

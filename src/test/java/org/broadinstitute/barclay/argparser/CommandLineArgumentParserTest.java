@@ -126,6 +126,40 @@ public final class CommandLineArgumentParserTest {
         Assert.assertEquals(reqIndex, 0);
     }
 
+    @CommandLineProgramProperties(
+            summary = "Experimental.\n",
+            oneLineSummary = "Experimental feature",
+            programGroup = TestProgramGroup.class
+    )
+    @ExperimentalFeature
+    public class ExperimentalTool {
+    }
+
+    @Test
+    public void testExperimentalFeatureUsage() {
+        final ExperimentalTool eo = new ExperimentalTool();
+        final CommandLineArgumentParser clp = new CommandLineArgumentParser(eo);
+        final String out = clp.usage(false, false); // without common/hidden args
+        final int reqIndex = out.indexOf(CommandLineArgumentParser.EXPERIMENTAL_PREFIX);
+        Assert.assertEquals(reqIndex, 0);
+    }
+
+    @CommandLineProgramProperties(
+            summary = "Experimental and Beta.\n",
+            oneLineSummary = "Experimental and Beta feature",
+            programGroup = TestProgramGroup.class
+    )
+    @BetaFeature
+    @ExperimentalFeature
+    public class ExperimentalAndBetaTool {
+    }
+
+    @Test(expectedExceptions= CommandLineException.CommandLineParserInternalException.class)
+    public void testBetaExperimentalMutex() {
+        final ExperimentalAndBetaTool eo = new ExperimentalAndBetaTool();
+        final CommandLineArgumentParser clp = new CommandLineArgumentParser(eo);
+    }
+
     class AbbreviatableArgument{
         public static final String ARGUMENT_NAME = "longNameArgument";
         @Argument(fullName= ARGUMENT_NAME)

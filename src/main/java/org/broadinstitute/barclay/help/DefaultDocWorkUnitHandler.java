@@ -228,7 +228,12 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
         workUnit.setProperty("name", workUnit.getName());
         workUnit.setProperty("group", workUnit.getGroupName());
         workUnit.setProperty("summary", workUnit.getSummary());
-        workUnit.setProperty("beta", workUnit.getBetaFeature());
+
+        // Note that these properties are inserted into the toplevel WorkUnit FreeMarker map typed
+        // as Strings, with values "true" or "false", but the same entries are typed as Booleans in the
+        // FreeMarker map for the index.
+        workUnit.setProperty("beta", workUnit.isBetaFeature());
+        workUnit.setProperty("experimental", workUnit.isExperimentalFeature());
 
         workUnit.setProperty("description", getDescription(workUnit));
 

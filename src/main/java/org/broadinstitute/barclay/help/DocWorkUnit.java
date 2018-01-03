@@ -6,6 +6,7 @@ import org.apache.logging.log4j.Logger;
 import org.broadinstitute.barclay.argparser.CommandLineProgramGroup;
 import org.broadinstitute.barclay.argparser.CommandLineProgramProperties;
 import org.broadinstitute.barclay.argparser.BetaFeature;
+import org.broadinstitute.barclay.argparser.ExperimentalFeature;
 import org.broadinstitute.barclay.utils.Utils;
 
 import java.util.HashMap;
@@ -27,6 +28,7 @@ public class DocWorkUnit implements Comparable<DocWorkUnit> {
     // Annotations attached to the feature class being documented by this work unit
     private final DocumentedFeature documentedFeature;
     private final CommandLineProgramProperties commandLineProperties;
+    private final ExperimentalFeature experimentalFeature;
     private final BetaFeature betaFeature;
 
     private Map<String, Object> propertyMap = new HashMap<>(); // propertyMap for this unit's template
@@ -57,6 +59,7 @@ public class DocWorkUnit implements Comparable<DocWorkUnit> {
 
         this.documentedFeature = documentedFeatureAnnotation;
         this.commandLineProperties = clazz.getAnnotation(CommandLineProgramProperties.class);
+        this.experimentalFeature = clazz.getAnnotation(ExperimentalFeature.class);
         this.betaFeature = clazz.getAnnotation(BetaFeature.class);
         this.workUnitHandler = workUnitHandler;
         this.classDoc = classDoc;
@@ -167,7 +170,12 @@ public class DocWorkUnit implements Comparable<DocWorkUnit> {
     /**
      * @return a boolean determining if this documented feature is marked as a beta feature
      */
-    public boolean getBetaFeature() { return betaFeature != null; }
+    public boolean isBetaFeature() { return betaFeature != null; }
+
+    /**
+     * @return a boolean determining if this documented feature is marked as an experimental feature
+     */
+    public boolean isExperimentalFeature() { return experimentalFeature != null; }
 
     /**
      * Get the CommandLineProgramGroup object from the CommandLineProgramProperties of this work unit.

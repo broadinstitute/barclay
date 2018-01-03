@@ -23,7 +23,6 @@
  */
 package org.broadinstitute.barclay.argparser;
 
-import org.apache.commons.lang3.text.WordUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.broadinstitute.barclay.utils.Utils;
@@ -41,8 +40,6 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -76,6 +73,9 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
     private static final int OPTION_COLUMN_WIDTH = 30;
     private static final int DESCRIPTION_COLUMN_WIDTH = 90;
 
+    protected static final String BETA_PREFIX = "\n\n**BETA FEATURE - WORK IN PROGRESS**\n\n";
+    protected static final String EXPERIMENTAL_PREFIX = "\n\n**EXPERIMENTAL FEATURE - USE AT YOUR OWN RISK**\n\n";
+
     private static final Boolean[] TRUE_FALSE_VALUES = {Boolean.TRUE, Boolean.FALSE};
 
     private static final String[] PACKAGES_WITH_WEB_DOCUMENTATION = {"picard"};
@@ -103,11 +103,18 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
      */
     @Override
     public String getStandardUsagePreamble(final Class<?> mainClass) {
-        return "USAGE: " + mainClass.getSimpleName() + " [options]\n\n" +
+        final String preamble = "USAGE: " + mainClass.getSimpleName() + " [options]\n\n" +
                 (hasWebDocumentation(mainClass) ?
                         "Documentation: http://broadinstitute.github.io/picard/command-line-overview.html#" +
                                 mainClass.getSimpleName() + "\n\n"
                         : "");
+        if (mainClass.getAnnotation(ExperimentalFeature.class) != null) {
+            return EXPERIMENTAL_PREFIX + preamble;
+        } else if (mainClass.getAnnotation(BetaFeature.class) != null) {
+            return BETA_PREFIX + preamble;
+        } else {
+            return preamble;
+        }
     }
 
     /**
@@ -211,6 +218,11 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
         }
 
         createArgumentDefinitions(callerOptions);
+
+        if ((this.callerOptions.getClass().getAnnotation(ExperimentalFeature.class) != null) &&
+                (this.callerOptions.getClass().getAnnotation(BetaFeature.class) != null)) {
+            throw new CommandLineException.CommandLineParserInternalException("Features cannot be both Beta and Experimental");
+        }
 
         this.programProperties = this.callerOptions.getClass().getAnnotation(CommandLineProgramProperties.class);
     }
