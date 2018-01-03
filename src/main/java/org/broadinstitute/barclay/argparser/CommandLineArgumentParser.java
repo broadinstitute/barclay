@@ -817,15 +817,10 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         } else {
             sb.append("Required. ");
         }
-        // if this argument definition is a string field contained within a plugin descriptor (i.e.,
+        // if this argument definition is a string field claimed by a plugin descriptor (i.e.,
         // it holds the names of plugins specified by the user on the command line, such as read filter names),
         // then we need to delegate to the plugin descriptor to generate the list of allowed values
-        if (CommandLinePluginDescriptor.class.isAssignableFrom(argumentDefinition.parent.getClass()) &&
-                CommandLineParser.getUnderlyingType(argumentDefinition.field).equals(String.class)) {
-            usageForPluginDescriptorArgument(argumentDefinition, sb);
-        } else {
-            sb.append(getOptions(CommandLineParser.getUnderlyingType(argumentDefinition.field)));
-        }
+        usageForPluginDescriptorArgumentIfApplicable(argumentDefinition, sb);
         if (!argumentDefinition.mutuallyExclusive.isEmpty()) {
             sb.append(" Cannot be used in conjuction with argument(s)");
             for (final String argument : argumentDefinition.mutuallyExclusive) {
@@ -844,18 +839,26 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         return sb.toString();
     }
 
-    private void usageForPluginDescriptorArgument(final ArgumentDefinition argDef, final StringBuilder sb) {
-        final CommandLinePluginDescriptor<?> descriptor = (CommandLinePluginDescriptor<?>) argDef.parent;
-        // this argument came from a plugin descriptor; delegate to get the list of allowed values
-        final List<String> allowedValues = new ArrayList<>(descriptor.getAllowedValuesForDescriptorArgument(argDef.getLongName()));
-        if (allowedValues.isEmpty()) {
-            sb.append("Any value allowed");
-        } else {
-            allowedValues.sort(String.CASE_INSENSITIVE_ORDER);
-            sb.append("Possible Values: {");
-            sb.append(String.join(", ", allowedValues));
-            sb.append("}");
+    private void usageForPluginDescriptorArgumentIfApplicable(final ArgumentDefinition argDef, final StringBuilder sb) {
+        if (CommandLineParser.getUnderlyingType(argDef.field).equals(String.class)) {
+            for (CommandLinePluginDescriptor<?> descriptor : pluginDescriptors.values()) {
+                // See if this this argument came from a plugin descriptor; delegate to get the list of allowed values if it is
+                final Set<String> allowedValues = descriptor.getAllowedValuesForDescriptorArgument(argDef.getLongName());
+                if (allowedValues != null) {
+                    if (allowedValues.isEmpty()) {
+                        sb.append("Any value allowed");
+                    } else {
+                        sb.append("Possible Values: {");
+                        sb.append(String.join(", ", allowedValues.stream().sorted(String::compareToIgnoreCase).collect(Collectors.toList())));
+                        sb.append("}");
+                    }
+                    return;
+                }
+                // Do nothing because the argument doesn't belong to this descriptor
+            }
         }
+        // If the argument wasn't claimed by any descriptor, treat it as a normal argument
+        sb.append(getOptions(CommandLineParser.getUnderlyingType(argDef.field)));
     }
 
     /**

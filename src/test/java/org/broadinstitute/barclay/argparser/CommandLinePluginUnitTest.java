@@ -44,6 +44,11 @@ public class CommandLinePluginUnitTest {
         Integer argumentForDefaultTestPlugin;
     }
 
+    public static class TestDefaultPluginArgumentCollection {
+        @Argument(fullName = TestPluginDescriptor.testPluginArgumentName, optional=true)
+        public final List<String> userPluginNames = new ArrayList<>(); // preserve order
+    }
+
     public static class TestPluginDescriptor extends CommandLinePluginDescriptor<TestPluginBase> {
 
         private static final String pluginPackageName = "org.broadinstitute.barclay.argparser";
@@ -51,8 +56,8 @@ public class CommandLinePluginUnitTest {
 
         public static final String testPluginArgumentName = "testPlugin";
 
-        @Argument(fullName = testPluginArgumentName, optional=true)
-        public final List<String> userPluginNames = new ArrayList<>(); // preserve order
+        @ArgumentCollection
+        public final TestDefaultPluginArgumentCollection collection = new TestDefaultPluginArgumentCollection(); // preserve order
 
         private List<TestPluginBase> defaultPlugins = new ArrayList<>();
 
@@ -123,7 +128,7 @@ public class CommandLinePluginUnitTest {
             // make sure the predecessor for this dependent class was either specified
             // on the command line or is a tool default, otherwise reject it
             String predecessorName = dependentClass.getSimpleName();
-            boolean isAllowed = userPluginNames.contains(predecessorName);
+            boolean isAllowed = collection.userPluginNames.contains(predecessorName);
             if (isAllowed) {
                 // keep track of the ones we allow so we can validate later that they
                 // weren't subsequently disabled
@@ -151,8 +156,8 @@ public class CommandLinePluginUnitTest {
         public List<TestPluginBase> getAllInstances() {
             // Add the instances in the order they were specified on the command line
             //
-            final ArrayList<TestPluginBase> filters = new ArrayList<>(userPluginNames.size());
-            userPluginNames.forEach(s -> filters.add(testPlugins.get(s)));
+            final ArrayList<TestPluginBase> filters = new ArrayList<>(collection.userPluginNames.size());
+            collection.userPluginNames.forEach(s -> filters.add(testPlugins.get(s)));
             return filters;
         }
 
@@ -164,7 +169,7 @@ public class CommandLinePluginUnitTest {
             if (longArgName.equals(testPluginArgumentName)) {
                 return testPlugins.keySet();
             }
-            throw new IllegalArgumentException("Allowed values request for unrecognized string argument: " + longArgName);
+            return null;
         }
 
         /**
@@ -175,7 +180,7 @@ public class CommandLinePluginUnitTest {
         @Override
         public void validateArguments() {
             Set<String> seenNames = new HashSet<>();
-            seenNames.addAll(userPluginNames);
+            seenNames.addAll(collection.userPluginNames);
 
             Set<String> validNames = new HashSet<>();
             validNames.add(org.broadinstitute.barclay.argparser.CommandLinePluginUnitTest.TestPluginWithRequiredArg.class.getSimpleName());
@@ -185,7 +190,7 @@ public class CommandLinePluginUnitTest {
             if (seenNames.retainAll(validNames)) {
                 throw new CommandLineException.BadArgumentValue("Illegal command line plugin specified");
             }
-            userPluginNames.retainAll(seenNames);
+            collection.userPluginNames.retainAll(seenNames);
         }
 
     }
@@ -400,8 +405,7 @@ public class CommandLinePluginUnitTest {
             if (longArgName.equals(collisionPluginArgName) ){
                 return pluginInstances.keySet();
             }
-            throw new IllegalArgumentException("Allowed values request for unrecognized string argument: " + longArgName);
-
+            return null;
         }
         @Override
         public boolean isDependentArgumentAllowed(Class<?> targetPluginClass) {
