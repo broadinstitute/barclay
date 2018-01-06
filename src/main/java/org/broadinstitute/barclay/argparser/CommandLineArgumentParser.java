@@ -230,14 +230,14 @@ public final class CommandLineArgumentParser implements CommandLineParser {
             final CommandLinePluginDescriptor<?> pluginDescriptor) {
         final ClassFinder classFinder = new ClassFinder();
         pluginDescriptor.getPackageNames().forEach(
-                pkg -> classFinder.find(pkg, pluginDescriptor.getPluginClass()));
+                pkg -> classFinder.find(pkg, pluginDescriptor.getPluginBaseClass()));
         final Set<Class<?>> pluginClasses = classFinder.getClasses();
 
         final List<Object> plugins = new ArrayList<>(pluginClasses.size());
         for (Class<?> c : pluginClasses) {
-            if (pluginDescriptor.getClassFilter().test(c)) {
+            if (pluginDescriptor.includePluginClass(c)) {
                 try {
-                    final Object plugin = pluginDescriptor.getInstance(c);
+                    final Object plugin = pluginDescriptor.createInstanceForPlugin(c);
                     plugins.add(plugin);
                     createArgumentDefinitions(plugin, pluginDescriptor);
                 } catch (InstantiationException | IllegalAccessException e) {
@@ -539,7 +539,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         argumentDefinitions = actualArgumentDefinitions;
 
         // finally, give each plugin a chance to trim down any unseen instances from it's own list
-        pluginDescriptors.entrySet().forEach(e -> e.getValue().validateArguments());
+        pluginDescriptors.entrySet().forEach(e -> e.getValue().validateAndResolvePlugins());
     }
     /**
      * Check the provided value against any range constraints specified in the Argument annotation
@@ -852,7 +852,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         if (CommandLineParser.getUnderlyingType(argDef.field).equals(String.class)) {
             for (CommandLinePluginDescriptor<?> descriptor : pluginDescriptors.values()) {
                 // See if this this argument came from a plugin descriptor; delegate to get the list of allowed values if it is
-                final Set<String> allowedValues = descriptor.getAllowedValuesForDescriptorArgument(argDef.getLongName());
+                final Set<String> allowedValues = descriptor.getAllowedValuesForDescriptorHelp(argDef.getLongName());
                 if (allowedValues != null) {
                     if (allowedValues.isEmpty()) {
                         sb.append("Any value allowed");
