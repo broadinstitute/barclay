@@ -57,8 +57,13 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     public static final String COMMENT = "#";
     public static final String POSITIONAL_ARGUMENTS_NAME = "Positional Argument";
 
-    // Extension for collection argument list files
-    static final String COLLECTION_LIST_FILE_EXTENSION = ".args";
+    /**
+     * Extensions recognized for collection argument file expansion.
+     */
+    static final String COLLECTION_LIST_FILE_EXTENSIONS_LIST = ".list";
+    static final String COLLECTION_LIST_FILE_EXTENSIONS_ARGS = ".args";
+    static final Set<String> COLLECTION_LIST_FILE_EXTENSIONS = new HashSet<>(
+            Arrays.asList(COLLECTION_LIST_FILE_EXTENSIONS_LIST, COLLECTION_LIST_FILE_EXTENSIONS_ARGS));
 
     private static final Logger logger = LogManager.getLogger();
 
@@ -630,7 +635,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
                 final Collection c = (Collection) argumentDefinition.getFieldValue();
                 c.clear();
             }
-            values = expandListFile(values);
+            values = expandListFile(argumentDefinition, values);
         }
 
         for (int i = 0; i < values.size(); i++) {
@@ -709,24 +714,34 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     }
 
     /**
-     * Expand any collection values that are ".list" argument files, and add them
-     * to the list of values for that argument.
-     * @param originalValues
+     * Expand any collection value that references a filename that ends in one of the accepted expansion
+     * extensions, and add the contents of the file to the list of values for that argument.
+     * @param argDef the ArgumentDefinition being populated
+     * @param originalValues list of original values provided on the command line
      * @return a list containing the original entries in {@code originalValues}, with any
      * values from list files expanded in place, preserving both the original list order and
      * the file order
      */
-    private List<String> expandListFile(final List<String> originalValues) {
-        List<String> expandedValues = new ArrayList<>(originalValues.size());
-        for (String stringValue: originalValues) {
-            if (stringValue.endsWith(COLLECTION_LIST_FILE_EXTENSION)) {
-                expandedValues.addAll(loadCollectionListFile(stringValue));
+    private List<String> expandListFile(final ArgumentDefinition argDef, final List<String> originalValues) {
+        if (!argDef.suppressFileExpansion) {
+            List<String> expandedValues = new ArrayList<>(originalValues.size());
+            for (final String stringValue: originalValues) {
+                if (COLLECTION_LIST_FILE_EXTENSIONS.stream().anyMatch(ext -> stringValue.endsWith(ext))) {
+                    // If any value provided for this argument is an expansion file, expand it in place,
+                    // but also preserve the original values for subsequent retrieval during command line
+                    // display, since expansion files can result in very large post-expansion command lines
+                    // (its harmless to update this multiple times).
+                    expandedValues.addAll(loadCollectionListFile(stringValue));
+                    argDef.preserveOriginalValueList(originalValues);
+                }
+                else {
+                    expandedValues.add(stringValue);
+                }
             }
-            else {
-                expandedValues.add(stringValue);
-            }
+            return expandedValues;
+        } else {
+            return originalValues;
         }
-        return expandedValues;
     }
 
     /**
@@ -1134,6 +1149,13 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         final Double minRecommendedValue;
         final boolean isHidden;
         final boolean isAdvanced;
+        final boolean suppressFileExpansion;
+
+        // Override values to be used when displaying this argument as part of the command line. When argument
+        // file expansion is triggered, this is used to preserve the original values provided by the user so that
+        // these are displayed, rather than the expanded values, which may be large, and can consist of intermixed
+        // literal values and expansion file names.
+        private List<String> originalCommandLineValues;
 
         public ArgumentDefinition(
                 final Field field,
@@ -1154,6 +1176,11 @@ public final class CommandLineArgumentParser implements CommandLineParser {
 
             this.mutuallyExclusive = new LinkedHashSet<>(Arrays.asList(annotation.mutex()));
             this.controllingDescriptor = controllingDescriptor;
+            this.suppressFileExpansion = annotation.suppressFileExpansion();
+
+            if (suppressFileExpansion && !isCollection) {
+                throw new CommandLineException.CommandLineParserInternalException("Can only suppress file expansion for collection arguments");
+            }
 
             Object tmpDefault = getFieldValue();
             if (tmpDefault != null) {
@@ -1261,7 +1288,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         }
 
         /**
-         * Comparator for sorting ArgumentDefinitions in alphabetical order b y longName
+         * Comparator for sorting ArgumentDefinitions in alphabetical order by longName
          */
         public static Comparator<ArgumentDefinition> sortByLongName =
                 (argDef1, argDef2) -> String.CASE_INSENSITIVE_ORDER.compare(argDef1.getLongName(), argDef2.getLongName());
@@ -1270,7 +1297,6 @@ public final class CommandLineArgumentParser implements CommandLineParser {
          * Helper for pretty printing this option.
          * @param value A value this argument was given
          * @return a string
-         *
          */
         private String prettyNameValue(Object value) {
             if (value != null) {
@@ -1289,22 +1315,31 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         }
 
         /**
+         * Provide an override value to be used when when displaying this field as part of a command line. This is
+         * used to record the original value provided by the user when file expansion was used.
+         * @param commandLineDisplayValue
+         */
+        void preserveOriginalValueList(final List<String> commandLineDisplayValue) {
+            this.originalCommandLineValues = commandLineDisplayValue;
+        }
+
+        /**
          * @return A string representation of this argument and it's value(s) which would be valid if copied and pasted
          * back as a command line argument
          */
         public String toCommandLineString(){
             final Object value = getFieldValue();
             if (this.isCollection){
-                Collection<?> collect = (Collection<?>)value;
+                Collection<?> collect = originalCommandLineValues == null ?
+                        (Collection<?>)value :
+                        originalCommandLineValues;
                 return collect.stream()
                         .map(this::prettyNameValue)
                         .collect(Collectors.joining(" "));
-
             } else {
                 return prettyNameValue(value);
             }
         }
-
     }
 
     /**

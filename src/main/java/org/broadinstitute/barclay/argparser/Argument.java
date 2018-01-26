@@ -65,6 +65,14 @@ public @interface Argument {
     boolean common() default false;
 
     /**
+     * Suppress automatic expansion of files with names ending in recognized extensions
+     * ({@link CommandLineArgumentParser#COLLECTION_LIST_FILE_EXTENSIONS}) when such files are provided
+     * on the commandline for collection arguments.
+     * @return true if file expansion should be suppressed for this argument
+     */
+    boolean suppressFileExpansion() default false;
+
+    /**
      * Does this option have special treatment in the argument parsing system.
      * Some examples are arguments_file and help, which have special behavior in the parser.
      * This is intended for documenting these options.
