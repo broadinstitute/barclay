@@ -304,7 +304,7 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
         if (clp != null) {
             // do positional arguments, followed by named arguments
             processPositionalArguments(clp, argMap);
-            clp.getArgumentDefinitions().stream().forEach(argDef -> processNamedArgument(currentWorkUnit, argMap, argDef));
+            clp.getNamedArgumentDefinitions().stream().forEach(argDef -> processNamedArgument(currentWorkUnit, argMap, argDef));
 
             // sort the resulting args
             argMap.entrySet().stream().forEach( entry -> entry.setValue(sortArguments(entry.getValue())));
@@ -370,10 +370,10 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
     private void processNamedArgument(
             final DocWorkUnit currentWorkUnit,
             final Map<String, List<Map<String, Object>>> args,
-            final CommandLineArgumentParser.ArgumentDefinition argDef)
+            final NamedArgumentDefinition argDef)
     {
         if (!argDef.isControlledByPlugin() &&
-                (argDef.field.getAnnotation(Hidden.class) == null || getDoclet().showHiddenFeatures())) {
+                (!argDef.isHidden() || getDoclet().showHiddenFeatures())) {
             // first find the fielddoc for the target
             FieldDoc fieldDoc = getFieldDocForCommandLineArgument(currentWorkUnit, argDef);
             final Map<String, Object> argBindings = docForArgument(fieldDoc, argDef);
@@ -381,24 +381,23 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
             argBindings.put("kind", kind);
 
             // Retrieve default value
-            final Object fieldValue = argDef.getFieldValue();
+            final Object fieldValue = argDef.getArgumentValue();
             argBindings.put("defaultValue",
                     fieldValue == null ?
-                            argDef.defaultValue :
+                            argDef.getDefaultValueAsString() :
                             prettyPrintValueString(fieldValue));
 
             if (fieldValue instanceof Number) {
                 // Retrieve min and max / hard and soft value thresholds for numeric args
-                Argument argAnnotation = argDef.field.getAnnotation(Argument.class);
-                argBindings.put("minValue", argAnnotation.minValue());
-                argBindings.put("maxValue", argAnnotation.maxValue());
+                argBindings.put("minValue", argDef.getMinValue());
+                argBindings.put("maxValue", argDef.getMaxValue());
                 argBindings.put("minRecValue",
-                        argAnnotation.minRecommendedValue() != Double.NEGATIVE_INFINITY ?
-                                argAnnotation.minRecommendedValue() :
+                        argDef.getMinRecommendedValue() != Double.NEGATIVE_INFINITY ?
+                                argDef.getMinRecommendedValue() :
                                 "NA");
                 argBindings.put("maxRecValue",
-                        argAnnotation.maxRecommendedValue() != Double.POSITIVE_INFINITY ?
-                                argAnnotation.maxRecommendedValue() :
+                        argDef.getMaxRecommendedValue() != Double.POSITIVE_INFINITY ?
+                                argDef.getMaxRecommendedValue() :
                                 "NA");
             } else {
                 argBindings.put("minValue", "NA");
@@ -408,8 +407,8 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
             }
 
             // Add in the number of times you can specify it:
-            argBindings.put("minElements", argDef.field.getAnnotation(Argument.class).minElements());
-            argBindings.put("maxElements", argDef.field.getAnnotation(Argument.class).maxElements());
+            argBindings.put("minElements", argDef.getMinElements());
+            argBindings.put("maxElements", argDef.getMaxElements());
 
             // if its a plugin descriptor arg, get the allowed values
             processPluginDescriptorArgument(argDef, argBindings);
@@ -422,27 +421,27 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
 
     private FieldDoc getFieldDocForCommandLineArgument(
             final DocWorkUnit currentWorkUnit,
-            final CommandLineArgumentParser.ArgumentDefinition argDef)
+            final NamedArgumentDefinition argDef)
     {
         // Retrieve the ClassDoc corresponding to this argument directly
-        final String declaringClassTypeName = argDef.field.getDeclaringClass().getTypeName();
+        final String declaringClassTypeName = argDef.getUnderlyingField().getDeclaringClass().getTypeName();
         final ClassDoc declaringClassDoc = getDoclet().getRootDoc().classNamed(declaringClassTypeName);
 
         if (declaringClassDoc == null) {
             throw new DocException(
                     String.format("Can't resolve ClassDoc for declaring class for argument \"%s\" in \"%s\" with qualified name \"%s\"",
-                            argDef.field.getName(),
+                            argDef.getUnderlyingField().getName(),
                             currentWorkUnit.getClassDoc().qualifiedTypeName(),
                             declaringClassTypeName));
         }
 
-        final FieldDoc fieldDoc = getFieldDoc(declaringClassDoc, argDef.field.getName());
+        final FieldDoc fieldDoc = getFieldDoc(declaringClassDoc, argDef.getUnderlyingField().getName());
 
         if (fieldDoc == null) {
             throw new DocException(
                     String.format(
                         "The class \"%s\" is referenced by \"%s\", and must be included in the list of documentation sources.",
-                        argDef.field.getDeclaringClass().getCanonicalName(),
+                        argDef.getUnderlyingField().getDeclaringClass().getCanonicalName(),
                         currentWorkUnit.getClassDoc().qualifiedTypeName())
             );
         }
@@ -453,17 +452,17 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
         if (!fieldDoc.qualifiedName().startsWith(normalizedTypeName)) {
             // The qualified name for a FieldDoc doesn't include the full path of the class if it corresponds to
             // an argument who's declaring class is local/anonymous
-            if (argDef.field.getDeclaringClass().isLocalClass() || argDef.field.getDeclaringClass().isAnonymousClass()) {
+            if (argDef.getUnderlyingField().getDeclaringClass().isLocalClass() || argDef.getUnderlyingField().getDeclaringClass().isAnonymousClass()) {
                 logger.warn(String.format(
                         "Field level Javadoc is ignored for local/anonymous class for member field \"%s\" in \"%s\" of type \"%s\".",
-                        argDef.field.getName(),
+                        argDef.getUnderlyingField().getName(),
                         currentWorkUnit.getClazz().getCanonicalName(),
                         declaringClassTypeName));
             } else {
                 logger.warn(String.format(
                         "Can't validate FieldDoc \"%s\" for member field \"%s\" in \"%s\" of type \"%s\".",
                         fieldDoc.qualifiedName(),
-                        argDef.field.getName(),
+                        argDef.getUnderlyingField().getName(),
                         currentWorkUnit.getClazz().getCanonicalName(),
                         declaringClassTypeName));
             }
@@ -475,18 +474,17 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
             final CommandLineArgumentParser clp,
             final Map<String, List<Map<String, Object>>> args) {
         // first get the positional arguments
-        final Field positionalField = clp.getPositionalArguments();
-        if (positionalField != null) {
+        final PositionalArgumentDefinition positionalArgDef = clp.getPositionalArgumentDefinition();
+        if (positionalArgDef != null) {
             final Map<String, Object> argBindings = new HashMap<>();
-            PositionalArguments posArgs = positionalField.getAnnotation(PositionalArguments.class);
             argBindings.put("kind", "positional");
             argBindings.put("name", NAME_FOR_POSITIONAL_ARGS);
-            argBindings.put("summary", posArgs.doc());
-            argBindings.put("fulltext", posArgs.doc());
+            argBindings.put("summary", positionalArgDef.getPositionalArgumentsAnnotation().doc());
+            argBindings.put("fulltext", positionalArgDef.getPositionalArgumentsAnnotation().doc());
             argBindings.put("otherArgumentRequired", "NA");
             argBindings.put("synonyms", "NA");
             argBindings.put("exclusiveOf", "NA");
-            argBindings.put("type", argumentTypeString(positionalField.getGenericType()));
+            argBindings.put("type", argumentTypeString(positionalArgDef.getUnderlyingField().getGenericType()));
             argBindings.put("options", Collections.EMPTY_LIST);
             argBindings.put("attributes", "NA");
             argBindings.put("required", "yes");
@@ -495,8 +493,8 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
             argBindings.put("minValue", "NA");
             argBindings.put("maxValue", "NA");
             argBindings.put("defaultValue", "NA");
-            argBindings.put("minElements", posArgs.minElements());
-            argBindings.put("maxElements", posArgs.maxElements());
+            argBindings.put("minElements", positionalArgDef.getPositionalArgumentsAnnotation().minElements());
+            argBindings.put("maxElements", positionalArgDef.getPositionalArgumentsAnnotation().maxElements());
 
             args.get("positional").add(argBindings);
             args.get("all").add(argBindings);
@@ -504,11 +502,12 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
     }
 
     protected void processPluginDescriptorArgument(
-            final CommandLineArgumentParser.ArgumentDefinition argDef,
+            final NamedArgumentDefinition argDef,
             final Map<String, Object> argBindings) {
-        if (CommandLinePluginDescriptor.class.isAssignableFrom(argDef.parent.getClass()) &&
-                CommandLineParser.getUnderlyingType(argDef.field).equals(String.class)) {
-            final CommandLinePluginDescriptor<?> descriptor = (CommandLinePluginDescriptor<?>) argDef.parent;
+        if (CommandLinePluginDescriptor.class.isAssignableFrom(argDef.getContainingObject().getClass()) &&
+                argDef.getUnderlyingFieldClass().equals(String.class)) {
+            final CommandLinePluginDescriptor<?> descriptor = (CommandLinePluginDescriptor<?>) argDef.getContainingObject();
+
             //TODO: need a way to emit a link to the index group for the plugin
         }
     }
@@ -519,33 +518,32 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
      * @param argumentDefinition
      * @return
      */
-    private String docKindOfArg(final CommandLineArgumentParser.ArgumentDefinition argumentDefinition) {
+    private String docKindOfArg(final NamedArgumentDefinition argumentDefinition) {
 
-        // positional
+        // deprecated
         // required (common or otherwise)
         // common optional
         // advanced
         // hidden
-        // deprecated
 
         // Required first (after positional, which are separate), regardless of what else it might be
+        if (argumentDefinition.isDeprecated()) {
+            return "deprecated";
+        }
         if (argumentDefinition.isControlledByPlugin()) {
             return "dependent";
         }
-        if (!argumentDefinition.optional) {
+        if (!argumentDefinition.isOptional()) {
             return "required";
         }
-        if (argumentDefinition.isCommon) {  // these will all be optional
+        if (argumentDefinition.isCommon()) {  // these will all be optional
             return "common";
         }
-        if (argumentDefinition.field.isAnnotationPresent(Advanced.class)) {
+        if (argumentDefinition.isAdvanced()) {
             return "advanced";
         }
-        if (argumentDefinition.field.isAnnotationPresent(Hidden.class)) {
+        if (argumentDefinition.isHidden()) {
             return "hidden";
-        }
-        if (argumentDefinition.field.isAnnotationPresent(Deprecated.class)) {
-            return "deprecated";
         }
         return "optional";
     }
@@ -610,29 +608,7 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
      * @return
      */
     private Object prettyPrintValueString(final Object value) {
-        if (value.getClass().isArray()) {
-            final Class<?> type = value.getClass().getComponentType();
-            if (boolean.class.isAssignableFrom(type))
-                return Arrays.toString((boolean[]) value);
-            if (byte.class.isAssignableFrom(type))
-                return Arrays.toString((byte[]) value);
-            if (char.class.isAssignableFrom(type))
-                return Arrays.toString((char[]) value);
-            if (double.class.isAssignableFrom(type))
-                return Arrays.toString((double[]) value);
-            if (float.class.isAssignableFrom(type))
-                return Arrays.toString((float[]) value);
-            if (int.class.isAssignableFrom(type))
-                return Arrays.toString((int[]) value);
-            if (long.class.isAssignableFrom(type))
-                return Arrays.toString((long[]) value);
-            if (short.class.isAssignableFrom(type))
-                return Arrays.toString((short[]) value);
-            if (Object.class.isAssignableFrom(type))
-                return Arrays.toString((Object[]) value);
-            else
-                throw new RuntimeException("Unexpected array type in prettyPrintValue.  Value was " + value + " type is " + type);
-        } else if (value instanceof String) {
+        if (value instanceof String) {
             return value.equals("") ? "\"\"" : value;
         } else {
             return value.toString();
@@ -743,45 +719,45 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
      * @param def
      * @return a non-null Map binding argument keys with their values
      */
-    protected Map<String, Object> docForArgument(final FieldDoc fieldDoc, final CommandLineArgumentParser.ArgumentDefinition def) {
+    protected Map<String, Object> docForArgument(final FieldDoc fieldDoc, final NamedArgumentDefinition def) {
         final Map<String, Object> root = new HashMap<>();
 
-        final Pair<String, String> names = displayNames(def.shortName, def.getLongName());
+        final Pair<String, String> names = displayNames(def.getShortName(), def.getLongName());
         root.put("name", names.getLeft());
         root.put("synonyms", names.getRight() != null ? names.getRight() : "NA");
-        root.put("required", def.optional ? "no": "yes") ;
-        root.put("type", argumentTypeString(def.field.getGenericType()));
+        root.put("required", def.isOptional() ? "no": "yes") ;
+        root.put("type", argumentTypeString(def.getUnderlyingField().getGenericType()));
 
         // summary and fulltext
-        root.put("summary", def.doc != null ? def.doc : "");
+        root.put("summary", def.getDocString() != null ? def.getDocString() : "");
         root.put("fulltext", fieldDoc.commentText());
 
         // Does this argument interact with any others?
         if (def.isControlledByPlugin()) {
             root.put("otherArgumentRequired",
-                    def.parent.getClass().getSimpleName().length() == 0 ?
-                        def.parent.getClass().getName() :
-                        def.parent.getClass().getSimpleName());
+                    def.getContainingObject().getClass().getSimpleName().length() == 0 ?
+                        def.getContainingObject().getClass().getName() :
+                        def.getContainingObject().getClass().getSimpleName());
         } else {
             root.put("otherArgumentRequired", "NA");
         }
 
         root.put("exclusiveOf",
-                def.mutuallyExclusive != null && !def.mutuallyExclusive.isEmpty() ?
-                    String.join(", ", def.mutuallyExclusive) :
+                def.getMutexTargetList() != null && !def.getMutexTargetList().isEmpty() ?
+                    String.join(", ", def.getMutexTargetList()) :
                     "NA");
 
         // enum options
         root.put("options",
-                def.field.getType().isEnum() ?
-                        docForEnumArgument(def.field.getType()) :
+                def.getUnderlyingField().getType().isEnum() ?
+                        docForEnumArgument(def.getUnderlyingField().getType()) :
                         Collections.EMPTY_LIST);
 
         List<String> attributes = new ArrayList<>();
-        if (!def.optional) {
+        if (!def.isOptional()) {
             attributes.add("required");
         }
-        if (def.field.isAnnotationPresent(Deprecated.class)) {
+        if (def.isDeprecated()) {
             attributes.add("deprecated");
         }
         root.put("attributes", attributes.size() > 0 ? String.join(", ", attributes) : "NA");

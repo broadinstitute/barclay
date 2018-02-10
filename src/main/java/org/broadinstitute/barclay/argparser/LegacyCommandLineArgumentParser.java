@@ -23,6 +23,7 @@
  */
 package org.broadinstitute.barclay.argparser;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.broadinstitute.barclay.utils.Utils;
@@ -228,7 +229,7 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
     }
 
     private void createArgumentDefinitions(final Object callerArguments) {
-        for (final Field field : CommandLineParser.getAllFields(callerArguments.getClass())) {
+        for (final Field field : CommandLineParserUtilities.getAllFields(callerArguments.getClass())) {
             if (field.getAnnotation(Argument.class) != null && field.getAnnotation(ArgumentCollection.class) != null){
                 throw new CommandLineException.CommandLineParserInternalException("An Argument cannot be an argument collection: "
                         +field.getName() + " in " + callerArguments.toString() + " is annotated as both.");
@@ -1038,5 +1039,10 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
 
     public Object getCallerOptions() {
         return callerOptions;
+    }
+
+    @Override
+    public <T> List<Pair<ArgumentDefinition, T>> gatherArgumentValuesOfType(final Class<T> type ) {
+        throw new RuntimeException("Not implemented");
     }
 }

@@ -66,7 +66,7 @@ public @interface Argument {
 
     /**
      * Suppress automatic expansion of files with names ending in recognized extensions
-     * ({@link CommandLineArgumentParser#COLLECTION_LIST_FILE_EXTENSIONS}) when such files are provided
+     * ({@link CommandLineArgumentParser#EXPANSION_FILE_EXTENSIONS}) when such files are provided
      * on the commandline for collection arguments.
      * @return true if file expansion should be suppressed for this argument
      */

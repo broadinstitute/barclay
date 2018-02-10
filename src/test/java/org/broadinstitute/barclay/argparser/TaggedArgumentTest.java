@@ -4,6 +4,9 @@ import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.*;
 
 /**
@@ -336,6 +339,66 @@ public class TaggedArgumentTest {
         Assert.assertTrue(ta.getTagAttributes().isEmpty());
     }
 
+    @Test
+    public void testMixedTaggedExpansionFile() throws IOException {
+        // test that tags on a ttagged argument populated with an expansion file have the tags propagated to all values
+        final TaggableArguments taggable = new TaggableArguments();
+
+        final File expansionFile = createTemporaryExpansionFile();
+
+        final CommandLineArgumentParser clp = new CommandLineArgumentParser(taggable);
+        String argv[] = new String[] {
+                "--t:tumor,truth=false,training=true", "tumor-false-true.bam",
+                "--t:tumor,truth=true,training=true", expansionFile.getAbsolutePath(),
+                "--t:tumor,truth=true,training=false", "tumor-true-false.bam",
+                "--t", "normal.bam"
+        };
+        clp.parseArguments(System.err, argv);
+
+        Assert.assertEquals(taggable.taggableArgList.size(), 6);
+
+        TaggableArg ta = taggable.taggableArgList.get(0);
+        Assert.assertEquals(ta.argValue, "tumor-false-true.bam");
+        Assert.assertEquals(ta.getTagAttributes().get("truth"), "false");
+        Assert.assertEquals(ta.getTagAttributes().get("training"), "true");
+
+        ta = taggable.taggableArgList.get(1);
+        Assert.assertEquals(ta.argValue, "value1");
+        Assert.assertEquals(ta.getTagAttributes().get("truth"), "true");
+        Assert.assertEquals(ta.getTagAttributes().get("training"), "true");
+
+        ta = taggable.taggableArgList.get(2);
+        Assert.assertEquals(ta.argValue, "value2");
+        Assert.assertEquals(ta.getTagAttributes().get("truth"), "true");
+        Assert.assertEquals(ta.getTagAttributes().get("training"), "true");
+
+        ta = taggable.taggableArgList.get(3);
+        Assert.assertEquals(ta.argValue, "value3");
+        Assert.assertEquals(ta.getTagAttributes().get("truth"), "true");
+        Assert.assertEquals(ta.getTagAttributes().get("training"), "true");
+
+        ta = taggable.taggableArgList.get(4);
+        Assert.assertEquals(ta.argValue, "tumor-true-false.bam");
+        Assert.assertEquals(ta.getTagAttributes().get("truth"), "true");
+        Assert.assertEquals(ta.getTagAttributes().get("training"), "false");
+
+        ta = taggable.taggableArgList.get(5);
+        Assert.assertEquals(ta.argValue, "normal.bam");
+        Assert.assertTrue(ta.getTagAttributes().isEmpty());
+    }
+
+    private File createTemporaryExpansionFile() throws IOException {
+        final File expansionFile = File.createTempFile("clp.", ".args");
+        expansionFile.deleteOnExit();
+        try (final PrintWriter writer = new PrintWriter(expansionFile)) {
+            writer.println("value1");
+            writer.println("value2");
+            writer.println("value3");
+        }
+
+        return expansionFile;
+    }
+
     @DataProvider(name = "BadTaggedArguments")
     public Object[][] badTaggedArguments() {
         return new Object[][]{
@@ -422,10 +485,10 @@ public class TaggedArgumentTest {
     public Object[][] taggedGetCommandLine() {
         return new Object[][]{
                 {new String[]{"--t:tumor", "gcs://my/tumor.bam"},
-                        "TaggableArguments  --tFullName:tumor gcs://my/tumor.bam  --tScalar:taggableArgScalar foo --scalarArg 17"
+                        "TaggableArguments --tFullName:tumor gcs://my/tumor.bam --tScalar:taggableArgScalar foo --scalarArg 17"
                 },
                 {new String[]{"--t:tumor,truth=false,training=true", "tumor.bam", "--tFullName:normal,truth=true,training=false", "normal.bam"},
-                        "TaggableArguments  --tFullName:tumor,training=true,truth=false tumor.bam --tFullName:normal,training=false,truth=true normal.bam  --tScalar:taggableArgScalar foo --scalarArg 17"
+                        "TaggableArguments --tFullName:tumor,training=true,truth=false tumor.bam --tFullName:normal,training=false,truth=true normal.bam --tScalar:taggableArgScalar foo --scalarArg 17"
                 }
         };
     }

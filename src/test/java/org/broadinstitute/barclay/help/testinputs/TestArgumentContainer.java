@@ -194,8 +194,8 @@ public class TestArgumentContainer implements CommandLinePluginProvider {
     /**
      * Mutually exclusive args
      */
-    @Argument(shortName = "mutexArg", fullName = "mutexArg",
-            mutex = {"READ1_ALIGNED_BAM", "READ2_ALIGNED_BAM"},
+    @Argument(shortName = "mutexSourceField", fullName = "mutexSourceField",
+            mutex = {"mutexTargetField1", "mutexTargetField2"},
             optional = true)
     public List<File> mutexSourceField;
 

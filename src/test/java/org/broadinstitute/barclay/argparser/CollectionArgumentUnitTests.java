@@ -187,7 +187,7 @@ public class CollectionArgumentUnitTests {
                         new EnabledListFileArguments(),
                         Collections.EMPTY_SET,                                                  // parser options
                         createTemporaryExpansionFile("enabledExpansion",
-                                CommandLineArgumentParser.COLLECTION_LIST_FILE_EXTENSIONS_ARGS),// expansion file
+                                CommandLineArgumentParser.EXPANSION_FILE_EXTENSIONS_ARGS),// expansion file
                         expansionFileContents,                                                  // args for expansion file
                         new String[] {"shmiggle0", "shmiggle1", "shmiggle2"},                   // expected result
                         false                                                                   // expect temp file name
@@ -197,7 +197,7 @@ public class CollectionArgumentUnitTests {
                         new EnabledListFileArguments(),
                         Collections.singleton(CommandLineParserOptions.APPEND_TO_COLLECTIONS),  // parser options
                         createTemporaryExpansionFile("enabledExpansion",
-                                CommandLineArgumentParser.COLLECTION_LIST_FILE_EXTENSIONS_ARGS),// expansion file
+                                CommandLineArgumentParser.EXPANSION_FILE_EXTENSIONS_ARGS),// expansion file
                         expansionFileContents,                                                  // args for expansion file
                         new String[] {"foo", "bar", "shmiggle0", "shmiggle1", "shmiggle2"},     // expected result
                         false                                                                   // expect temp file name
@@ -207,7 +207,7 @@ public class CollectionArgumentUnitTests {
                         new EnabledListFileArguments(),
                         Collections.EMPTY_SET,                                                  // parser options
                         createTemporaryExpansionFile("enabledExpansion",
-                                CommandLineArgumentParser.COLLECTION_LIST_FILE_EXTENSIONS_LIST),// expansion file
+                                CommandLineArgumentParser.EXPANSION_FILE_EXTENSION_LIST),// expansion file
                         expansionFileContents,                                                  // args for expansion file
                         new String[] {"shmiggle0", "shmiggle1", "shmiggle2"},                   // expected result
                         false                                                                   // expect temp file name
@@ -217,7 +217,7 @@ public class CollectionArgumentUnitTests {
                         new EnabledListFileArguments(),
                         Collections.singleton(CommandLineParserOptions.APPEND_TO_COLLECTIONS),  // parser options
                         createTemporaryExpansionFile("enabledExpansion",
-                                CommandLineArgumentParser.COLLECTION_LIST_FILE_EXTENSIONS_LIST),// expansion file
+                                CommandLineArgumentParser.EXPANSION_FILE_EXTENSION_LIST),// expansion file
                         expansionFileContents,                                                  // args for expansion file
                         new String[] {"foo", "bar", "shmiggle0", "shmiggle1", "shmiggle2"},     // expected result
                         false                                                                   // expect temp file name
@@ -229,7 +229,7 @@ public class CollectionArgumentUnitTests {
                         new SuppressedListFileArguments(),
                         Collections.EMPTY_SET,                                                  // parser options
                         createTemporaryExpansionFile("enabledExpansion",
-                                CommandLineArgumentParser.COLLECTION_LIST_FILE_EXTENSIONS_ARGS),// expansion file
+                                CommandLineArgumentParser.EXPANSION_FILE_EXTENSIONS_ARGS),// expansion file
                         expansionFileContents,                                                  // args for expansion file
                         new String[] {},                                                        // expected result
                         true,
@@ -239,7 +239,7 @@ public class CollectionArgumentUnitTests {
                         new SuppressedListFileArguments(),
                         Collections.singleton(CommandLineParserOptions.APPEND_TO_COLLECTIONS),  // parser options
                         createTemporaryExpansionFile("enabledExpansion",
-                                CommandLineArgumentParser.COLLECTION_LIST_FILE_EXTENSIONS_ARGS),// expansion file
+                                CommandLineArgumentParser.EXPANSION_FILE_EXTENSIONS_ARGS),// expansion file
                         expansionFileContents,                                                  // args for expansion file
                         new String[] {"foo", "bar"},                                            // expected result
                         true,
@@ -249,7 +249,7 @@ public class CollectionArgumentUnitTests {
                         new SuppressedListFileArguments(),
                         Collections.EMPTY_SET,                                                  // parser options
                         createTemporaryExpansionFile("enabledExpansion",
-                                CommandLineArgumentParser.COLLECTION_LIST_FILE_EXTENSIONS_LIST),// expansion file
+                                CommandLineArgumentParser.EXPANSION_FILE_EXTENSION_LIST),// expansion file
                         expansionFileContents,                                                  // args for expansion file
                         new String[] {},                                                        // expected result
                         true,
@@ -259,7 +259,7 @@ public class CollectionArgumentUnitTests {
                         new SuppressedListFileArguments(),
                         Collections.singleton(CommandLineParserOptions.APPEND_TO_COLLECTIONS),  // parser options
                         createTemporaryExpansionFile("enabledExpansion",
-                                CommandLineArgumentParser.COLLECTION_LIST_FILE_EXTENSIONS_LIST),// expansion file
+                                CommandLineArgumentParser.EXPANSION_FILE_EXTENSION_LIST),// expansion file
                         expansionFileContents,                                                  // args for expansion file
                         new String[] {"foo", "bar"},                                            // expected result
                         true,
@@ -301,6 +301,29 @@ public class CollectionArgumentUnitTests {
             expectedResult = makeList(expectedList);
         }
         Assert.assertEquals(argumentContainer.getList1(), expectedResult);
+    }
+
+    class PositionalCollection {
+        @PositionalArguments
+        public List<String> positionalCollection = new ArrayList<>();
+    }
+
+    @Test
+    public void testPositionalCollectionFromExpansionFile() throws IOException
+    {
+        final PositionalCollection positionalCollection = new PositionalCollection();
+        final CommandLineParser clp = new CommandLineArgumentParser(positionalCollection);
+
+        final File expansionFile = createTemporaryExpansionFile("enabledExpansion",
+                CommandLineArgumentParser.EXPANSION_FILE_EXTENSION_LIST);
+
+        final String[] expansionFileContentsArray = new String[] {"value1", "value2", "value3"};
+        populateExpansionFile(expansionFile, expansionFileContentsArray);
+
+        // use a single file argument
+        Assert.assertTrue(clp.parseArguments(System.err, new String[] { expansionFile.getAbsolutePath() }));
+
+        Assert.assertEquals(positionalCollection.positionalCollection, Arrays.asList(expansionFileContentsArray));
     }
 
     @DataProvider(name="mixedListFileArguments")
@@ -354,9 +377,9 @@ public class CollectionArgumentUnitTests {
     ) throws IOException {
 
         // use two file arguments
-        final File listFile = createTemporaryExpansionFile("testFile1", CommandLineArgumentParser.COLLECTION_LIST_FILE_EXTENSIONS_ARGS);
+        final File listFile = createTemporaryExpansionFile("testFile1", CommandLineArgumentParser.EXPANSION_FILE_EXTENSIONS_ARGS);
         populateExpansionFile(listFile, argList1);
-        final File listFile2 = createTemporaryExpansionFile("testFile2", CommandLineArgumentParser.COLLECTION_LIST_FILE_EXTENSIONS_LIST);
+        final File listFile2 = createTemporaryExpansionFile("testFile2", CommandLineArgumentParser.EXPANSION_FILE_EXTENSION_LIST);
         populateExpansionFile(listFile2, argList2);
         final CommandLineParser clp = new CommandLineArgumentParser(
                 argumentContainer,
@@ -389,7 +412,7 @@ public class CollectionArgumentUnitTests {
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(fo);
         Assert.assertTrue(clp.parseArguments(System.err, args));
          final String expectedCommandLine =
-                 String.format("EnabledListFileArguments  --LIST commandLineValue --LIST %s --LIST2 anotherCommandLineValue  ", expansionFile.getAbsolutePath());
+                 String.format("EnabledListFileArguments --LIST commandLineValue --LIST %s --LIST2 anotherCommandLineValue", expansionFile.getAbsolutePath());
         Assert.assertEquals(clp.getCommandLine(), expectedCommandLine);
     }
 

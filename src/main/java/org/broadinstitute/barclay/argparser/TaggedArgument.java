@@ -8,7 +8,7 @@ import java.util.Map;
  * attribute/value pairs to the field.
  *
  * NOTE: No check is done to prevent duplicate tag names from being used more than once
- * in an arugment that is a Collection.
+ * in an argument that is a Collection.
  */
 public interface TaggedArgument {
 

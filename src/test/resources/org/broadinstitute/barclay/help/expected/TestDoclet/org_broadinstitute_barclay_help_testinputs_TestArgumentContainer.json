@@ -63,8 +63,8 @@
     },
     {
       "summary": "Undocumented option",
-      "name": "--mutexArg",
-      "synonyms": "-mutexArg",
+      "name": "--mutexSourceField",
+      "synonyms": "-mutexSourceField",
       "type": "List[File]",
       "required": "no",
       "fulltext": "Mutually exclusive args",
