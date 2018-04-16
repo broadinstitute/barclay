@@ -64,11 +64,11 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     private PositionalArgumentDefinition positionalArgumentDefinition;
 
     // List of all the data members with @Argument annotation
-    private List<NamedArgumentDefinition> argumentDefinitions = new ArrayList<>();
+    private List<NamedArgumentDefinition> namedArgumentDefinitions = new ArrayList<>();
 
     // Maps long name, and short name, if present, to an argument definition that is
-    // also in the argumentDefinitions list.
-    private final Map<String, NamedArgumentDefinition> argumentsDefinitionsByAlias = new LinkedHashMap<>();
+    // also in the namedArgumentDefinitions list.
+    private final Map<String, NamedArgumentDefinition> namedArgumentsDefinitionsByAlias = new LinkedHashMap<>();
 
     // The (optional) CommandLineProgramProperties annotation
     private final CommandLineProgramProperties programProperties;
@@ -97,6 +97,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
      *                          should be used by this command line parser to extend the list of
      *                          command line arguments with dynamically discovered plugins. If
      *                          null, no descriptors are loaded.
+     * @param parserOptions A non-null set of {@link CommandLineParserOptions}.
      */
     public CommandLineArgumentParser(
             final Object callerArguments,
@@ -168,13 +169,13 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     /**
      * @return list of ArgumentDefinitions for all named arguments seen by the parser
      */
-    public List<NamedArgumentDefinition> getNamedArgumentDefinitions() { return argumentDefinitions; }
+    public List<NamedArgumentDefinition> getNamedArgumentDefinitions() { return namedArgumentDefinitions; }
 
     /**
      * @return ArgumentDefinitions for a given alias, otherwise null
      */
     public NamedArgumentDefinition getNamedArgumentDefinitionByAlias(final String argumentAlias) {
-        return argumentsDefinitionsByAlias.get(argumentAlias);
+        return namedArgumentsDefinitionsByAlias.get(argumentAlias);
     }
 
     /**
@@ -199,7 +200,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         return targetDescriptor.cast(pluginDescriptors.get(targetDescriptor.getName()));
     }
 
-    public boolean getAppendToCollections() { return parserOptions.contains(CommandLineParserOptions.APPEND_TO_COLLECTIONS); }
+    public boolean getAppendToCollectionsParserOption() { return parserOptions.contains(CommandLineParserOptions.APPEND_TO_COLLECTIONS); }
 
     /**
      * The commandline used to run this program, including any default args that
@@ -224,14 +225,14 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         }
 
         // then args that were explicitly set
-        tempString = argumentDefinitions.stream()
-                .filter(argumentDefinition -> argumentDefinition.getHasBeenSet())
+        tempString = namedArgumentDefinitions.stream()
+                .filter(NamedArgumentDefinition::getHasBeenSet)
                 .map(NamedArgumentDefinition::getCommandLineDisplayString)
                 .collect(Collectors.joining(" "));
         commandLineString.append(tempString.length() > 0 ? " " + tempString : "");
 
         // finally, args that weren't explicitly set, but have a default value
-        tempString = argumentDefinitions.stream()
+        tempString = namedArgumentDefinitions.stream()
                         .filter(argumentDefinition -> !argumentDefinition.getHasBeenSet() &&
                                 !argumentDefinition.getDefaultValueAsString().equals(NamedArgumentDefinition.NULL_ARGUMENT_STRING))
                         .map(NamedArgumentDefinition::getCommandLineDisplayString)
@@ -258,13 +259,14 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         }
     }
 
-    // Validate that any mutex targets exist. NOTE: it isn't a requirement for correct behavior that mutex
-    // arguments have symmetric declarations, and its not enforced. But they should be declared that way
-    // so that the relationship is reflected in usage/help/doc for all arguments involved.
+    // Validate ay argument values. For now, only validates that any mutex targets exist. NOTE: it isn't
+    // a requirement for correct behavior that mutex arguments have symmetric declarations, and its not enforced.
+    // But they should be declared that way so that the relationship is reflected in usage/help/doc for all
+    // arguments involved.
     private void validateArgumentDefinitions() {
-        for (final NamedArgumentDefinition mutexSourceDef : argumentDefinitions) {
+        for (final NamedArgumentDefinition mutexSourceDef : namedArgumentDefinitions) {
             for (final String mutexTarget : mutexSourceDef.getMutexTargetList()) {
-                final NamedArgumentDefinition mutexTargetDef = argumentsDefinitionsByAlias.get(mutexTarget);
+                final NamedArgumentDefinition mutexTargetDef = namedArgumentsDefinitionsByAlias.get(mutexTarget);
                 if (mutexTargetDef == null) {
                     throw new CommandLineException.CommandLineParserInternalException(
                             String.format("Argument '%s' references a nonexistent mutex argument '%s'",
@@ -294,13 +296,13 @@ public final class CommandLineArgumentParser implements CommandLineParser {
 
     private void addAllAliases(final NamedArgumentDefinition arg){
         for (final String key: arg.getArgumentAliases()) {
-            argumentsDefinitionsByAlias.put(key, arg);
+            namedArgumentsDefinitionsByAlias.put(key, arg);
         }
     }
 
     private boolean inArgumentMap(final NamedArgumentDefinition arg){
         for (final String key: arg.getArgumentAliases()){
-            if (argumentsDefinitionsByAlias.containsKey(key)) {
+            if (namedArgumentsDefinitionsByAlias.containsKey(key)) {
                 return true;
             }
         }
@@ -325,15 +327,12 @@ public final class CommandLineArgumentParser implements CommandLineParser {
                 positionalArgumentDefinition = handlePositionalArgumentAnnotation(positionalArgumentAnnotation, callerArguments, field);
             }
             else if (argumentAnnotation != null) {
-                if (argumentCollectionAnnotation != null || positionalArgumentAnnotation != null) {
+                if (argumentCollectionAnnotation != null) {
                     throw new CommandLineException.CommandLineParserInternalException(errorString);
                 }
                 handleArgumentAnnotation(argumentAnnotation, callerArguments, field, controllingDescriptor);
             }
             else if (argumentCollectionAnnotation != null) {
-                if (argumentAnnotation != null || positionalArgumentAnnotation != null) {
-                    throw new CommandLineException.CommandLineParserInternalException(errorString);
-                }
                 try {
                     field.setAccessible(true);
                     createArgumentDefinitions(field.get(callerArguments), controllingDescriptor);
@@ -368,12 +367,10 @@ public final class CommandLineArgumentParser implements CommandLineParser {
                 pkg -> classFinder.find(pkg, pluginDescriptor.getPluginBaseClass()));
         final Set<Class<?>> pluginClasses = classFinder.getClasses();
 
-        final List<Object> plugins = new ArrayList<>(pluginClasses.size());
         for (Class<?> c : pluginClasses) {
             if (pluginDescriptor.includePluginClass(c)) {
                 try {
                     final Object plugin = pluginDescriptor.createInstanceForPlugin(c);
-                    plugins.add(plugin);
                     createArgumentDefinitions(plugin, pluginDescriptor);
                 } catch (InstantiationException | IllegalAccessException e) {
                     throw new CommandLineException.CommandLineParserInternalException("Problem making an instance of plugin " + c +
@@ -388,7 +385,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
             sb.append(preamble);
             args.stream().sorted(NamedArgumentDefinition.sortByLongName)
                     .forEach(argumentDefinition -> sb.append(argumentDefinition.getArgumentUsage(
-                            argumentsDefinitionsByAlias,
+                            namedArgumentsDefinitionsByAlias,
                             pluginDescriptors.values(),
                             ARGUMENT_COLUMN_WIDTH,
                             DESCRIPTION_COLUMN_WIDTH)));
@@ -411,7 +408,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         sb.append("\n" + getVersion() + "\n");
 
         // filter on common and partition on plugin-controlled
-        final Map<Boolean, List<NamedArgumentDefinition>> allArgsMap = argumentDefinitions.stream()
+        final Map<Boolean, List<NamedArgumentDefinition>> allArgsMap = namedArgumentDefinitions.stream()
                 .filter(argumentDefinition -> printCommon || !argumentDefinition.isCommon())
                 .filter(argumentDefinition -> printHidden || !argumentDefinition.isHidden())
                 .collect(Collectors.partitioningBy(a -> a.getDescriptorForControllingPlugin() == null));
@@ -476,13 +473,13 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         // named args first
         for (final OptionSpec<?> optSpec : parsedArguments.asMap().keySet()) {
             if (parsedArguments.has(optSpec)) {
-                final NamedArgumentDefinition namedArgumentDefinition = argumentsDefinitionsByAlias.get(optSpec.options().get(0));
+                final NamedArgumentDefinition namedArgumentDefinition = namedArgumentsDefinitionsByAlias.get(optSpec.options().get(0));
                 // Note that these values can be preprocessed tag surrogates
                 namedArgumentDefinition.setArgumentValues(
                         this,
                         optSpec.values(parsedArguments)
                             .stream()
-                            .map(v -> v.toString())
+                            .map(Object::toString)
                             .collect(Collectors.toList())
                 );
             }
@@ -522,7 +519,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
 
     private OptionParser getOptionParser() {
         final OptionParser parser = new OptionParser(false);
-        for (final NamedArgumentDefinition argDef : argumentDefinitions){
+        for (final NamedArgumentDefinition argDef : namedArgumentDefinitions){
             final OptionSpecBuilder bld = parser.acceptsAll(argDef.getArgumentAliases(), argDef.getDocString());
             if (argDef.isFlag()) {
                 bld.withOptionalArg().withValuesConvertedBy(new StrictBooleanConverter());
@@ -557,8 +554,8 @@ public final class CommandLineArgumentParser implements CommandLineParser {
      * @throws CommandLineException if arguments requirements are not satisfied.
      */
     private void validateArgumentValues()  {
-        argumentDefinitions = validatePluginArgumentValues(); // trim the list of plugin-derived argument definitions before validation
-        for (final NamedArgumentDefinition argumentDefinition : argumentDefinitions) {
+        namedArgumentDefinitions = validatePluginArgumentValues(); // trim the list of plugin-derived argument definitions before validation
+        for (final NamedArgumentDefinition argumentDefinition : namedArgumentDefinitions) {
             argumentDefinition.validateValues(this);
         }
         if (positionalArgumentDefinition != null) {
@@ -575,7 +572,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     // other arguments that require validation.
     private List<NamedArgumentDefinition> validatePluginArgumentValues() {
         final List<NamedArgumentDefinition> actualArgumentDefinitions = new ArrayList<>();
-        for (final NamedArgumentDefinition argumentDefinition : argumentDefinitions) {
+        for (final NamedArgumentDefinition argumentDefinition : namedArgumentDefinitions) {
             if (!argumentDefinition.isControlledByPlugin()) {
                 actualArgumentDefinitions.add(argumentDefinition);
             } else {
@@ -691,7 +688,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
                     argumentDefinition.getArgumentAliasDisplayString() + " has already been used.");
         } else {
             addAllAliases(argumentDefinition);
-            argumentDefinitions.add(argumentDefinition);
+            namedArgumentDefinitions.add(argumentDefinition);
         }
     }
 
@@ -734,8 +731,8 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         final List<Pair<ArgumentDefinition, T>> argumentValues = new ArrayList<>();
 
         // include all named and positional argument definitions
-        List<ArgumentDefinition> allArgDefs = new ArrayList<>(argumentDefinitions.size());
-        allArgDefs.addAll(argumentDefinitions);
+        final List<ArgumentDefinition> allArgDefs = new ArrayList<>(namedArgumentDefinitions.size());
+        allArgDefs.addAll(namedArgumentDefinitions);
         if (positionalArgumentDefinition != null) {
             allArgDefs.add(positionalArgumentDefinition);
         }
@@ -745,7 +742,6 @@ public final class CommandLineArgumentParser implements CommandLineParser {
                 // Consider only fields that are either of the target type, subtypes of the target type,
                 // or Collections of the target type or one of its subtypes:
 
-                final Field field = argDef.getUnderlyingField();
                 if ( argDef.isCollection() ) {
                     // Collection arguments are guaranteed by the parsing system to be non-null (at worst, empty)
                     final Collection<?> argumentContainer = (Collection<?>) argDef.getArgumentValue();

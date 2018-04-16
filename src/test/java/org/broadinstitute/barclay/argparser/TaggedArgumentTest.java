@@ -341,7 +341,7 @@ public class TaggedArgumentTest {
 
     @Test
     public void testMixedTaggedExpansionFile() throws IOException {
-        // test that tags on a ttagged argument populated with an expansion file have the tags propagated to all values
+        // test that tags on a tagged argument populated with an expansion file have the tags propagated to all values
         final TaggableArguments taggable = new TaggableArguments();
 
         final File expansionFile = createTemporaryExpansionFile();

@@ -301,7 +301,7 @@ public class NamedArgumentDefinition extends ArgumentDefinition {
             final List<String> preprocessedValues) // Note that some of these might be tag surrogates
     {
         final Collection c = (Collection) getArgumentValue();
-        if (!commandLineArgumentParser.getAppendToCollections()) {
+        if (!commandLineArgumentParser.getAppendToCollectionsParserOption()) {
             // if this is a collection then we only want to clear it once at the beginning, before we
             // process any of the values, unless we're in APPEND_TO_COLLECTIONS mode
             c.clear();
@@ -335,7 +335,6 @@ public class NamedArgumentDefinition extends ArgumentDefinition {
 
                 for (final String expandedValue : expandedValues) {
                     final Object actualValue = getValuePopulatedWithTags(
-                            commandLineArgumentParser,
                             normalizedSurrogatePair.getLeft(),
                             expandedValue);
                     checkArgumentRange(actualValue);
@@ -347,6 +346,8 @@ public class NamedArgumentDefinition extends ArgumentDefinition {
 
     // Propagate any argument values provided by the user to the argument. For values that are a tag
     // surrogate, the constructed value must be populated with any tags and attributes.
+    // Note that even though the target is a scalar, the user may have tried to provided more than
+    // one value, in which case we throw.
     private void setScalarValue(
             final CommandLineArgumentParser commandLineArgumentParser,
             final List<String> originalValues) // Note that these might be tag surrogates
@@ -368,10 +369,7 @@ public class NamedArgumentDefinition extends ArgumentDefinition {
                 }
             } else {
                 final Pair<String, String> normalizedSurrogatePair = getNormalizedTagValuePair(commandLineArgumentParser, stringValue);
-                value = getValuePopulatedWithTags(
-                        commandLineArgumentParser,
-                        normalizedSurrogatePair.getLeft(),
-                        normalizedSurrogatePair.getRight());
+                value = getValuePopulatedWithTags(normalizedSurrogatePair.getLeft(), normalizedSurrogatePair.getRight());
             }
             checkArgumentRange(value);
             setArgumentValue(value);
@@ -433,10 +431,9 @@ public class NamedArgumentDefinition extends ArgumentDefinition {
             final Collection<CommandLinePluginDescriptor<?>> pluginDescriptors,
             final int argumentColumnWidth,
             final int descriptionColumnWidth) {
+
         final StringBuilder sb = new StringBuilder();
-        if (getUnderlyingFieldClass() != null) {
-            sb.append("--").append(getLongName());
-        }
+        sb.append("--").append(getLongName());
         if (!getShortName().isEmpty()) {
             sb.append(",-").append(getShortName());
         }
@@ -462,6 +459,9 @@ public class NamedArgumentDefinition extends ArgumentDefinition {
             sb.append("\n");
         }
         sb.append("\n");
+        if (sb.toString().startsWith(",")) {
+            int i = 37;
+        }
         return sb.toString();
     }
 
@@ -532,14 +532,10 @@ public class NamedArgumentDefinition extends ArgumentDefinition {
 
     // If the string value is tag surrogate key, retrieve the underlying tags and return an object that has been
     // populated with the actual value and tags and attributes provided by the user for that argument.
-    private Object getValuePopulatedWithTags(
-            CommandLineArgumentParser commandLineArgumentParser,
-            final String originalTag,
-            final String stringValue)
+    private Object getValuePopulatedWithTags(final String originalTag, final String stringValue)
     {
         // See if the value is a surrogate key in the tag parser's map that was placed there during preprocessing,
         // and if so, unpack the values retrieved via the key and use those to populate the field
-        //final Pair<String, String> taggedOptionPair = commandLineArgumentParser.getTagAndValueForSurrogate(stringValue);
         final Object value = constructFromString(stringValue, getLongName());
 
         if (TaggedArgument.class.isAssignableFrom(getUnderlyingFieldClass())) {
@@ -703,20 +699,27 @@ public class NamedArgumentDefinition extends ArgumentDefinition {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof NamedArgumentDefinition)) return false;
         if (!super.equals(o)) return false;
 
         NamedArgumentDefinition that = (NamedArgumentDefinition) o;
 
+        if (isOptional() != that.isOptional()) return false;
         if (!argumentAnnotation.equals(that.argumentAnnotation)) return false;
-        return getDescriptorForControllingPlugin().equals(that.getDescriptorForControllingPlugin());
+        if (getDescriptorForControllingPlugin() != null ? !getDescriptorForControllingPlugin().equals(that.getDescriptorForControllingPlugin()) : that.getDescriptorForControllingPlugin() != null)
+            return false;
+        if (!mutuallyExclusiveArgs.equals(that.mutuallyExclusiveArgs)) return false;
+        return getDefaultValueAsString() != null ? getDefaultValueAsString().equals(that.getDefaultValueAsString()) : that.getDefaultValueAsString() == null;
     }
 
     @Override
     public int hashCode() {
         int result = super.hashCode();
         result = 31 * result + argumentAnnotation.hashCode();
-        result = 31 * result + getDescriptorForControllingPlugin().hashCode();
+        result = 31 * result + (getDescriptorForControllingPlugin() != null ? getDescriptorForControllingPlugin().hashCode() : 0);
+        result = 31 * result + (isOptional() ? 1 : 0);
+        result = 31 * result + mutuallyExclusiveArgs.hashCode();
+        result = 31 * result + (getDefaultValueAsString() != null ? getDefaultValueAsString().hashCode() : 0);
         return result;
     }
 }

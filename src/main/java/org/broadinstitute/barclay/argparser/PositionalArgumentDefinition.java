@@ -55,7 +55,7 @@ public class PositionalArgumentDefinition extends ArgumentDefinition {
         } catch (IllegalAccessException e) {
             throw new CommandLineException.ShouldNeverReachHereException("setAccessible(true) was called", e);
         }
-        return positionalArgs.stream().map(arg -> arg.toString()).collect(Collectors.joining(" "));
+        return positionalArgs.stream().map(Object::toString).collect(Collectors.joining(" "));
     }
 
     public PositionalArguments getPositionalArgumentsAnnotation() { return positionalArgumentsAnnotation; }

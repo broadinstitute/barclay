@@ -14,7 +14,7 @@ import java.util.*;
  */
 public class CollectionArgumentUnitTests {
 
-    class UninitializedCollections {
+    private class UninitializedCollections {
         @Argument
         public List<String> LIST;
         @Argument
@@ -73,7 +73,7 @@ public class CollectionArgumentUnitTests {
         Assert.assertEquals(o.COLLECTION, expectedCollection);
     }
 
-    class InitializedCollections {
+    private class InitializedCollections {
         @Argument
         public List<String> LIST = makeList("foo", "bar");
     }
@@ -146,12 +146,12 @@ public class CollectionArgumentUnitTests {
     //////////////////////////////////////////////////////////////////
     // tests for .list/.args file expansion
 
-    abstract class CollectionForListFileArguments {
+    private abstract class CollectionForListFileArguments {
         abstract List<String> getList1();
         abstract List<String> getList2();
     }
 
-    class EnabledListFileArguments extends CollectionForListFileArguments {
+    private class EnabledListFileArguments extends CollectionForListFileArguments {
 
         @Argument
         public List<String> LIST = makeList("foo", "bar");
@@ -303,7 +303,7 @@ public class CollectionArgumentUnitTests {
         Assert.assertEquals(argumentContainer.getList1(), expectedResult);
     }
 
-    class PositionalCollection {
+    private class PositionalCollection {
         @PositionalArguments
         public List<String> positionalCollection = new ArrayList<>();
     }
@@ -416,7 +416,7 @@ public class CollectionArgumentUnitTests {
         Assert.assertEquals(clp.getCommandLine(), expectedCommandLine);
     }
 
-    class NonCollectionFileExpansionSuppression {
+    private class NonCollectionFileExpansionSuppression {
         @Argument(suppressFileExpansion = true)
         public int bogusFileExpansionArg;
     }
@@ -427,7 +427,7 @@ public class CollectionArgumentUnitTests {
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(fo);
     }
 
-    class UninitializedCollectionThatCannotBeAutoInitializedArguments {
+    private class UninitializedCollectionThatCannotBeAutoInitializedArguments {
         @Argument
         public Set<String> SET;
     }

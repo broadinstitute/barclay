@@ -25,7 +25,7 @@ public abstract class ArgumentDefinition {
 
     /**
      * @param containingObject the parent {@code Object} containing the {@code Field} for this argument. cannot be null.
-     * @param underlyingField the {@code Field} object for this argument. cannot  be null.
+     * @param underlyingField the {@code Field} object for this argument. cannot be null.
      */
     public ArgumentDefinition(final Object containingObject, final Field underlyingField) {
         Utils.nonNull(underlyingField, "An underlying field must be provided");
@@ -179,8 +179,8 @@ public abstract class ArgumentDefinition {
                 field.set(callerArguments, field.getType().newInstance());
             }
         } catch (final Exception ex) {
-            // Note: I assume this catches Exception to handle the case where the type is not instantiable
-            // TODO: Can't we just throw when this happens ??
+            // If we can't instantiate the collection, try falling back to Note: I assume this catches Exception to
+            // handle the case where the type is not instantiable
             try {
                 field.set(callerArguments, new ArrayList<>());
             } catch (final IllegalArgumentException e) {
