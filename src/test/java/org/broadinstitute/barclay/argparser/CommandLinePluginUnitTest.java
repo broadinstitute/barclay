@@ -453,4 +453,67 @@ public class CommandLinePluginUnitTest {
                 Collections.emptySet());
     }
 
+    // Used to test the default implementation of includePluginClass
+    public static class DescriptorThatDoesntOverrideIncludePluginClass extends CommandLinePluginDescriptor<TestPluginBase> {
+        @Override
+        public List<String> getPackageNames() {
+            return null;
+        }
+
+        @Override
+        public Class<?> getPluginBaseClass() {
+            return TestPluginBase.class;
+        }
+
+        @Override
+        public TestPluginBase createInstanceForPlugin(Class<?> pluginClass) throws IllegalAccessException, InstantiationException {
+            return null;
+        }
+
+        @Override
+        public boolean isDependentArgumentAllowed(Class<?> predecessorClass) {
+            return false;
+        }
+
+        @Override
+        public void validateAndResolvePlugins() throws CommandLineException {
+
+        }
+
+        @Override
+        public List<TestPluginBase> getDefaultInstances() {
+            return null;
+        }
+
+        @Override
+        public List<TestPluginBase> getResolvedInstances() {
+            return null;
+        }
+
+        @Override
+        public Set<String> getAllowedValuesForDescriptorHelp(String longArgName) {
+            return null;
+        }
+
+        @Override
+        public Class<?> getClassForPluginHelp(String pluginName) {
+            return null;
+        }
+    }
+
+    @DataProvider(name="includePluginClassTests")
+    Object[][] getIncludePluginClassTests() {
+        return new Object[][] {
+                { TestPluginBase.class, true },
+                { TestPluginWithOptionalArg.class, true },
+                { Integer.class, false }
+        };
+    }
+
+    @Test(dataProvider = "includePluginClassTests")
+    public void testDefaultIncludePluginClass(final Class<?> clazz, final boolean expectedInclusion) {
+        final DescriptorThatDoesntOverrideIncludePluginClass descriptor = new DescriptorThatDoesntOverrideIncludePluginClass();
+        Assert.assertEquals(descriptor.includePluginClass(clazz), expectedInclusion);
+    }
+
 }
