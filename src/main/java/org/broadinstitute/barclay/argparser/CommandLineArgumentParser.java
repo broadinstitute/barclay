@@ -15,6 +15,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -614,7 +615,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         c.add(value);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private void setArgument(ArgumentDefinition argumentDefinition, List<String> values) {
         //special treatment for flags
         if (argumentDefinition.isFlag() && values.isEmpty()){
@@ -631,9 +632,8 @@ public final class CommandLineArgumentParser implements CommandLineParser {
                 // if this is a collection then we only want to clear it once at the beginning, before we process
                 // any of the values, unless we're in APPEND_TO_COLLECTIONS mode, in which case we leave the initial
                 // and append to it
-                @SuppressWarnings("rawtypes")
-                final Collection c = (Collection) argumentDefinition.getFieldValue();
-                c.clear();
+                System.err.println("Clear collection");
+                applyToCollection(argumentDefinition, Collection::clear);
             }
             values = expandListFile(argumentDefinition, values);
         }
@@ -695,21 +695,37 @@ public final class CommandLineArgumentParser implements CommandLineParser {
 
             // check the argument range
             checkArgumentRange(argumentDefinition, value);
+            // set the already parsed argument
+            setParsedArgumentValue(argumentDefinition, value);
+        }
+    }
 
-            if (argumentDefinition.isCollection) {
-                @SuppressWarnings("rawtypes")
-                final Collection c = (Collection) argumentDefinition.getFieldValue();
-                if (value == null) {
-                    //user specified this arg=null which is interpreted as empty list
-                    c.clear();
-                } else {
-                    c.add(value);
-                }
-                argumentDefinition.hasBeenSet = true;
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private void setParsedArgumentValue(final ArgumentDefinition argumentDefinition, final Object value) {
+        if (argumentDefinition.isCollection) {
+            if (value == null) {
+                applyToCollection(argumentDefinition, Collection::clear);
             } else {
-                argumentDefinition.setFieldValue(value);
-                argumentDefinition.hasBeenSet = true;
+                applyToCollection(argumentDefinition, c -> c.add(value));
             }
+            argumentDefinition.hasBeenSet = true;
+        } else {
+            argumentDefinition.setFieldValue(value);
+            argumentDefinition.hasBeenSet = true;
+        }
+    }
+
+    // apply a function to a collection, catching UnsuportedOperationException into a more informative
+    @SuppressWarnings("rawtypes")
+    private void applyToCollection(final ArgumentDefinition argumentDefinitionCollection, final Consumer<Collection> function) {
+
+        final Collection c = (Collection) argumentDefinitionCollection.getFieldValue();
+        try {
+            function.accept(c);
+        } catch (UnsupportedOperationException e) {
+            throw new CommandLineException.CommandLineParserInternalException(String.format("Collection arguments seems immutable: \"%s\". Initialized collection should support the clear and add methods, but %s does not.",
+                    argumentDefinitionCollection.getLongName(),
+                    c.getClass().getName()));
         }
     }
 
