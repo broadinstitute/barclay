@@ -189,6 +189,19 @@ public final class CommandLineArgumentParserTest {
         clp.parseArguments(System.err, new String[]{"--" + AbbreviatableArgument.ARGUMENT_NAME.substring(0,5)});
     }
 
+    @Test
+    public void testEnsureClusteringDisabled() {
+        final String clusterOfShortArgs = "-cluster";
+        final CommandLineArgumentParser clp = new CommandLineArgumentParser(new Object());
+        final CommandLineException e = Assert.expectThrows(
+                CommandLineException.class,
+                () -> clp.parseArguments(System.err, new String[]{clusterOfShortArgs}));
+        // If clustering is enabled, the string "cluster" would be interpreted as a series of short arg names, the
+        // first one being "c", so the error message will say "-c is not...", but we want to ensure it says
+        // "-cluster is not..."
+        Assert.assertTrue(e.getMessage().startsWith(clusterOfShortArgs));
+    }
+
     @CommandLineProgramProperties(
             summary = "[oscillation_frequency]\n\nRecalibrates overthruster oscillation. \n",
             oneLineSummary = "Recalibrates the overthruster.",

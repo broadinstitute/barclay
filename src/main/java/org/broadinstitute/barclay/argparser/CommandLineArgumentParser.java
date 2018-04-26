@@ -527,7 +527,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     }
 
     private OptionParser getOptionParser() {
-        final OptionParser parser = new OptionParser(false);
+        final OptionParser parser = new BarclayOptionParser(false);
         for (final NamedArgumentDefinition argDef : namedArgumentDefinitions){
             final OptionSpecBuilder bld = parser.acceptsAll(argDef.getArgumentAliases(), argDef.getDocString());
             if (argDef.isFlag()) {
