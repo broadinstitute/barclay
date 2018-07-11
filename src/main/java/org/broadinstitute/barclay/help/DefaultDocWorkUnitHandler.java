@@ -372,50 +372,19 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
             final Map<String, List<Map<String, Object>>> args,
             final NamedArgumentDefinition argDef)
     {
-        if (!argDef.isControlledByPlugin() &&
-                (!argDef.isHidden() || getDoclet().showHiddenFeatures())) {
-            // first find the fielddoc for the target
-            FieldDoc fieldDoc = getFieldDocForCommandLineArgument(currentWorkUnit, argDef);
-            final Map<String, Object> argBindings = docForArgument(fieldDoc, argDef);
-            final String kind = docKindOfArg(argDef);
-            argBindings.put("kind", kind);
-
-            // Retrieve default value
-            final Object fieldValue = argDef.getArgumentValue();
-            argBindings.put("defaultValue",
-                    fieldValue == null ?
-                            argDef.getDefaultValueAsString() :
-                            prettyPrintValueString(fieldValue));
-
-            if (fieldValue instanceof Number) {
-                // Retrieve min and max / hard and soft value thresholds for numeric args
-                argBindings.put("minValue", argDef.getMinValue());
-                argBindings.put("maxValue", argDef.getMaxValue());
-                argBindings.put("minRecValue",
-                        argDef.getMinRecommendedValue() != Double.NEGATIVE_INFINITY ?
-                                argDef.getMinRecommendedValue() :
-                                "NA");
-                argBindings.put("maxRecValue",
-                        argDef.getMaxRecommendedValue() != Double.POSITIVE_INFINITY ?
-                                argDef.getMaxRecommendedValue() :
-                                "NA");
-            } else {
-                argBindings.put("minValue", "NA");
-                argBindings.put("maxValue", "NA");
-                argBindings.put("minRecValue", "NA");
-                argBindings.put("maxRecValue", "NA");
-            }
-
-            // Add in the number of times you can specify it:
-            argBindings.put("minElements", argDef.getMinElements());
-            argBindings.put("maxElements", argDef.getMaxElements());
-
-            // if its a plugin descriptor arg, get the allowed values
-            processPluginDescriptorArgument(argDef, argBindings);
+        // Rather than including all the doc for all of the arguments of all plugins right in with the main doc for
+        // a given DocumentedFeature, we instead exclude them (note that this excludes arguments that are
+        // controlled by a plugin, but not by the controlling descriptor itself) by default, on the premise that the
+        // plugins themselves are standalone @DocumentedFeatures that have their own doc. Custom doclets can override
+        // processNamedArgument and provide an alternative policy.
+        if (!argDef.isControlledByPlugin() && (!argDef.isHidden() || getDoclet().showHiddenFeatures())) {
+            final Map<String, Object> argMap = new HashMap<>();
+            final FieldDoc fieldDoc = getFieldDocForCommandLineArgument(currentWorkUnit, argDef);
+            final String argKind = processNamedArgument(argMap, argDef, fieldDoc.commentText());
 
             // Finalize argument bindings
-            args.get(kind).add(argBindings);
-            args.get("all").add(argBindings);
+            args.get(argKind).add(argMap);
+            args.get("all").add(argMap);
         }
     }
 
@@ -498,17 +467,6 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
 
             args.get("positional").add(argBindings);
             args.get("all").add(argBindings);
-        }
-    }
-
-    protected void processPluginDescriptorArgument(
-            final NamedArgumentDefinition argDef,
-            final Map<String, Object> argBindings) {
-        if (CommandLinePluginDescriptor.class.isAssignableFrom(argDef.getContainingObject().getClass()) &&
-                argDef.getUnderlyingFieldClass().equals(String.class)) {
-            final CommandLinePluginDescriptor<?> descriptor = (CommandLinePluginDescriptor<?>) argDef.getContainingObject();
-
-            //TODO: need a way to emit a link to the index group for the plugin
         }
     }
 
@@ -712,57 +670,91 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
     }
 
     /**
-     * High-level entry point for creating a FreeMarker map describing the argument
-     * source with definition def, with associated javadoc fieldDoc.
+     * Populate a FreeMarker map with attributes of an argument
      *
-     * @param fieldDoc
-     * @param def
-     * @return a non-null Map binding argument keys with their values
+     * @param argBindings
+     * @param argDef
+     * @param fieldCommentText
+     * @return
      */
-    protected Map<String, Object> docForArgument(final FieldDoc fieldDoc, final NamedArgumentDefinition def) {
-        final Map<String, Object> root = new HashMap<>();
+    protected String processNamedArgument(
+            final Map<String, Object> argBindings,
+            final NamedArgumentDefinition argDef,
+            final String fieldCommentText) {
+        // Retrieve default value
+        final Object fieldValue = argDef.getArgumentValue();
+        argBindings.put("defaultValue",
+                fieldValue == null ?
+                        argDef.getDefaultValueAsString() :
+                        prettyPrintValueString(fieldValue));
 
-        final Pair<String, String> names = displayNames(def.getShortName(), def.getLongName());
-        root.put("name", names.getLeft());
-        root.put("synonyms", names.getRight() != null ? names.getRight() : "NA");
-        root.put("required", def.isOptional() ? "no": "yes") ;
-        root.put("type", argumentTypeString(def.getUnderlyingField().getGenericType()));
-
-        // summary and fulltext
-        root.put("summary", def.getDocString() != null ? def.getDocString() : "");
-        root.put("fulltext", fieldDoc.commentText());
-
-        // Does this argument interact with any others?
-        if (def.isControlledByPlugin()) {
-            root.put("otherArgumentRequired",
-                    def.getContainingObject().getClass().getSimpleName().length() == 0 ?
-                        def.getContainingObject().getClass().getName() :
-                        def.getContainingObject().getClass().getSimpleName());
+        if (fieldValue instanceof Number) {
+            // Retrieve min and max / hard and soft value thresholds for numeric args
+            argBindings.put("minValue", argDef.getMinValue());
+            argBindings.put("maxValue", argDef.getMaxValue());
+            argBindings.put("minRecValue",
+                    argDef.getMinRecommendedValue() != Double.NEGATIVE_INFINITY ?
+                            argDef.getMinRecommendedValue() :
+                            "NA");
+            argBindings.put("maxRecValue",
+                    argDef.getMaxRecommendedValue() != Double.POSITIVE_INFINITY ?
+                            argDef.getMaxRecommendedValue() :
+                            "NA");
         } else {
-            root.put("otherArgumentRequired", "NA");
+            argBindings.put("minValue", "NA");
+            argBindings.put("maxValue", "NA");
+            argBindings.put("minRecValue", "NA");
+            argBindings.put("maxRecValue", "NA");
         }
 
-        root.put("exclusiveOf",
-                def.getMutexTargetList() != null && !def.getMutexTargetList().isEmpty() ?
-                    String.join(", ", def.getMutexTargetList()) :
+        // Add in the number of times you can specify it:
+        argBindings.put("minElements", argDef.getMinElements());
+        argBindings.put("maxElements", argDef.getMaxElements());
+
+        final String kind = docKindOfArg(argDef);
+        argBindings.put("kind", kind);
+
+        final Pair<String, String> names = displayNames(argDef.getShortName(), argDef.getLongName());
+        argBindings.put("name", names.getLeft());
+        argBindings.put("synonyms", names.getRight() != null ? names.getRight() : "NA");
+        argBindings.put("required", argDef.isOptional() ? "no": "yes") ;
+        argBindings.put("type", argumentTypeString(argDef.getUnderlyingField().getGenericType()));
+
+        // summary and fulltext
+        argBindings.put("summary", argDef.getDocString() != null ? argDef.getDocString() : "");
+        argBindings.put("fulltext", fieldCommentText);
+
+        // Does this argument interact with any others?
+        if (argDef.isControlledByPlugin()) {
+            argBindings.put("otherArgumentRequired",
+                    argDef.getContainingObject().getClass().getSimpleName().length() == 0 ?
+                            argDef.getContainingObject().getClass().getName() :
+                            argDef.getContainingObject().getClass().getSimpleName());
+        } else {
+            argBindings.put("otherArgumentRequired", "NA");
+        }
+
+        argBindings.put("exclusiveOf",
+                argDef.getMutexTargetList() != null && !argDef.getMutexTargetList().isEmpty() ?
+                    String.join(", ", argDef.getMutexTargetList()) :
                     "NA");
 
         // enum options
-        root.put("options",
-                def.getUnderlyingField().getType().isEnum() ?
-                        docForEnumArgument(def.getUnderlyingField().getType()) :
+        argBindings.put("options",
+                argDef.getUnderlyingField().getType().isEnum() ?
+                        docForEnumArgument(argDef.getUnderlyingField().getType()) :
                         Collections.EMPTY_LIST);
 
         List<String> attributes = new ArrayList<>();
-        if (!def.isOptional()) {
+        if (!argDef.isOptional()) {
             attributes.add("required");
         }
-        if (def.isDeprecated()) {
+        if (argDef.isDeprecated()) {
             attributes.add("deprecated");
         }
-        root.put("attributes", attributes.size() > 0 ? String.join(", ", attributes) : "NA");
+        argBindings.put("attributes", attributes.size() > 0 ? String.join(", ", attributes) : "NA");
 
-        return root;
+        return kind;
     }
 
     /**
