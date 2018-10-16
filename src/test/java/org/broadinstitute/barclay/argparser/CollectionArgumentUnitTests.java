@@ -164,7 +164,7 @@ public class CollectionArgumentUnitTests {
         public List<String> getList2() { return LIST2; };
     }
 
-    class SuppressedListFileArguments extends CollectionForListFileArguments {
+    private class SuppressedListFileArguments extends CollectionForListFileArguments {
 
         @Argument(suppressFileExpansion = true)
         public List<String> LIST = makeList("foo", "bar");

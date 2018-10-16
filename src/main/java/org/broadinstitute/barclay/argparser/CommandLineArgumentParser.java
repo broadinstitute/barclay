@@ -259,7 +259,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         }
     }
 
-    // Validate ay argument values. For now, only validates that any mutex targets exist. NOTE: it isn't
+    // Validate any argument values. For now, only validates that any mutex targets exist. NOTE: it isn't
     // a requirement for correct behavior that mutex arguments have symmetric declarations, and its not enforced.
     // But they should be declared that way so that the relationship is reflected in usage/help/doc for all
     // arguments involved.

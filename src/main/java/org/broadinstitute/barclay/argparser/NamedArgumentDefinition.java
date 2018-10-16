@@ -459,9 +459,6 @@ public class NamedArgumentDefinition extends ArgumentDefinition {
             sb.append("\n");
         }
         sb.append("\n");
-        if (sb.toString().startsWith(",")) {
-            int i = 37;
-        }
         return sb.toString();
     }
 
@@ -585,7 +582,7 @@ public class NamedArgumentDefinition extends ArgumentDefinition {
         // then we need to delegate to the plugin descriptor to generate the list of allowed values
         if (!usageForPluginDescriptorArgument(sb, pluginDescriptors)) {
             // If the argument wasn't claimed by any descriptor, treat it as a normal argument
-            sb.append(getOptions(getUnderlyingFieldClass()));
+            sb.append(getOptionsAsDisplayString());
         }
 
         if (!getMutexTargetList().isEmpty()) {

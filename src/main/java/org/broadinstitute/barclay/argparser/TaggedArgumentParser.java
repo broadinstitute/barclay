@@ -90,7 +90,7 @@ public final class TaggedArgumentParser {
 
     /**
      * Reset the cached tag surrogate map. The command line parser needs to do two passes on input arguments in
-     * order to determine if some special arguments have been included (ie, and arguments file). This is used to
+     * order to determine if some special arguments have been included (ie, an arguments file). This is used to
      * clear the tag surrogates generated in the first pass before a second pass is started, when they will be
      * recreated.
      */

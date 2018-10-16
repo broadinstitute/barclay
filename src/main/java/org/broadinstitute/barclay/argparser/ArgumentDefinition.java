@@ -259,18 +259,18 @@ public abstract class ArgumentDefinition {
     }
 
     /**
-     * Returns the help string with details about valid options for the given argument class.
+     * Returns the list of possible options values for this argument.
      *
      * <p>
      *     Currently this only make sense with {@link Boolean} and {@link Enum}. Any other class
      *     will result in an empty string.
      * </p>
      *
-     * @param clazz the target argument's class.
-     * @return never {@code null}.
+     * @return String representing the list of possible option values, never {@code null}.
      */
     @SuppressWarnings({"unchecked","rawtypes"})
-    protected static String getOptions(final Class<?> clazz) {
+    protected String getOptionsAsDisplayString() {
+        final Class<?> clazz = getUnderlyingFieldClass();
         if (clazz == Boolean.class) {
             return String.format("%s%s, %s%s", OPTION_DOC_PREFIX, Boolean.TRUE, Boolean.FALSE, OPTION_DOC_SUFFIX);
         } else if (clazz.isEnum()) {
