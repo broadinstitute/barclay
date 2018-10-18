@@ -10,7 +10,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -160,6 +159,19 @@ public final class CommandLineArgumentParserTest {
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(eo);
     }
 
+    class ArrayArgument {
+        // arrays have no string constructor
+        @Argument
+        public String[] stringArrayArgument = new String[] { "foo", "bar" };
+    }
+
+    @Test(expectedExceptions = CommandLineException.CommandLineParserInternalException.class)
+    public void testArrayArgument() {
+        final ArrayArgument arrayArg = new ArrayArgument();
+        final CommandLineArgumentParser clp = new CommandLineArgumentParser(arrayArg);
+        Assert.assertTrue(clp.parseArguments(System.err, new String[]{"--stringArrayArgument", "somestring"}));
+    }
+
     class AbbreviatableArgument{
         public static final String ARGUMENT_NAME = "longNameArgument";
         @Argument(fullName= ARGUMENT_NAME)
@@ -285,9 +297,9 @@ public final class CommandLineArgumentParserTest {
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(fo);
         Assert.assertTrue(clp.parseArguments(System.err, args));
         Assert.assertEquals(clp.getCommandLine(),
-                "FrobnicateArguments  " +
+                "FrobnicateArguments " +
                         "positional1 positional2 --FROBNICATION_THRESHOLD 17 --FROBNICATION_FLAVOR BAR " +
-                        "--SHMIGGLE_TYPE shmiggle1 --SHMIGGLE_TYPE shmiggle2 --TRUTHINESS true  --help false " +
+                        "--SHMIGGLE_TYPE shmiggle1 --SHMIGGLE_TYPE shmiggle2 --TRUTHINESS true --help false " +
                         "--version false --showHidden false");
     }
 
@@ -556,6 +568,24 @@ public final class CommandLineArgumentParserTest {
         clp.parseArguments(System.err, args);
     }
 
+    class DanglingMutexArguments {
+        @Argument(mutex={"B"})
+        public String A;
+
+        @Argument(mutex={"nonexistent", "Z"})
+        public String B;
+
+        @Argument(mutex={"A", "B"})
+        public String Z;
+    }
+
+    @Test(expectedExceptions = CommandLineException.CommandLineParserInternalException.class)
+    public void testDanglingMutex() {
+        final DanglingMutexArguments o = new DanglingMutexArguments();
+        final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
+        Assert.assertTrue(clp.parseArguments(System.err, new String[]{"-B", "b"}));
+    }
+
     @Test
        public void testFlagNoArgument(){
         final BooleanFlags o = new BooleanFlags();
@@ -788,6 +818,42 @@ public final class CommandLineArgumentParserTest {
         Assert.assertEquals(o.nullDouble, expectedDouble);
     }
 
+    @CommandLineProgramProperties(
+            summary = "tool with non-nullable arguments",
+            oneLineSummary = "tools with non-nullable arguments",
+            programGroup = TestProgramGroup.class
+    )
+    public class NonNullableArguments {
+        @Argument(doc = "Primitive int", optional = true)
+        public int primitiveInt;
+
+        @Argument(doc = "Primitive double", optional = true)
+        public double primitiveDouble;
+
+        @Argument(doc = "Primitive boolean", optional = true)
+        public boolean primitiveBoolean;
+    }
+
+    @DataProvider(name = "nonNullableArgs")
+    public Object[][] getNonNullableArguments() {
+        return new Object[][] {
+                // null values
+                {new String[]{"--primitiveInt", "null"}},
+                {new String[]{"--primitiveDouble", "null"}},
+                // this case triggers a very different code path; because its a flag option, its not required to
+                // have an argument value, and because the value "null" fails StrictBooleanConverter, the parser
+                // treats it is a flag with no argument value, followed by a positional argument value "null"
+                {new String[]{"--primitiveBoolean", "null"}},
+        };
+    }
+
+    @Test(dataProvider = "nonNullableArgs", expectedExceptions = CommandLineException.BadArgumentValue.class)
+    public void testSetNonNullableArgumentsToNull(final String[] args) throws Exception {
+        final NonNullableArguments o = new NonNullableArguments();
+        final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
+        Assert.assertTrue(clp.parseArguments(System.err, args));
+    }
+
     @Test(expectedExceptions = CommandLineException.CommandLineParserInternalException.class)
     public void testWithBoundariesArgumentsForNoNumeric() {
         @CommandLineProgramProperties(summary = "broken tool",
@@ -856,7 +922,6 @@ public final class CommandLineArgumentParserTest {
                 {new String[]{"--integerArg", "-1"}},
                 {new String[]{"--integerArg", "31"}},
                 {new String[]{"--integerArg", "106"}},
-                {new String[]{"--integerArg", "null"}},
                 {new String[]{"--doubleArg", "-1"}},
                 {new String[]{"--doubleArg", "0"}},
                 {new String[]{"--doubleArg", "21"}}
@@ -1145,18 +1210,18 @@ public final class CommandLineArgumentParserTest {
 
         // Gather all argument values of type GatherArgumentValuesTargetSuperType (or Collection<GatherArgumentValuesTargetSuperType>),
         // including subtypes.
-        List<Pair<Field, GatherArgumentValuesTargetSuperType>> gatheredArguments =
-                CommandLineParser.gatherArgumentValuesOfType(GatherArgumentValuesTargetSuperType.class, argumentSource);
+        List<Pair<ArgumentDefinition, GatherArgumentValuesTargetSuperType>> gatheredArguments =
+                clp.gatherArgumentValuesOfType(GatherArgumentValuesTargetSuperType.class);
 
         // Make sure we gathered the expected number of argument values
         Assert.assertEquals(gatheredArguments.size(), sortedExpectedGatheredValues.size(), "Gathered the wrong number of arguments");
 
         // Make sure actual gathered argument values match expected values
         List<Pair<String, String>> sortedActualGatheredArgumentValues = new ArrayList<>();
-        for ( Pair<Field, GatherArgumentValuesTargetSuperType> gatheredArgument : gatheredArguments ) {
-            Assert.assertNotNull(gatheredArgument.getKey().getAnnotation(Argument.class), "Gathered argument is not annotated with an @Argument annotation");
+        for ( Pair<ArgumentDefinition, GatherArgumentValuesTargetSuperType> gatheredArgument : gatheredArguments ) {
+            Assert.assertNotNull(gatheredArgument.getKey().getUnderlyingField().getAnnotation(Argument.class), "Gathered argument is not annotated with an @Argument annotation");
 
-            String argumentName = gatheredArgument.getKey().getAnnotation(Argument.class).fullName();
+            String argumentName = gatheredArgument.getKey().getUnderlyingField().getAnnotation(Argument.class).fullName();
             GatherArgumentValuesTargetSuperType argumentValue = gatheredArgument.getValue();
 
             sortedActualGatheredArgumentValues.add(Pair.of(argumentName, argumentValue != null ? argumentValue.getValue() : null));
@@ -1165,7 +1230,6 @@ public final class CommandLineArgumentParserTest {
 
         Assert.assertEquals(sortedActualGatheredArgumentValues, sortedExpectedGatheredValues,
                             "One or more gathered argument values not correct");
-
     }
 
     /**
@@ -1208,16 +1272,16 @@ public final class CommandLineArgumentParserTest {
 
         // Gather argument values of the raw type GatherArgumentValuesParameterizedTargetType, and make
         // sure that we match fully-parameterized declarations
-        List<Pair<Field, GatherArgumentValuesParameterizedTargetType>> gatheredArguments =
-                CommandLineParser.gatherArgumentValuesOfType(GatherArgumentValuesParameterizedTargetType.class, argumentSource);
+        List<Pair<ArgumentDefinition, GatherArgumentValuesParameterizedTargetType>> gatheredArguments =
+                clp.gatherArgumentValuesOfType(GatherArgumentValuesParameterizedTargetType.class);
 
         Assert.assertEquals(gatheredArguments.size(), 2, "Wrong number of arguments gathered");
 
-        Assert.assertNotNull(gatheredArguments.get(0).getKey().getAnnotation(Argument.class), "Gathered argument is not annotated with an @Argument annotation");
-        Assert.assertEquals(gatheredArguments.get(0).getKey().getAnnotation(Argument.class).fullName(), "parameterizedTypeArgument", "Wrong argument gathered");
+        Assert.assertNotNull(gatheredArguments.get(0).getKey().getUnderlyingField().getAnnotation(Argument.class), "Gathered argument is not annotated with an @Argument annotation");
+        Assert.assertEquals(gatheredArguments.get(0).getKey().getUnderlyingField().getAnnotation(Argument.class).fullName(), "parameterizedTypeArgument", "Wrong argument gathered");
         Assert.assertEquals(gatheredArguments.get(0).getValue().getValue(), "parameterizedTypeArgumentValue", "Wrong value for gathered argument");
-        Assert.assertNotNull(gatheredArguments.get(1).getKey().getAnnotation(Argument.class), "Gathered argument is not annotated with an @Argument annotation");
-        Assert.assertEquals(gatheredArguments.get(1).getKey().getAnnotation(Argument.class).fullName(), "parameterizedTypeListArgument", "Wrong argument gathered");
+        Assert.assertNotNull(gatheredArguments.get(1).getKey().getUnderlyingField().getAnnotation(Argument.class), "Gathered argument is not annotated with an @Argument annotation");
+        Assert.assertEquals(gatheredArguments.get(1).getKey().getUnderlyingField().getAnnotation(Argument.class).fullName(), "parameterizedTypeListArgument", "Wrong argument gathered");
         Assert.assertEquals(gatheredArguments.get(1).getValue().getValue(), "parameterizedTypeListArgumentValue", "Wrong value for gathered argument");
     }
 

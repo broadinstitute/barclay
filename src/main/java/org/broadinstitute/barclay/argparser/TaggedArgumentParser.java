@@ -13,7 +13,7 @@ import java.util.*;
  * or:
  *     --argument_name:logical_name,key1=value1,key2=value2 argument_value
  *
- * The logical name is optional, but is required if key/value pairs are includede. @Argument annotated fields that
+ * The logical name is optional, but is required if key/value pairs are included. @Argument annotated fields that
  * require tagged values must implement {@link TaggedArgument}.
  *
  * The parsing occurs in two phases:
@@ -84,10 +84,17 @@ public final class TaggedArgumentParser {
             } else { // Positional arg, etc., just add it
                 finalArgs.add(arg);
             }
-
         }
         return finalArgs.toArray(new String[finalArgs.size()]);
-    };
+    }
+
+    /**
+     * Reset the cached tag surrogate map. The command line parser needs to do two passes on input arguments in
+     * order to determine if some special arguments have been included (ie, an arguments file). This is used to
+     * clear the tag surrogates generated in the first pass before a second pass is started, when they will be
+     * recreated.
+     */
+    public void resetTagSurrogates() { tagSurrogates.clear(); }
 
     /**
      * Process a single option and add it to the curated args list. If the option is tagged, add the
@@ -206,7 +213,7 @@ public final class TaggedArgumentParser {
      * @param longArgName name of the argument being tagged
      * @param tagString tag string (including logical name and attributes, no option name)
      */
-    public void populateArgumentTags(final TaggedArgument taggedArg, final String longArgName, final String tagString) {
+    public static void populateArgumentTags(final TaggedArgument taggedArg, final String longArgName, final String tagString) {
         if (tagString == null) {
             taggedArg.setTag(null);
             taggedArg.setTagAttributes(Collections.emptyMap());
@@ -218,7 +225,7 @@ public final class TaggedArgumentParser {
     }
 
     /**
-     * Given a TaggedArgument implementation and along argument name, return a string representation of argument,
+     * Given a TaggedArgument implementation and a long argument name, return a string representation of argument,
      * including the tag and attributes, for display purposes.
      *
      * @param taggedArg implementation of TaggedArgument interface
