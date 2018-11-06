@@ -791,31 +791,37 @@ public final class CommandLineArgumentParserTest {
         public Integer nullInteger = null;
         // Double without boundaries and null should be allowed
         @Argument(doc = "Double with null value allowed", optional = true)
-        public Double nullDouble= null;
+        public Double nullDouble = null;
+        // String null should be allowed
+        @Argument(doc = "String with null value allowed", optional = true)
+        public String nullString = null;
     }
 
     @DataProvider(name = "nullableArgs")
     public Object[][] getNullableArguments() {
         return new Object[][] {
                 // null values
-                {new String[]{}, null, null},
-                {new String[]{"--nullInteger", "null"}, null, null},
-                {new String[]{"--nullDouble", "null"}, null, null},
-                {new String[]{"--nullInteger", "null", "--nullDouble", "null"}, null, null},
+                {new String[]{}, null, null, null},
+                {new String[]{"--nullInteger", "null"}, null, null, null},
+                {new String[]{"--nullDouble", "null"}, null, null, null},
+                {new String[]{"--nullString", "null"}, null, null, null},
+                {new String[]{"--nullInteger", "null", "--nullDouble", "null", "--nullString", "null"}, null, null, null},
                 // with values
-                {new String[]{"--nullInteger", "1"}, 1, null},
-                {new String[]{"--nullDouble", "2"}, null, 2d},
-                {new String[]{"--nullInteger", "1", "--nullDouble", "2"}, 1, 2.d},
+                {new String[]{"--nullInteger", "1"}, 1, null, null},
+                {new String[]{"--nullDouble", "2"}, null, 2d, null},
+                {new String[]{"--nullString", "somestring"}, null, null, "somestring"},
+                {new String[]{"--nullInteger", "1", "--nullDouble", "2", "--nullString", "somestring"}, 1, 2.d, "somestring"},
         };
     }
 
     @Test(dataProvider = "nullableArgs")
-    public void testWithinBoundariesArguments(final String[] argv, final Integer expectedInteger, final Double expectedDouble) throws Exception {
+    public void testWithinBoundariesArguments(final String[] argv, final Integer expectedInteger, final Double expectedDouble, final String expectedString) throws Exception {
         final WithNullableArguments o = new WithNullableArguments();
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
         Assert.assertTrue(clp.parseArguments(System.err, argv));
         Assert.assertEquals(o.nullInteger, expectedInteger);
         Assert.assertEquals(o.nullDouble, expectedDouble);
+        Assert.assertEquals(o.nullString, expectedString);
     }
 
     @CommandLineProgramProperties(
