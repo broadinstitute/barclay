@@ -115,11 +115,12 @@ public final class TaggedArgumentParser {
     {
         final int separatorIndex = optionString.indexOf(TaggedArgumentParser.ARGUMENT_TAG_NAME_SEPARATOR);
         if (separatorIndex == -1) { // no tags, consume one argument and get out
+            detectAndRejectHybridSyntax(optionString);
             finalArgList.add(optionPrefix + optionString);
         } else {
+            final String optionName = optionString.substring(0, separatorIndex);
+            detectAndRejectHybridSyntax(optionName);
             if (userArgIt.hasNext()) {
-
-                final String optionName = optionString.substring(0, separatorIndex);
                 if (optionName.isEmpty()) {
                     throw new CommandLineException("Zero length argument name found in tagged argument: " + optionString);
                 }
@@ -130,7 +131,7 @@ public final class TaggedArgumentParser {
                 final String argValue = userArgIt.next();
                 if (isLongOptionToken(argValue) || isShortOptionToken(argValue)) {
                     // An argument value is required, and there isn't one to consume
-                    throw new CommandLineException("No value found for tagged argument: " + optionString);
+                    throw new CommandLineException("No argument value found for tagged argument: " + optionString);
                 }
 
                 // Replace the original prefix/option/attribute string with the original prefix/option name, and
@@ -142,8 +143,22 @@ public final class TaggedArgumentParser {
             } else {
                 // the option appears to be tagged, but we're already at the end of the argument list,
                 // and there is no companion value to use
-                throw new CommandLineException("No value found for tagged argument: " + optionString);
+                throw new CommandLineException("No argument value found for tagged argument: " + optionString);
             }
+        }
+    }
+
+    /**
+     * Reject attempts to use hybrid Barclay/legacy syntax that contains embedded "=". Most of the time
+     * this works because jopt accepts "-O=value". But if "value" contains what appears to be tagging
+     * syntax (ie., an embedded ":"), the tag parser will fail and give misleading error messages. So instead of
+     * allowing it some cases and having strange failures in others, require users to always use correct
+     * (Barclay style) syntax.
+     * @param optionName name of the option being inspected
+     */
+    private void detectAndRejectHybridSyntax(final String optionName) {
+        if (optionName.contains(ARGUMENT_KEY_VALUE_SEPARATOR)) {
+            throw new CommandLineException(String.format("Can't parse option name containing an embedded '=' (%s)", optionName));
         }
     }
 

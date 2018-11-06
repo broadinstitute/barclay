@@ -471,6 +471,13 @@ public class TaggedArgumentTest {
                 {new String[]{"--t,tumor,=:value", "value"}},
                 {new String[]{"--t,tumor:value", "value"}},
                 {new String[]{"--t,tumor:value:", "gendb://mydb"}},
+
+                // reject hybrid picard/posix syntax
+                {new String[]{"-C=hybrid"}},
+                {new String[]{"-C=hybrid:"}},
+                {new String[]{"-C=hybrid: "}},
+                {new String[]{"-C=hybrid: comment"}},
+                {new String[]{"-C=hybrid: comment", "-C=hybrid: comment"}},
         };
     }
 
