@@ -1,5 +1,7 @@
 package org.broadinstitute.barclay.argparser;
 
+import org.mockito.Mockito;
+import org.mockito.stubbing.Answer;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -451,6 +453,28 @@ public class CommandLinePluginUnitTest {
                 PlugInTestObject,
                 Collections.singletonList(new TestPluginArgCollisionDescriptor()),
                 Collections.emptySet());
+    }
+
+    @DataProvider(name="includePluginClassTests")
+    Object[][] getIncludePluginClassTests() {
+        return new Object[][] {
+                { TestPluginBase.class, true },
+                { TestPluginWithOptionalArg.class, true },
+                { Integer.class, false }
+        };
+    }
+
+    // Used to test the default implementation of includePluginClass. Provides an explicit implementation of
+    // getPluginBaseClass since that will be called by the mock.
+    private abstract class DescriptorThatDoesntOverrideIncludePluginClass extends CommandLinePluginDescriptor<TestPluginBase> {
+        public Class<?> getPluginBaseClass() { return TestPluginBase.class; }
+    }
+
+    @Test(dataProvider = "includePluginClassTests")
+    public void testDefaultIncludePluginClass(final Class<?> clazz, final boolean expectedInclusion) {
+        final CommandLinePluginDescriptor<?> descriptor =
+                Mockito.mock(DescriptorThatDoesntOverrideIncludePluginClass.class, Mockito.CALLS_REAL_METHODS);
+        Assert.assertEquals(descriptor.includePluginClass(clazz), expectedInclusion);
     }
 
 }

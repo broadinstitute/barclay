@@ -132,7 +132,7 @@ public abstract class CommandLinePluginDescriptor<T> {
      * @param c plugin class, upper bounded by {@code T}
      * @return false if the plugin class shouldn't be used, otherwise true
      */
-    public boolean includePluginClass(Class<?> c) { return c.isAssignableFrom(getPluginBaseClass());}
+    public boolean includePluginClass(Class<?> c) { return getPluginBaseClass().isAssignableFrom(c);}
 
     /**
      * Return an instance of the specified plugin class. The descriptor should instantiate or otherwise
