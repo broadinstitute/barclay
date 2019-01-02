@@ -8,6 +8,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.broadinstitute.barclay.argparser.*;
+import org.broadinstitute.barclay.utils.Utils;
 
 import java.lang.reflect.*;
 import java.util.*;
@@ -454,7 +455,7 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
             argBindings.put("synonyms", "NA");
             argBindings.put("exclusiveOf", "NA");
             argBindings.put("type", argumentTypeString(positionalArgDef.getUnderlyingField().getGenericType()));
-            argBindings.put("options", Collections.EMPTY_LIST);
+            argBindings.put("options", getPossibleValues(positionalArgDef, "positional"));
             argBindings.put("attributes", "NA");
             argBindings.put("required", "yes");
             argBindings.put("minRecValue", "NA");
@@ -739,13 +740,10 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
                     String.join(", ", argDef.getMutexTargetList()) :
                     "NA");
 
-        // enum options
-        argBindings.put("options",
-                argDef.getUnderlyingField().getType().isEnum() ?
-                        docForEnumArgument(argDef.getUnderlyingField().getType()) :
-                        Collections.EMPTY_LIST);
+        // possible values
+        argBindings.put("options", getPossibleValues(argDef, argDef.getLongName()));
 
-        List<String> attributes = new ArrayList<>();
+        final List<String> attributes = new ArrayList<>();
         if (!argDef.isOptional()) {
             attributes.add("required");
         }
@@ -755,6 +753,44 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
         argBindings.put("attributes", attributes.size() > 0 ? String.join(", ", attributes) : "NA");
 
         return kind;
+    }
+
+    /**
+     * Return a (possibly empty) list of possible values that can be specified for this argument. Each
+     * value in the list is a map with "name" and "summary" keys, used to handle enums that implement the
+     * {@link CommandLineParser.ClpEnum} interface.
+     * @param argDef {ArgumentDefinition}
+     * @return list of possible options for {@code argDef}, may not be null
+     */
+    private List<Map<String, Object>> getPossibleValues(final ArgumentDefinition argDef, final String displayName) {
+        Utils.nonNull(argDef);
+
+        final Field underlyingField = argDef.getUnderlyingField();
+        Class<?> targetClass = underlyingField.getType();
+
+        // enum options
+        // if this argument is a Collection, get the type param to see if its an enum
+        if (argDef.isCollection() && underlyingField.getGenericType() instanceof ParameterizedType) {
+            final ParameterizedType parameterizedType = (ParameterizedType) underlyingField.getGenericType();
+            final Type types[] = parameterizedType.getActualTypeArguments();
+            if (types.length != 1) { // if there are multiple (or no!) type parameters, give up
+                logger.warn(String.format(
+                        "Unable to determine possible values for a collection (%s) with generic type parameter(s)",
+                        displayName));
+                return Collections.emptyList();
+            }
+            try {
+                // use the type param of the underlying field as the target instead
+                targetClass = Class.forName(types[0].getTypeName());
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(String.format("No class found for type parameter (%s) used for argument (%s)",
+                                types[0].getTypeName(), displayName), e);
+            }
+        }
+
+        return targetClass.isEnum() ?
+                docForEnumArgument(targetClass) :
+                Collections.emptyList();
     }
 
     /**
