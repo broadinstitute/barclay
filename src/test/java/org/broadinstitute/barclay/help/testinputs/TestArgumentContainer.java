@@ -37,6 +37,9 @@ public class TestArgumentContainer implements CommandLinePluginProvider {
     public static final String ONE_LINE_SUMMARY = "Argument container class for testing documentation generation.";
     public static final String GROUP_NAME = "Test feature group name";
 
+    @Argument(optional =true, fullName = "EnumArgCollection", shortName = "EAC", doc = "arg of collection of enum.")
+    public List<TestEnum> list = new ArrayList<>();
+
     public TestArgumentContainer() {
         argBaseClass = new TestBaseArgumentType() {
 

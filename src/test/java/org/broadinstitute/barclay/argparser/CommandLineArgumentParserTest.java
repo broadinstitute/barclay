@@ -1,8 +1,7 @@
 package org.broadinstitute.barclay.argparser;
 
 import org.apache.commons.lang3.tuple.Pair;
-
-import org.testng.Assert;
+import org.junit.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -10,13 +9,20 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
+
+import static org.testng.Assert.*;
 
 public final class CommandLineArgumentParserTest {
     enum FrobnicationFlavor {
         FOO, BAR, BAZ
     }
+
+    enum TestEnumValues {ENUM_VALUE_1, ENUM_VALUE_2};
 
     @CommandLineProgramProperties(
             summary = "Usage: frobnicate [arguments] input-file output-file\n\nRead input-file, frobnicate it, and write frobnicated results to output-file\n",
@@ -102,9 +108,9 @@ public final class CommandLineArgumentParserTest {
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(nr);
         final String out = clp.usage(false, false); // without common/hidden args
         final int reqIndex = out.indexOf("Required Arguments:");
-        Assert.assertTrue(reqIndex > 0);
-        Assert.assertTrue(out.indexOf("Optional Arguments:", reqIndex) < 0);
-        Assert.assertTrue(out.indexOf("Advanced Arguments:", reqIndex) < 0);
+        assertTrue(reqIndex > 0);
+        assertTrue(out.indexOf("Optional Arguments:", reqIndex) < 0);
+        assertTrue(out.indexOf("Advanced Arguments:", reqIndex) < 0);
     }
 
     @CommandLineProgramProperties(
@@ -122,7 +128,7 @@ public final class CommandLineArgumentParserTest {
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(eo);
         final String out = clp.usage(false, false); // without common/hidden args
         final int reqIndex = out.indexOf(CommandLineArgumentParser.BETA_PREFIX);
-        Assert.assertEquals(reqIndex, 0);
+        assertEquals(reqIndex, 0);
     }
 
     @CommandLineProgramProperties(
@@ -140,7 +146,7 @@ public final class CommandLineArgumentParserTest {
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(eo);
         final String out = clp.usage(false, false); // without common/hidden args
         final int reqIndex = out.indexOf(CommandLineArgumentParser.EXPERIMENTAL_PREFIX);
-        Assert.assertEquals(reqIndex, 0);
+        assertEquals(reqIndex, 0);
     }
 
     @CommandLineProgramProperties(
@@ -169,7 +175,19 @@ public final class CommandLineArgumentParserTest {
     public void testArrayArgument() {
         final ArrayArgument arrayArg = new ArrayArgument();
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(arrayArg);
-        Assert.assertTrue(clp.parseArguments(System.err, new String[]{"--stringArrayArgument", "somestring"}));
+        assertTrue(clp.parseArguments(System.err, new String[]{"--stringArrayArgument", "somestring"}));
+    }
+
+    class EnumCollection {
+        @Argument(optional =true, fullName = "EnumArgCollection", shortName = "EAC", doc = "arg of collection of enum.")
+        public List<TestEnumValues> list = new ArrayList<>();
+    }
+    @Test
+    public void testEnumCollectionPossibleValues(){
+        final EnumCollection ec = new EnumCollection();
+        final CommandLineArgumentParser clp = new CommandLineArgumentParser(ec);
+        final String out = clp.usage(false, false);
+        Assert.assertTrue(out.contains("ENUM_VALUE_1, ENUM_VALUE_2"));
     }
 
     class AbbreviatableArgument{
@@ -183,7 +201,7 @@ public final class CommandLineArgumentParserTest {
         final AbbreviatableArgument abrv = new AbbreviatableArgument();
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(abrv);
         //argument name is valid when it isn't abbreviated
-        Assert.assertTrue(clp.parseArguments(System.err, new String[]{"--" + AbbreviatableArgument.ARGUMENT_NAME}));
+        assertTrue(clp.parseArguments(System.err, new String[]{"--" + AbbreviatableArgument.ARGUMENT_NAME}));
 
         //should throw when the abbreviated name is used
         clp.parseArguments(System.err, new String[]{"--" + AbbreviatableArgument.ARGUMENT_NAME.substring(0,5)});
@@ -205,10 +223,10 @@ public final class CommandLineArgumentParserTest {
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(oo);
         final String out = clp.usage(false, false); // without common/hidden args
         final int reqIndex = out.indexOf("Required Arguments:");
-        Assert.assertTrue(reqIndex < 0);
-        Assert.assertTrue(out.indexOf("Optional Arguments:", reqIndex) > 0);
-        Assert.assertEquals(out.indexOf("Conditional Arguments:", reqIndex), -1);
-        Assert.assertEquals(out.indexOf("Advanced Arguments:", reqIndex), -1);
+        assertTrue(reqIndex < 0);
+        assertTrue(out.indexOf("Optional Arguments:", reqIndex) > 0);
+        assertEquals(out.indexOf("Conditional Arguments:", reqIndex), -1);
+        assertEquals(out.indexOf("Advanced Arguments:", reqIndex), -1);
     }
 
     /**
@@ -219,10 +237,10 @@ public final class CommandLineArgumentParserTest {
         final String out = clp.usage(withDefault, false); // with common args, without hidden args
         // Required arguments should appear before optional ones
         final int reqIndex = out.indexOf("Required Arguments:");
-        Assert.assertTrue(reqIndex > 0);
-        Assert.assertTrue(out.indexOf("Optional Arguments:", reqIndex) > 0);
-        Assert.assertEquals(out.indexOf("Conditional Arguments:", reqIndex), -1);
-        Assert.assertEquals(out.indexOf("Advanced Arguments:", reqIndex) != -1, hasAdvanced);
+        assertTrue(reqIndex > 0);
+        assertTrue(out.indexOf("Optional Arguments:", reqIndex) > 0);
+        assertEquals(out.indexOf("Conditional Arguments:", reqIndex), -1);
+        assertEquals(out.indexOf("Advanced Arguments:", reqIndex) != -1, hasAdvanced);
     }
 
     @Test
@@ -270,16 +288,16 @@ public final class CommandLineArgumentParserTest {
         };
         final FrobnicateArguments fo = new FrobnicateArguments();
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(fo);
-        Assert.assertTrue(clp.parseArguments(System.err, args));
-        Assert.assertEquals(fo.positionalArguments.size(), 2);
+        assertTrue(clp.parseArguments(System.err, args));
+        assertEquals(fo.positionalArguments.size(), 2);
         final File[] expectedPositionalArguments = { new File("positional1"), new File("positional2")};
-        Assert.assertEquals(fo.positionalArguments.toArray(), expectedPositionalArguments);
-        Assert.assertEquals(fo.FROBNICATION_THRESHOLD.intValue(), 17);
-        Assert.assertEquals(fo.FROBNICATION_FLAVOR, FrobnicationFlavor.BAR);
-        Assert.assertEquals(fo.SHMIGGLE_TYPE.size(), 2);
+        assertEquals(fo.positionalArguments.toArray(), expectedPositionalArguments);
+        assertEquals(fo.FROBNICATION_THRESHOLD.intValue(), 17);
+        assertEquals(fo.FROBNICATION_FLAVOR, FrobnicationFlavor.BAR);
+        assertEquals(fo.SHMIGGLE_TYPE.size(), 2);
         final String[] expectedShmiggleTypes = {"shmiggle1", "shmiggle2"};
-        Assert.assertEquals(fo.SHMIGGLE_TYPE.toArray(), expectedShmiggleTypes);
-        Assert.assertTrue(fo.TRUTHINESS);
+        assertEquals(fo.SHMIGGLE_TYPE.toArray(), expectedShmiggleTypes);
+        assertTrue(fo.TRUTHINESS);
     }
 
     @Test
@@ -295,8 +313,8 @@ public final class CommandLineArgumentParserTest {
         };
         final FrobnicateArguments fo = new FrobnicateArguments();
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(fo);
-        Assert.assertTrue(clp.parseArguments(System.err, args));
-        Assert.assertEquals(clp.getCommandLine(),
+        assertTrue(clp.parseArguments(System.err, args));
+        assertEquals(clp.getCommandLine(),
                 "FrobnicateArguments " +
                         "positional1 positional2 --FROBNICATION_THRESHOLD 17 --FROBNICATION_FLAVOR BAR " +
                         "--SHMIGGLE_TYPE shmiggle1 --SHMIGGLE_TYPE shmiggle2 --TRUTHINESS true --help false " +
@@ -322,15 +340,15 @@ public final class CommandLineArgumentParserTest {
         };
         final WithSensitiveValues sv = new WithSensitiveValues();
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(sv);
-        Assert.assertTrue(clp.parseArguments(System.err, args));
+        assertTrue(clp.parseArguments(System.err, args));
 
         final String commandLine = clp.getCommandLine();
 
-        Assert.assertTrue(commandLine.contains(unclassified));
-        Assert.assertFalse(commandLine.contains(supersecret));
+        assertTrue(commandLine.contains(unclassified));
+        assertFalse(commandLine.contains(supersecret));
 
-        Assert.assertEquals(sv.openValue, unclassified);
-        Assert.assertEquals(sv.secretValue, supersecret);
+        assertEquals(sv.openValue, unclassified);
+        assertEquals(sv.secretValue, supersecret);
     }
 
     @Test
@@ -345,8 +363,8 @@ public final class CommandLineArgumentParserTest {
         };
         final FrobnicateArguments fo = new FrobnicateArguments();
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(fo);
-        Assert.assertTrue(clp.parseArguments(System.err, args));
-        Assert.assertEquals(fo.FROBNICATION_THRESHOLD.intValue(), 20);
+        assertTrue(clp.parseArguments(System.err, args));
+        assertEquals(fo.FROBNICATION_THRESHOLD.intValue(), 20);
     }
 
     @Test(expectedExceptions = CommandLineException.MissingArgument.class)
@@ -502,16 +520,16 @@ public final class CommandLineArgumentParserTest {
         };
         final FrobnicateArguments fo = new FrobnicateArguments();
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(fo);
-        Assert.assertTrue(clp.parseArguments(System.err, args));
-        Assert.assertEquals(fo.positionalArguments.size(), 2);
+        assertTrue(clp.parseArguments(System.err, args));
+        assertEquals(fo.positionalArguments.size(), 2);
         final File[] expectedPositionalArguments = { new File("positional1"), new File("positional2")};
-        Assert.assertEquals(fo.positionalArguments.toArray(), expectedPositionalArguments);
-        Assert.assertEquals(fo.FROBNICATION_THRESHOLD.intValue(), 18);
-        Assert.assertEquals(fo.FROBNICATION_FLAVOR, FrobnicationFlavor.BAR);
-        Assert.assertEquals(fo.SHMIGGLE_TYPE.size(), 3);
+        assertEquals(fo.positionalArguments.toArray(), expectedPositionalArguments);
+        assertEquals(fo.FROBNICATION_THRESHOLD.intValue(), 18);
+        assertEquals(fo.FROBNICATION_FLAVOR, FrobnicationFlavor.BAR);
+        assertEquals(fo.SHMIGGLE_TYPE.size(), 3);
         final String[] expectedShmiggleTypes = {"shmiggle0", "shmiggle0", "shmiggle1"};
-        Assert.assertEquals(fo.SHMIGGLE_TYPE.toArray(), expectedShmiggleTypes);
-        Assert.assertTrue(fo.TRUTHINESS);
+        assertEquals(fo.SHMIGGLE_TYPE.toArray(), expectedShmiggleTypes);
+        assertTrue(fo.TRUTHINESS);
     }
 
 
@@ -559,7 +577,7 @@ public final class CommandLineArgumentParserTest {
     @Test(dataProvider="passingMutexScenarios")
     public void passingMutexCheck(final String testName, final Object o, final String[] args){
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
-        Assert.assertTrue(clp.parseArguments(System.err, args));
+        assertTrue(clp.parseArguments(System.err, args));
     }
 
     @Test(dataProvider="failingMutexScenarios", expectedExceptions = CommandLineException.class)
@@ -583,24 +601,24 @@ public final class CommandLineArgumentParserTest {
     public void testDanglingMutex() {
         final DanglingMutexArguments o = new DanglingMutexArguments();
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
-        Assert.assertTrue(clp.parseArguments(System.err, new String[]{"-B", "b"}));
+        assertTrue(clp.parseArguments(System.err, new String[]{"-B", "b"}));
     }
 
     @Test
        public void testFlagNoArgument(){
         final BooleanFlags o = new BooleanFlags();
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
-        Assert.assertTrue(clp.parseArguments(System.err, new String[]{"--flag1"}));
-        Assert.assertTrue(o.flag1);
+        assertTrue(clp.parseArguments(System.err, new String[]{"--flag1"}));
+        assertTrue(o.flag1);
     }
 
     @Test
     public void testFlagsWithArguments(){
         final BooleanFlags o = new BooleanFlags();
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
-        Assert.assertTrue(clp.parseArguments(System.err, new String[]{"--flag1", "false", "--flag2", "false"}));
-        Assert.assertFalse(o.flag1);
-        Assert.assertFalse(o.flag2);
+        assertTrue(clp.parseArguments(System.err, new String[]{"--flag1", "false", "--flag2", "false"}));
+        assertFalse(o.flag1);
+        assertFalse(o.flag2);
     }
 
     class ArgsCollection {
@@ -625,9 +643,9 @@ public final class CommandLineArgumentParserTest {
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
 
         String[] args = {"--arg1", "42", "--somenumber", "12"};
-        Assert.assertTrue(clp.parseArguments(System.err, args));
-        Assert.assertEquals(o.someNumber, 12);
-        Assert.assertEquals(o.default_args.Arg1, 42);
+        assertTrue(clp.parseArguments(System.err, args));
+        assertEquals(o.someNumber, 12);
+        assertEquals(o.default_args.Arg1, 42);
 
     }
 
@@ -654,9 +672,9 @@ public final class CommandLineArgumentParserTest {
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
 
         clp.parseArguments(System.err, new String[]{"--flag1", "false", "--flag2"});
-        Assert.assertFalse(o.flag1);
-        Assert.assertTrue(o.flag2);
-        Assert.assertFalse(o.flag3);
+        assertFalse(o.flag1);
+        assertTrue(o.flag2);
+        assertFalse(o.flag3);
     }
 
     class WithBadField{
@@ -689,20 +707,20 @@ public final class CommandLineArgumentParserTest {
     public void testFlagWithPositionalFollowing(){
         PrivateArgument o = new PrivateArgument();
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
-        Assert.assertTrue(clp.parseArguments(System.err, new String[]{"--flag1","1","2" }));
-        Assert.assertTrue(o.booleanFlags.flag1);
-        Assert.assertEquals(o.positionals, Arrays.asList(1, 2));
+        assertTrue(clp.parseArguments(System.err, new String[]{"--flag1","1","2" }));
+        assertTrue(o.booleanFlags.flag1);
+        assertEquals(o.positionals, Arrays.asList(1, 2));
     }
 
     @Test
     public void testPrivateArgument(){
         PrivateArgument o = new PrivateArgument();
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
-        Assert.assertTrue(clp.parseArguments(System.err, new String[]{"--privateArgument",
+        assertTrue(clp.parseArguments(System.err, new String[]{"--privateArgument",
                 "--privateCollection", "1", "--privateCollection", "2", "--flag1"}));
-        Assert.assertTrue(o.privateArgument);
-        Assert.assertEquals(o.privateCollection, Arrays.asList(1,2));
-        Assert.assertTrue(o.booleanFlags.flag1);
+        assertTrue(o.privateArgument);
+        assertEquals(o.privateCollection, Arrays.asList(1,2));
+        assertTrue(o.booleanFlags.flag1);
     }
 
     /**
@@ -716,12 +734,12 @@ public final class CommandLineArgumentParserTest {
 
         final String[] versionArgs = {"--" + SpecialArgumentsCollection.VERSION_FULLNAME};
         String out = captureStderr(() -> {
-                    Assert.assertFalse(clp.parseArguments(System.err, versionArgs));
+                    assertFalse(clp.parseArguments(System.err, versionArgs));
             });
-        Assert.assertTrue(out.contains("Version:"));
+        assertTrue(out.contains("Version:"));
 
-        Assert.assertTrue(clp.parseArguments(System.err, new String[]{"--version","false"}));
-        Assert.assertFalse(clp.parseArguments(System.err, new String[]{"--version", "true"}));
+        assertTrue(clp.parseArguments(System.err, new String[]{"--version","false"}));
+        assertFalse(clp.parseArguments(System.err, new String[]{"--version", "true"}));
     }
 
     /**
@@ -735,12 +753,12 @@ public final class CommandLineArgumentParserTest {
 
         final String[] versionArgs = {"--" + SpecialArgumentsCollection.HELP_FULLNAME};
         String out = captureStderr(() -> {
-            Assert.assertFalse(clp.parseArguments(System.err, versionArgs));
+            assertFalse(clp.parseArguments(System.err, versionArgs));
         });
-        Assert.assertTrue(out.contains("USAGE:"));
+        assertTrue(out.contains("USAGE:"));
 
-        Assert.assertTrue(clp.parseArguments(System.err, new String[]{"--help","false"}));
-        Assert.assertFalse(clp.parseArguments(System.err, new String[]{"--help", "true"}));
+        assertTrue(clp.parseArguments(System.err, new String[]{"--help","false"}));
+        assertFalse(clp.parseArguments(System.err, new String[]{"--help", "true"}));
     }
 
     class NameCollision{
@@ -818,10 +836,10 @@ public final class CommandLineArgumentParserTest {
     public void testWithinBoundariesArguments(final String[] argv, final Integer expectedInteger, final Double expectedDouble, final String expectedString) throws Exception {
         final WithNullableArguments o = new WithNullableArguments();
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
-        Assert.assertTrue(clp.parseArguments(System.err, argv));
-        Assert.assertEquals(o.nullInteger, expectedInteger);
-        Assert.assertEquals(o.nullDouble, expectedDouble);
-        Assert.assertEquals(o.nullString, expectedString);
+        assertTrue(clp.parseArguments(System.err, argv));
+        assertEquals(o.nullInteger, expectedInteger);
+        assertEquals(o.nullDouble, expectedDouble);
+        assertEquals(o.nullString, expectedString);
     }
 
     @CommandLineProgramProperties(
@@ -857,7 +875,7 @@ public final class CommandLineArgumentParserTest {
     public void testSetNonNullableArgumentsToNull(final String[] args) throws Exception {
         final NonNullableArguments o = new NonNullableArguments();
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
-        Assert.assertTrue(clp.parseArguments(System.err, args));
+        assertTrue(clp.parseArguments(System.err, args));
     }
 
     @Test(expectedExceptions = CommandLineException.CommandLineParserInternalException.class)
@@ -916,9 +934,9 @@ public final class CommandLineArgumentParserTest {
     public void testWithinBoundariesArguments(final String[] argv, final double expectedDouble, final int expectedInteger) throws Exception {
         final WithBoundariesArguments o = new WithBoundariesArguments();
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
-        Assert.assertTrue(clp.parseArguments(System.err, argv));
-        Assert.assertEquals(o.doubleArg, expectedDouble);
-        Assert.assertEquals(o.integerArg, expectedInteger);
+        assertTrue(clp.parseArguments(System.err, argv));
+        assertEquals(o.doubleArg, expectedDouble);
+        assertEquals(o.integerArg, expectedInteger);
     }
 
     @DataProvider
@@ -969,12 +987,12 @@ public final class CommandLineArgumentParserTest {
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(tool);
         // test that it is not printed in the usage
         String out = clp.usage(true, false); // with common args, without hidden
-        Assert.assertEquals(out.indexOf("hiddenTestArgument"), -1, out);
+        assertEquals(out.indexOf("hiddenTestArgument"), -1, out);
         out = clp.usage(true, true); // with common and hidden args
-        Assert.assertNotEquals(out.indexOf("hiddenTestArgument"), -1, out);
+        assertNotEquals(out.indexOf("hiddenTestArgument"), -1, out);
         // test that it is parsed from the command line if specified
         clp.parseArguments(System.err, new String[]{"--hiddenTestArgument", "10"});
-        Assert.assertEquals(tool.hidden.intValue(), 10);
+        assertEquals(tool.hidden.intValue(), 10);
     }
 
     @Test
@@ -991,7 +1009,7 @@ public final class CommandLineArgumentParserTest {
         final CommandLineParser clp = new CommandLineArgumentParser(new ToolWithAdvancedArgument());
         // test that it is printed in the usage
         final String out = clp.usage(true, false); // with common args, without hidden
-        Assert.assertTrue(out.contains("advancedTestArgument"), out);
+        assertTrue(out.contains("advancedTestArgument"), out);
     }
 
     @Test(expectedExceptions = CommandLineException.CommandLineParserInternalException.class)
@@ -1220,12 +1238,12 @@ public final class CommandLineArgumentParserTest {
                 clp.gatherArgumentValuesOfType(GatherArgumentValuesTargetSuperType.class);
 
         // Make sure we gathered the expected number of argument values
-        Assert.assertEquals(gatheredArguments.size(), sortedExpectedGatheredValues.size(), "Gathered the wrong number of arguments");
+        assertEquals(gatheredArguments.size(), sortedExpectedGatheredValues.size(), "Gathered the wrong number of arguments");
 
         // Make sure actual gathered argument values match expected values
         List<Pair<String, String>> sortedActualGatheredArgumentValues = new ArrayList<>();
         for ( Pair<ArgumentDefinition, GatherArgumentValuesTargetSuperType> gatheredArgument : gatheredArguments ) {
-            Assert.assertNotNull(gatheredArgument.getKey().getUnderlyingField().getAnnotation(Argument.class), "Gathered argument is not annotated with an @Argument annotation");
+            assertNotNull(gatheredArgument.getKey().getUnderlyingField().getAnnotation(Argument.class), "Gathered argument is not annotated with an @Argument annotation");
 
             String argumentName = gatheredArgument.getKey().getUnderlyingField().getAnnotation(Argument.class).fullName();
             GatherArgumentValuesTargetSuperType argumentValue = gatheredArgument.getValue();
@@ -1234,7 +1252,7 @@ public final class CommandLineArgumentParserTest {
         }
         Collections.sort(sortedActualGatheredArgumentValues);
 
-        Assert.assertEquals(sortedActualGatheredArgumentValues, sortedExpectedGatheredValues,
+        assertEquals(sortedActualGatheredArgumentValues, sortedExpectedGatheredValues,
                             "One or more gathered argument values not correct");
     }
 
@@ -1281,14 +1299,14 @@ public final class CommandLineArgumentParserTest {
         List<Pair<ArgumentDefinition, GatherArgumentValuesParameterizedTargetType>> gatheredArguments =
                 clp.gatherArgumentValuesOfType(GatherArgumentValuesParameterizedTargetType.class);
 
-        Assert.assertEquals(gatheredArguments.size(), 2, "Wrong number of arguments gathered");
+        assertEquals(gatheredArguments.size(), 2, "Wrong number of arguments gathered");
 
-        Assert.assertNotNull(gatheredArguments.get(0).getKey().getUnderlyingField().getAnnotation(Argument.class), "Gathered argument is not annotated with an @Argument annotation");
-        Assert.assertEquals(gatheredArguments.get(0).getKey().getUnderlyingField().getAnnotation(Argument.class).fullName(), "parameterizedTypeArgument", "Wrong argument gathered");
-        Assert.assertEquals(gatheredArguments.get(0).getValue().getValue(), "parameterizedTypeArgumentValue", "Wrong value for gathered argument");
-        Assert.assertNotNull(gatheredArguments.get(1).getKey().getUnderlyingField().getAnnotation(Argument.class), "Gathered argument is not annotated with an @Argument annotation");
-        Assert.assertEquals(gatheredArguments.get(1).getKey().getUnderlyingField().getAnnotation(Argument.class).fullName(), "parameterizedTypeListArgument", "Wrong argument gathered");
-        Assert.assertEquals(gatheredArguments.get(1).getValue().getValue(), "parameterizedTypeListArgumentValue", "Wrong value for gathered argument");
+        assertNotNull(gatheredArguments.get(0).getKey().getUnderlyingField().getAnnotation(Argument.class), "Gathered argument is not annotated with an @Argument annotation");
+        assertEquals(gatheredArguments.get(0).getKey().getUnderlyingField().getAnnotation(Argument.class).fullName(), "parameterizedTypeArgument", "Wrong argument gathered");
+        assertEquals(gatheredArguments.get(0).getValue().getValue(), "parameterizedTypeArgumentValue", "Wrong value for gathered argument");
+        assertNotNull(gatheredArguments.get(1).getKey().getUnderlyingField().getAnnotation(Argument.class), "Gathered argument is not annotated with an @Argument annotation");
+        assertEquals(gatheredArguments.get(1).getKey().getUnderlyingField().getAnnotation(Argument.class).fullName(), "parameterizedTypeListArgument", "Wrong argument gathered");
+        assertEquals(gatheredArguments.get(1).getValue().getValue(), "parameterizedTypeListArgumentValue", "Wrong value for gathered argument");
     }
 
     @CommandLineProgramProperties(
@@ -1320,7 +1338,7 @@ public final class CommandLineArgumentParserTest {
                 "characters...";
 
         final String result = byteArrayOutputStream.toString();
-        Assert.assertEquals(result.substring(0, expected.length()), expected);
+        assertEquals(result.substring(0, expected.length()), expected);
     }
 
 

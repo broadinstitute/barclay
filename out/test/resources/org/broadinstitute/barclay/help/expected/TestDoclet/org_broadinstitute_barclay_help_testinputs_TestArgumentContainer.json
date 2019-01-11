@@ -47,30 +47,6 @@
       "options": []
     },
     {
-      "summary": "arg of collection of enum.",
-      "name": "--EnumArgCollection",
-      "synonyms": "-EAC",
-      "type": "List[TestEnum]",
-      "required": "no",
-      "fulltext": "",
-      "defaultValue": "[]",
-      "minValue": "NA",
-      "maxValue": "NA",
-      "minRecValue": "NA",
-      "maxRecValue": "NA",
-      "kind": "optional",
-      "options": [
-        {
-          "summary": "",
-          "name": "ENUM_VALUE_1"
-        },
-        {
-          "summary": "",
-          "name": "ENUM_VALUE_2"
-        }
-      ]
-    },
-    {
       "summary": "Test anonymous class arg",
       "name": "--fullAnonymousArgName",
       "synonyms": "-anonymousClassArg",
@@ -374,7 +350,7 @@
       "options": []
     }
   ],
-  "description": "Argument container class for testing documentation generation. Contains an argument\n for each @Argument, @ArgumentCollection, and @DocumentedFeature property that should\n be tested.\n\n Test custom tag:\n testType\n\n \u003cp\u003e\n The purpose of this paragraph is to test embedded html formatting.\n \u003col\u003e\n     \u003cli\u003eThis is point number 1\u003c/li\u003e\n     \u003cli\u003eThis is point number 2\u003c/li\u003e\n \u003c/ol\u003e\n \u003c/p\u003e",
+  "description": "Argument container class for testing documentation generation. Contains an argument\n for each @Argument, @ArgumentCollection, and @DocumentedFeature property that should\n be tested.\n\n Test custom tag:\n \n\n \u003cp\u003e\n The purpose of this paragraph is to test embedded html formatting.\n \u003col\u003e\n     \u003cli\u003eThis is point number 1\u003c/li\u003e\n     \u003cli\u003eThis is point number 2\u003c/li\u003e\n \u003c/ol\u003e\n \u003c/p\u003e",
   "name": "TestArgumentContainer",
   "group": "Test feature group name",
   "beta": true,

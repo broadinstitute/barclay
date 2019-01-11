@@ -24,26 +24,30 @@
             }
         </style>
         <ul class="nav nav-pills nav-stacked" id="sidenav">
-				<li><a data-toggle="collapse" data-parent="#sidenav" href="#Testextradocsgroupname">Test extra docs group name</a>
-					<div id="Testextradocsgroupname"
-					<?php echo ($group == 'Test extra docs group name')? 'class="accordion-body collapse in"'.chr(62) : 'class="accordion-body collapse"'.chr(62);?>
-					<ul>
-								<li>
-									<a href="org_broadinstitute_barclay_help_testinputs_TestExtraDocs.html">TestExtraDocs</a>
-								</li>
-					</ul>
-					</div>
-				</li>
-				<li><a data-toggle="collapse" data-parent="#sidenav" href="#Testfeaturegroupname">Test feature group name</a>
-					<div id="Testfeaturegroupname"
-					<?php echo ($group == 'Test feature group name')? 'class="accordion-body collapse in"'.chr(62) : 'class="accordion-body collapse"'.chr(62);?>
-					<ul>
-								<li>
-									<a href="org_broadinstitute_barclay_help_testinputs_TestArgumentContainer.html">TestArgumentContainer</a>
-								</li>
-					</ul>
-					</div>
-				</li>
+        		<hr>
+        		<hr>
+        		<hr>
+						<li><a data-toggle="collapse" data-parent="#sidenav" href="#Testextradocsgroupname">Test extra docs group name</a>
+							<div id="Testextradocsgroupname"
+								<?php echo ($group == 'Test extra docs group name')? 'class="accordion-body collapse in"'.chr(62) : 'class="accordion-body collapse"'.chr(62);?>
+								<ul>
+											<li>
+												<a href="org_broadinstitute_barclay_help_testinputs_TestExtraDocs.html">TestExtraDocs</a>
+											</li>
+								</ul>
+							</div>
+						</li>
+						<li><a data-toggle="collapse" data-parent="#sidenav" href="#Testfeaturegroupname">Test feature group name</a>
+							<div id="Testfeaturegroupname"
+								<?php echo ($group == 'Test feature group name')? 'class="accordion-body collapse in"'.chr(62) : 'class="accordion-body collapse"'.chr(62);?>
+								<ul>
+											<li>
+												<a href="org_broadinstitute_barclay_help_testinputs_TestArgumentContainer.html">TestArgumentContainer</a>
+											</li>
+								</ul>
+							</div>
+						</li>
+        		<hr>
         </ul>
 		</aside>
 		<?php getForumPosts( 'TestArgumentContainer' ) ?>
@@ -52,7 +56,7 @@
 
 	<div class="span8">
 
-			<h1>TestArgumentContainer **BETA**</h1>
+        <h1>TestArgumentContainer **BETA**</h1>
 
 		<p class="lead">Argument container class for testing documentation generation.</p>
 
@@ -66,7 +70,7 @@
  be tested.
 
  Test custom tag:
- testType
+ 
 
  <p>
  The purpose of this paragraph is to test embedded html formatting.
@@ -76,6 +80,14 @@
  </ol>
  </p>
 
+				<hr>
+				<h2>Additional Information</h2>
+				<p></p>
+				<h3>Test Plugins</h3>
+					<p>This Test Plugin is automatically applied to the data by the Engine before processing by TestArgumentContainer.</p>
+				<ul>
+						<li><a href="org_broadinstitute_barclay_argparser_CommandLinePluginUnitTest$TestDefaultPlugin.html">TestDefaultPlugin</a></li>
+				</ul>
 				<hr>
 				<h2>Command-line Arguments</h2>
 				<p></p>
@@ -157,14 +169,6 @@
 			<tr>
 				<th colspan="4" id="row-divider">Optional Tool Arguments</th>
 			</tr>
-				<tr>
-					<td><a href="#--EnumArgCollection">--EnumArgCollection</a><br />
-								&nbsp;<em>-EAC</em>
-					</td>
-					<!--<td>List[TestEnum]</td> -->
-					<td>[]</td>
-					<td>arg of collection of enum.</td>
-				</tr>
 				<tr>
 					<td><a href="#--fullAnonymousArgName">--fullAnonymousArgName</a><br />
 								&nbsp;<em>-anonymousClassArg</em>
@@ -329,27 +333,6 @@
 				&nbsp;<span class="label">0</span>
 				&nbsp;<span class="label label-warning">[ [ -∞</span>
 				&nbsp;<span class="label label-warning">∞ ] ]</span>
-		</p>
-		<hr style="border-bottom: dotted 1px #C0C0C0;" />
-		<h3><a name="--EnumArgCollection">--EnumArgCollection </a>
-			 / <small>-EAC</small>
-		</h3>
-		<p class="args">
-			<b>arg of collection of enum.</b><br />
-			
-		</p>
-			<p>
-				The --EnumArgCollection argument is an enumerated type (List[TestEnum]), which can have one of the following values:
-			<dl class="enum">
-					<dt class="enum">ENUM_VALUE_1</dt>
-					<dd class="enum"></dd>
-					<dt class="enum">ENUM_VALUE_2</dt>
-					<dd class="enum"></dd>
-			</dl>
-			</p>
-		<p>
-			<span class="label label-info ">List[TestEnum]</span>
-				&nbsp;<span class="label">[]</span>
 		</p>
 		<hr style="border-bottom: dotted 1px #C0C0C0;" />
 		<h3><a name="--fullAnonymousArgName">--fullAnonymousArgName </a>
