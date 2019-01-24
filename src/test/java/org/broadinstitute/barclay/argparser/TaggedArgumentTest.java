@@ -508,4 +508,7 @@ public class TaggedArgumentTest {
         final String commandLine = clp.getCommandLine();
         Assert.assertEquals(commandLine, expectedCommandLine);
     }
+
+    // TODO: add a test for tagNameAndAttributesAreEqual
+    
 }
