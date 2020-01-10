@@ -335,7 +335,15 @@ public final class CommandLineArgumentParser implements CommandLineParser {
             else if (argumentCollectionAnnotation != null) {
                 try {
                     field.setAccessible(true);
-                    createArgumentDefinitions(field.get(callerArguments), controllingDescriptor);
+                    final Object fieldInstance = field.get(callerArguments);
+                    if (fieldInstance == null) {
+                        throw new CommandLineException.CommandLineParserInternalException(
+                                String.format(
+                                        "The ArgumentCollection field '%s' in '%s' must have an initial value",
+                                        field.getName(),
+                                        callerArguments.getClass().getName()));
+                    }
+                    createArgumentDefinitions(fieldInstance, controllingDescriptor);
                 } catch (final IllegalAccessException e) {
                     throw new CommandLineException.ShouldNeverReachHereException("should never reach here because we setAccessible(true)", e);
                 }
