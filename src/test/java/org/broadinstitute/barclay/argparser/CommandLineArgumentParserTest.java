@@ -628,7 +628,16 @@ public final class CommandLineArgumentParserTest {
         Assert.assertTrue(clp.parseArguments(System.err, args));
         Assert.assertEquals(o.someNumber, 12);
         Assert.assertEquals(o.default_args.Arg1, 42);
+    }
 
+    class ArgCollectionNotInitialized {
+        @ArgumentCollection
+        public ArgsCollection default_args;
+    }
+
+    @Test(expectedExceptions = CommandLineException.CommandLineParserInternalException.class)
+    public void testArgCollectionNotInitialized() {
+        new CommandLineArgumentParser(new ArgCollectionNotInitialized());
     }
 
     class BooleanFlags{
