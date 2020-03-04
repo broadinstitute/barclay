@@ -193,8 +193,8 @@ public class TestArgumentContainer implements CommandLinePluginProvider {
             optional = false)
     TestEnum requiredClpEnum;
 
-//    @Argument(fullName="enumCollection")
-//    List<TestEnum> enumCollection = new ArrayList<>();
+    @Argument(fullName="enumCollection")
+    List<TestEnum> enumCollection = new ArrayList<>();
 
     /**
      * Mutually exclusive args
