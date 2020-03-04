@@ -2,6 +2,7 @@ package org.broadinstitute.barclay.argparser;
 
 import org.broadinstitute.barclay.utils.Utils;
 
+import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.List;
@@ -64,11 +65,16 @@ public class PositionalArgumentDefinition extends ArgumentDefinition {
     @SuppressWarnings("unchecked")
     public void setArgumentValues(
             final CommandLineArgumentParser commandLineArgumentParser,
+            final PrintStream messageStream,
             final List<String> stringValues)
     {
         final List<String> expandedValues = stringValues
                 .stream()
-                .flatMap(s -> commandLineArgumentParser.expandFromExpansionFile(this, s, stringValues).stream())
+                .flatMap(s -> commandLineArgumentParser.expandFromExpansionFile(
+                        this,
+                        messageStream,
+                        s,
+                        stringValues).stream())
                 .collect(Collectors.toList());
         for (final String stringValue : expandedValues) {
             final Object value = constructFromString(stringValue, POSITIONAL_ARGUMENTS_NAME);

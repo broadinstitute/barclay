@@ -6,7 +6,6 @@ import org.testng.annotations.Test;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class PositionalArgumentsDefinitionUnitTest {
@@ -22,7 +21,7 @@ public class PositionalArgumentsDefinitionUnitTest {
         final PositionalArgumentDefinition def =
                 new PositionalArgumentDefinition(field.getAnnotation(PositionalArguments.class), o, field);
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
-        def.setArgumentValues(clp, Arrays.asList(new String[] { "arg1"}));
+        def.setArgumentValues(clp, System.out, Arrays.asList(new String[] { "arg1"}));
 
         // we only validate minimum number of arguments on validation, after we've seen all of the values
         def.validateValues(clp);
@@ -41,7 +40,7 @@ public class PositionalArgumentsDefinitionUnitTest {
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
 
         // exceeding the maximum number of arguments is validated when args are added
-        def.setArgumentValues(clp, Arrays.asList(new String[] { "arg1", "arg2", "arg3"}));
+        def.setArgumentValues(clp, System.out, Arrays.asList(new String[] { "arg1", "arg2", "arg3"}));
     }
 
     @Test(expectedExceptions = CommandLineException.CommandLineParserInternalException.class)
@@ -85,7 +84,7 @@ public class PositionalArgumentsDefinitionUnitTest {
         final Field field = getFieldForFieldName(o, "stringArg");
         final PositionalArgumentDefinition def =
                 new PositionalArgumentDefinition(field.getAnnotation(PositionalArguments.class), o, field);
-        def.setArgumentValues(new CommandLineArgumentParser(o), Arrays.asList(args));
+        def.setArgumentValues(new CommandLineArgumentParser(o), System.out, Arrays.asList(args));
         Assert.assertEquals(def.getCommandLineDisplayString(), expecteDisplayString);
     }
 

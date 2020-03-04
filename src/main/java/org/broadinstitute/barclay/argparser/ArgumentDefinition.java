@@ -2,6 +2,7 @@ package org.broadinstitute.barclay.argparser;
 
 import org.broadinstitute.barclay.utils.Utils;
 
+import java.io.PrintStream;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -88,12 +89,14 @@ public abstract class ArgumentDefinition {
      *
      * @param commandLineArgumentParser the {@code CommandLineArgumentParser} managing this argument, used to resolve
      *                                  tag surrogates
+     * @param messageStream output stream where error messages should be written
      * @param preprocessedValues the values to be used to populate the argument. these values may be tag surrogates
      *                           created by the {@link TaggedArgumentParser} that must be resolved using {@link
      *                           TaggedArgumentParser#getTaggedOptionForSurrogate(String)}.
      */
     public abstract void setArgumentValues(
             final CommandLineArgumentParser commandLineArgumentParser,
+            final PrintStream messageStream,
             final List<String> preprocessedValues);
 
     /**
