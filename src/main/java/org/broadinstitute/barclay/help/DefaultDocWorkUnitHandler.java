@@ -439,7 +439,7 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
         return fieldDoc;
     }
 
-    private void processPositionalArguments(
+    protected void processPositionalArguments(
             final CommandLineArgumentParser clp,
             final Map<String, List<Map<String, Object>>> args) {
         // first get the positional arguments
