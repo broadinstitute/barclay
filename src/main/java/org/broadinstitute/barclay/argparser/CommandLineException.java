@@ -57,7 +57,7 @@ public class CommandLineException extends RuntimeException {
         private static String getMessage(final double minValue, final double maxValue, final boolean asInt) {
             final boolean outMinValue = minValue != Double.NEGATIVE_INFINITY;
             final boolean outMaxValue = maxValue != Double.POSITIVE_INFINITY;
-            final DoubleFunction<String> toString = (asInt) ? Double::toString : v -> Integer.toString((int) Math.rint(v));
+            final DoubleFunction<String> toString = (asInt) ? v -> Integer.toString((int) Math.rint(v)) : Double::toString;
             if (outMinValue && outMaxValue) {
                 return String.format("allowed range [%s, %s].", toString.apply(minValue), toString.apply(maxValue));
             } else if (outMinValue) {
@@ -66,9 +66,8 @@ public class CommandLineException extends RuntimeException {
                 return String.format("maximum allowed value %s", toString.apply(maxValue));
             }
             // this should never be reached
-            throw new IllegalArgumentException("Unbounded range should not thrown this exception");
+            throw new CommandLineException.ShouldNeverReachHereException("Unbounded range should never result in this exception");
         }
-
     }
 
     /**
