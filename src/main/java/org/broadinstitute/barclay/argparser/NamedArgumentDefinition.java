@@ -5,6 +5,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.broadinstitute.barclay.utils.Utils;
 
+import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -283,12 +284,13 @@ public class NamedArgumentDefinition extends ArgumentDefinition {
     @Override
     public void setArgumentValues(
             final CommandLineArgumentParser commandLineArgumentParser,
+            final PrintStream messageStream,
             final List<String> preprocessedValues) // Note these might be tag surrogates
     {
         if (isCollection()) {
-            setCollectionValues(commandLineArgumentParser, preprocessedValues);
+            setCollectionValues(commandLineArgumentParser, messageStream, preprocessedValues);
         } else {
-            setScalarValue(commandLineArgumentParser, preprocessedValues);
+            setScalarValue(commandLineArgumentParser, messageStream, preprocessedValues);
         }
         hasBeenSet = true;
     }
@@ -298,6 +300,7 @@ public class NamedArgumentDefinition extends ArgumentDefinition {
     @SuppressWarnings({"rawtypes", "unchecked"})
     private void setCollectionValues(
             final CommandLineArgumentParser commandLineArgumentParser,
+            final PrintStream messageStream,
             final List<String> preprocessedValues) // Note that some of these might be tag surrogates
     {
         final Collection c = (Collection) getArgumentValue();
@@ -330,6 +333,7 @@ public class NamedArgumentDefinition extends ArgumentDefinition {
                         Collections.singletonList(normalizedSurrogatePair.getRight()) :
                         commandLineArgumentParser.expandFromExpansionFile(
                                 this,
+                                messageStream,
                                 normalizedSurrogatePair.getRight(),
                                 preprocessedValues);
 
@@ -350,6 +354,7 @@ public class NamedArgumentDefinition extends ArgumentDefinition {
     // one value, in which case we throw.
     private void setScalarValue(
             final CommandLineArgumentParser commandLineArgumentParser,
+            final PrintStream messageStream,
             final List<String> originalValues) // Note that these might be tag surrogates
     {
         if (getHasBeenSet() || originalValues.size() > 1) {

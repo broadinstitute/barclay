@@ -163,7 +163,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
                 return parseArguments(messageStream, newArgs.toArray(new String[newArgs.size()]));
             }
         }
-        return propagateParsedValues(parsedArguments);
+        return propagateParsedValues(parsedArguments, messageStream);
     }
 
     /**
@@ -477,7 +477,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         return sb.toString();
     }
 
-    private boolean propagateParsedValues(final OptionSet parsedArguments) {
+    private boolean propagateParsedValues(final OptionSet parsedArguments, final PrintStream messageStream) {
         // named args first
         for (final OptionSpec<?> optSpec : parsedArguments.asMap().keySet()) {
             if (parsedArguments.has(optSpec)) {
@@ -485,6 +485,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
                 // Note that these values can be preprocessed tag surrogates
                 namedArgumentDefinition.setArgumentValues(
                         this,
+                        messageStream,
                         optSpec.values(parsedArguments)
                             .stream()
                             .map(Object::toString)
@@ -503,7 +504,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
                         "Positional arguments were provided '%s' but no positional argument is defined for this tool.",
                         stringValues.stream().collect(Collectors.joining("{", ",","}"))));
             }
-            positionalArgumentDefinition.setArgumentValues(this, stringValues);
+            positionalArgumentDefinition.setArgumentValues(this, messageStream, stringValues);
         }
 
         validateArgumentValues();
@@ -625,6 +626,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
      */
     public List<String> expandFromExpansionFile(
             final ArgumentDefinition argumentDefinition,
+            final PrintStream messageStream,
             final String stringValue,
             final List<String> originalValuesForPreservation) {
         List<String> expandedValues = new ArrayList<>();
@@ -633,7 +635,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
             // but  preserve the original values for subsequent retrieval during command line
             // display, since expansion files can result in very large post-expansion command lines
             // (its harmless to update this multiple times).
-            expandedValues.addAll(loadCollectionListFile(stringValue));
+            expandedValues.addAll(loadCollectionListFile(stringValue, messageStream));
             argumentDefinition.setOriginalCommandLineValues(originalValuesForPreservation);
         } else {
             expandedValues.add(stringValue);
@@ -648,13 +650,25 @@ public final class CommandLineArgumentParser implements CommandLineParser {
      * @param collectionListFile a text file containing list values
      * @return false if a fatal error occurred
      */
-    private static List<String> loadCollectionListFile(final String collectionListFile) {
+    private static List<String> loadCollectionListFile(
+            final String collectionListFile,
+            final PrintStream messageStream) {
         try (BufferedReader reader = new BufferedReader(new FileReader(collectionListFile))){
-            return reader.lines()
+            final List<String> filteredStrings = reader.lines()
                     .map(String::trim)
                     .filter(line -> !line.isEmpty())
                     .filter(line -> !line.startsWith(ARGUMENT_FILE_COMMENT))
                     .collect(Collectors.toList());
+            final List<String> suspiciousString = filteredStrings.stream().filter(s -> s.startsWith("@")).limit(1).collect(Collectors.toList());
+            if (!suspiciousString.isEmpty()) {
+                // looks suspiciously like a sequence dictionary...
+                messageStream.println(String.format(
+                        "WARNING: the file %s has a file extension that causes it to be expanded by the argument parser into multiple argument values , " +
+                        "but contains lines with leading '@' characters that may indicate this was unintentional (%s).",
+                        collectionListFile,
+                        suspiciousString));
+            }
+            return filteredStrings;
         } catch (final IOException e) {
             throw new CommandLineException("I/O error loading list file:" + collectionListFile, e);
         }
