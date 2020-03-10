@@ -439,7 +439,18 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
         return fieldDoc;
     }
 
-    private void processPositionalArguments(
+    /**
+     * Process any positional arguments for this tool by populating and adding an argument bindings map to the
+     * top level freemarker map for the positional arguments, if they are defined by the tool being processed.
+     * If no positional arguments are defined, do nothing.
+     *
+     * @param clp the instantiated {@link CommandLineArgumentParser} in use for this run. If the current
+     *            command tool has positional arguments, the definition can be retrieved using
+     *            {@link CommandLineArgumentParser#getPositionalArgumentDefinition()}.
+     * @param args the top level freemarker map for this tool, to be populated with an argument map for
+     *            positional args
+     */
+    protected void processPositionalArguments(
             final CommandLineArgumentParser clp,
             final Map<String, List<Map<String, Object>>> args) {
         // first get the positional arguments
@@ -670,12 +681,14 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
     }
 
     /**
-     * Populate a FreeMarker map with attributes of an argument
+     * Process a single named argument by populating the argument bindings map for the top level freemarker map
+     * for this argument.
      *
-     * @param argBindings
-     * @param argDef
-     * @param fieldCommentText
-     * @return
+     * @param argBindings the argument property bindings map to be populated for this argument
+     * @param argDef the {@link NamedArgumentDefinition} for this argument
+     * @param fieldCommentText the comment text for the underlying Field for the arugment, if any
+     * @return the "kind" category for this argument as used by the freemarker template ("deprecated", "required"
+     * (common or otherwise), "common" (optional), "advanced", or "hidden")
      */
     protected String processNamedArgument(
             final Map<String, Object> argBindings,
