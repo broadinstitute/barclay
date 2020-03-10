@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -82,7 +83,8 @@ public class DocumentationGenerationIntegrationTest {
                         "html", // requestedIndexFileExtension
                         "html", // requestedOutputFileExtension
                         new String[] {}, // customDocletArgs
-                        false    // onlyTestIndex
+                        false,    // onlyTestIndex
+                        EXPECTED_OUTPUT_FILE_NAME_PREFIXES
                 },
                 // defaut doclet and templates using alternate index extension
                 {HelpDoclet.class,
@@ -94,7 +96,8 @@ public class DocumentationGenerationIntegrationTest {
                         "xhtml", // requestedIndexFileExtension
                         "html",  // requestedOutputFileExtension
                         new String[] {}, // customDocletArgs
-                        false     // onlyTestIndex
+                        false,     // onlyTestIndex
+                        EXPECTED_OUTPUT_FILE_NAME_PREFIXES
                 },
                 // custom doclet and templates
                 {TestDoclet.class,
@@ -106,7 +109,8 @@ public class DocumentationGenerationIntegrationTest {
                         "html", // requestedIndexFileExtension
                         "html", // requestedOutputFileExtension
                         new String[] {}, // customDocletArgs
-                        false    // onlyTestIndex
+                        false,    // onlyTestIndex
+                        EXPECTED_OUTPUT_FILE_NAME_PREFIXES
                 },
                 // custom bash doclet and templates
                 {BashTabCompletionDoclet.class,
@@ -135,7 +139,8 @@ public class DocumentationGenerationIntegrationTest {
                                 "-caller-post-arg-min-occurs", "0 0 1",
                                 "-caller-post-arg-max-occurs", "1 1 1",
                         },
-                        true  // onlyTestIndex
+                        true,  // onlyTestIndex
+                        EXPECTED_OUTPUT_FILE_NAME_PREFIXES
                 },
 
                 //==============================================================================================================
@@ -150,9 +155,10 @@ public class DocumentationGenerationIntegrationTest {
                         "html", // requestedIndexFileExtension
                         "html", // requestedOutputFileExtension
                         new String[] {"-use-default-templates"}, // customDocletArgs
-                        false    // onlyTestIndex
+                        false,    // onlyTestIndex
+                        EXPECTED_OUTPUT_FILE_NAME_PREFIXES
                 },
-                // defaut doclet and templates from classpath using alternate index extension
+                // default doclet and templates from classpath using alternate index extension
                 {HelpDoclet.class,
                         null,
                         new File(testResourcesDir + "help/expected/HelpDoclet"),
@@ -162,7 +168,8 @@ public class DocumentationGenerationIntegrationTest {
                         "xhtml", // requestedIndexFileExtension
                         "html",  // requestedOutputFileExtension
                         new String[] { "-use-default-templates" }, // customDocletArgs
-                        false     // onlyTestIndex
+                        false,     // onlyTestIndex
+                        EXPECTED_OUTPUT_FILE_NAME_PREFIXES
                 },
                 // custom bash doclet pulling templates from classpath
                 {BashTabCompletionDoclet.class,
@@ -193,7 +200,8 @@ public class DocumentationGenerationIntegrationTest {
                                 "-caller-post-arg-min-occurs", "0 0 1",
                                 "-caller-post-arg-max-occurs", "1 1 1",
                         },
-                        true  // onlyTestIndex
+                        true,  // onlyTestIndex
+                        EXPECTED_OUTPUT_FILE_NAME_PREFIXES
                 },
                 // custom bash doclet pulling templates from classpath, Mostly defaults
                 {BashTabCompletionDoclet.class,
@@ -208,8 +216,23 @@ public class DocumentationGenerationIntegrationTest {
                                 "-caller-script-name",         "bashTabCompletionDocletTestLaunchWithDefaults.sh",
                                 "-use-default-templates"
                         },
-                        true  // onlyTestIndex
+                        true,  // onlyTestIndex
+                        EXPECTED_OUTPUT_FILE_NAME_PREFIXES
                 },
+                // WDL Gen
+                { WDLDoclet.class,
+                        new File(inputResourcesDir + "helpTemplates/"),
+                        new File(testResourcesDir + "help/expected/WDLDoclet"),
+                        indexFileName,
+                        "html", // testIndexFileExtension
+                        "wdl", // testOutputFileExtension
+                        "html", // requestedIndexFileExtension
+                        "wdl", // requestedOutputFileExtension
+                        new String[] {}, // customDocletArgs
+                        false,    // onlyTestIndex
+                          // the WDL generator doesn't resolve "extraDocs", so there is only the test container
+                        Collections.singletonList("org_broadinstitute_barclay_help_testinputs_TestArgumentContainer")
+                }
         };
     }
 
@@ -224,7 +247,8 @@ public class DocumentationGenerationIntegrationTest {
             final String requestedIndexFileExtension,
             final String requestedOutputFileExtension,
             final String[] customDocletArgs,
-            final boolean onlyTestIndex
+            final boolean onlyTestIndex,
+            final List<String> expectedOutputPrefixes
     ) throws IOException
     {
         // creates a temp output directory
@@ -250,7 +274,7 @@ public class DocumentationGenerationIntegrationTest {
         // Only compare other output files if we should have them:
         if ( !onlyTestIndex ) {
             // Compare output files (json and workunit)
-            for (final String workUnitFileNamePrefix : EXPECTED_OUTPUT_FILE_NAME_PREFIXES) {
+            for (final String workUnitFileNamePrefix : expectedOutputPrefixes) {
                 //check json file
                 assertFileContentsIdentical(
                         new File(outputDir, workUnitFileNamePrefix + jsonFileExtension),

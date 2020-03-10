@@ -1,0 +1,25 @@
+{
+  "TestArgumentContainer.app": "String",
+  "TestArgumentContainer.positionalArgs": "Array[File]",
+
+  "TestArgumentContainer.requiredClpEnum": "String",
+  "TestArgumentContainer.requiredFileList": "Array[File]",
+  "TestArgumentContainer.requiredInputFilesFromArgCollection": "Array[File]",
+  "TestArgumentContainer.requiredStringInputFromArgCollection": "String",
+  "TestArgumentContainer.requiredStringList": "Array[String]",
+  "TestArgumentContainer.usesFieldNameForArgName": "String",
+
+  "TestArgumentContainer.fullAnonymousArgName": null,
+  "TestArgumentContainer.mutexSourceField": null,
+  "TestArgumentContainer.mutexTargetField1": null,
+  "TestArgumentContainer.mutexTargetField2": null,
+  "TestArgumentContainer.optionalClpEnum": "ENUM_VALUE_1",
+  "TestArgumentContainer.optionalDouble": "2.15",
+  "TestArgumentContainer.optionalDoubleList": "[100.0, 99.9, 99.0, 90.0]",
+  "TestArgumentContainer.optionalFileList": null,
+  "TestArgumentContainer.optionalFlag": "false",
+  "TestArgumentContainer.optionalInputFilesFromArgCollection": null,
+  "TestArgumentContainer.optionalStringInputFromArgCollection": null,
+  "TestArgumentContainer.optionalStringList": null,
+  "TestArgumentContainer.testPlugin": null
+}

@@ -73,6 +73,7 @@ public class TestArgumentContainer implements CommandLinePluginProvider {
     /**
      * Required file list.
      */
+    @WorkflowResource(input=false, output=true, companionResources={"companionDictionary", "companionIndex"})
     @Argument(fullName = "requiredFileList",
             shortName = "reqFilList",
             doc = "Required file list",
