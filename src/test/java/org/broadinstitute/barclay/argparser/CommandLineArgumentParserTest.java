@@ -349,6 +349,33 @@ public final class CommandLineArgumentParserTest {
         Assert.assertEquals(fo.FROBNICATION_THRESHOLD.intValue(), 20);
     }
 
+    class FrobnicateEnumSet {
+
+        @Argument(shortName = "set-of-enum")
+        public EnumSet<FrobnicationFlavor> enumSet = EnumSet.noneOf(FrobnicationFlavor.class);
+    }
+
+    @Test
+    public void testEnumSet() {
+        final String[] args = {
+                "--set-of-enum","BAR"
+        };
+        final FrobnicateEnumSet fo = new FrobnicateEnumSet();
+        final CommandLineArgumentParser clp = new CommandLineArgumentParser(fo);
+        Assert.assertTrue(clp.parseArguments(System.err, args));
+        Assert.assertTrue(fo.enumSet.contains(FrobnicationFlavor.BAR));
+    }
+
+    @Test(expectedExceptions = CommandLineException.BadArgumentValue.class)
+    public void testEnumSetNegative() {
+        final String[] args = {
+                "--set-of-enum","NOT_AN_ENUM_MEMBER"
+        };
+        final FrobnicateEnumSet fo = new FrobnicateEnumSet();
+        final CommandLineArgumentParser clp = new CommandLineArgumentParser(fo);
+        clp.parseArguments(System.err, args);
+    }
+
     @Test(expectedExceptions = CommandLineException.MissingArgument.class)
     public void testMissingRequiredArgument() {
         final String[] args = {
