@@ -30,6 +30,7 @@ import java.util.*;
         oneLineSummary = TestArgumentContainer.ONE_LINE_SUMMARY,
         programGroup = TestProgramGroup.class)
 @BetaFeature
+@RuntimeProperties(memory="3G", disks="local-disk 20 HDD")
 @DocumentedFeature(groupName = TestArgumentContainer.GROUP_NAME, extraDocs = TestExtraDocs.class)
 public class TestArgumentContainer implements CommandLinePluginProvider {
 

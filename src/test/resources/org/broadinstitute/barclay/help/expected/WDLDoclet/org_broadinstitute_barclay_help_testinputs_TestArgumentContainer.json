@@ -1,5 +1,6 @@
 {
   "TestArgumentContainer.app": "String",
+  "TestArgumentContainer.docker": "String",
   "TestArgumentContainer.positionalArgs": "Array[File]",
 
   "TestArgumentContainer.requiredClpEnum": "String",

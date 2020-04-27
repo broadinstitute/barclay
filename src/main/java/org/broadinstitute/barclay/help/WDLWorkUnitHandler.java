@@ -34,6 +34,10 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
      */
     public final String RUNTIME_PROPERTY_MEMORY = "memory";
     /**
+     * runtime memory property (stored in "runtimeProperties")
+     */
+    public final String RUNTIME_PROPERTY_DISKS = "disks";
+    /**
      * name of the top level freemarker map entry for runtime outputs
      */
     public final String RUNTIME_OUTPUTS = "runtimeOutputs";
@@ -369,12 +373,14 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
 
         final RuntimeProperties rtProperties = currentWorkUnit.getClazz().getAnnotation(RuntimeProperties.class);
         if (rtProperties != null) {
-            final String memory = rtProperties.memory();
-            if (!memory.isEmpty()) {
-                final Map<String, String> runtimePropertiesMap = new HashMap<>();
-                runtimePropertiesMap.put(RUNTIME_PROPERTY_MEMORY, memory);
-                currentWorkUnit.setProperty(RUNTIME_PROPERTIES, runtimePropertiesMap);
+            final Map<String, String> runtimePropertiesMap = new HashMap<>();
+            if (!rtProperties.memory().isEmpty()) {
+                runtimePropertiesMap.put(RUNTIME_PROPERTY_MEMORY, rtProperties.memory());
             }
+            if (!rtProperties.disks().isEmpty()) {
+                runtimePropertiesMap.put(RUNTIME_PROPERTY_DISKS, rtProperties.disks());
+            }
+            currentWorkUnit.setProperty(RUNTIME_PROPERTIES, runtimePropertiesMap);
         }
     }
 

@@ -2,6 +2,7 @@
 <#--- Store positional args in a WDL arg called "positionalArgs"--->
 <#assign positionalArgs="positionalArgs"/>
   "${name}.app": "String",
+  "${name}.docker": "String",
 <#assign remainingArgCount=arguments.required?size + arguments.optional?size + arguments.common?size/>
 <@taskinput heading="Positional Arguments" argsToUse=arguments.positional remainingCount=remainingArgCount/>
 <#assign remainingArgCount=arguments.optional?size + arguments.common?size/>

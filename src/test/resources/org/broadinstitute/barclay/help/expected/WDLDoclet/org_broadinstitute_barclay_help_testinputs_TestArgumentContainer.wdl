@@ -37,6 +37,8 @@ version 1.0
 workflow TestArgumentContainer {
 
   input {
+    #Docker to use
+    String? docker
     #App location
     String app
 
@@ -168,6 +170,11 @@ task TestArgumentContainerTask {
         ~{true='--testPlugin ' false='' defined(testPlugin)}~{sep=' --testPlugin ' testPlugin} \
   >>>
 
+  runtime {
+          docker:
+          memory: "3G"
+          disks: "local-disk 20 HDD"
+  }
 
   output {
     # Task Outputs                                      

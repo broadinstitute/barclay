@@ -34,6 +34,8 @@ version 1.0
 workflow ${name} {
 
   input {
+    #Docker to use
+    String? docker
     #App location
     String app
     <@defineWorkflowInputs heading="Positional Arguments" argsToUse=arguments.positional/>
@@ -82,8 +84,12 @@ task ${name}Task {
 
   <#if runtimeProperties?? && runtimeProperties?size != 0>
   runtime {
+          docker:
       <#if runtimeProperties.memory != "">
-    memory: "${runtimeProperties.memory}"
+          memory: "${runtimeProperties.memory}"
+      </#if>
+      <#if runtimeProperties.disks != "">
+          disks: "${runtimeProperties.disks}"
       </#if>
   }
   </#if>
