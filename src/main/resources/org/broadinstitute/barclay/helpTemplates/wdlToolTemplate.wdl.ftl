@@ -13,7 +13,10 @@ version 1.0
 # ${summary}
 #
 # General Workflow (non-tool) Arguments
-#    ${"app"?right_pad(50)}Location of app run by this workflow
+#    ${"dockerImage"?right_pad(50)} Docker image for this workflow
+#    ${"appLocation"?right_pad(50)} Location of app to run for this workflow
+#    ${"memoryRequirements"?right_pad(50)} Runtime memory requirements for this workflow
+#    ${"diskRequirements"?right_pad(50)} Runtime disk requirements for this workflow
 #
 <#if arguments.positional?size != 0>
 <@addArgumentDescriptions heading="Positional Tool Arguments" argsToUse=arguments.positional/>
@@ -35,9 +38,13 @@ workflow ${name} {
 
   input {
     #Docker to use
-    String? docker
+    String dockerImage
     #App location
-    String app
+    String appLocation
+    #Memory to use
+    String memoryRequirements
+    #Disk requirements for this workflow
+    String diskRequirements
     <@defineWorkflowInputs heading="Positional Arguments" argsToUse=arguments.positional/>
     <@defineWorkflowInputs heading="Required Arguments" argsToUse=arguments.required/>
     <@defineWorkflowInputs heading="Optional Tool Arguments" argsToUse=arguments.optional/>
@@ -49,8 +56,15 @@ workflow ${name} {
 
     input:
 
+        #Docker
+        ${"dockerImage"?right_pad(50)} = dockerImage,
         #App location
-        ${"app"?right_pad(50)} = app,
+        ${"appLocation"?right_pad(50)} = appLocation,
+        #Memory to use
+        ${"memoryRequirements"?right_pad(50)} = memoryRequirements,
+        #Disk requirements for this workflow
+        ${"diskRequirements"?right_pad(50)} = diskRequirements,
+
         <@callTaskInputs heading="Positional Arguments" argsToUse=arguments.positional/>
         <@callTaskInputs heading="Required Arguments" argsToUse=arguments.required/>
         <@callTaskInputs heading="Optional Tool Arguments" argsToUse=arguments.optional/>
@@ -66,7 +80,10 @@ workflow ${name} {
 task ${name}Task {
 
   input {
-    String app
+    String dockerImage
+    String appLocation
+    String memoryRequirements
+    String diskRequirements
     <@defineTaskInputs heading="Positional Arguments" argsToUse=arguments.positional/>
     <@defineTaskInputs heading="Required Arguments" argsToUse=arguments.required/>
     <@defineTaskInputs heading="Optional Tool Arguments" argsToUse=arguments.optional/>
@@ -75,7 +92,7 @@ task ${name}Task {
   }
 
   command <<<
-    ~{app} ${name} \
+    ~{appLocation} ${name} \
         <@callTaskCommand heading="Positional Arguments" argsToUse=arguments.positional/>
         <@callTaskCommand heading="Required Arguments" argsToUse=arguments.required/>
         <@callTaskCommand heading="Optional Tool Arguments" argsToUse=arguments.optional/>
@@ -84,13 +101,9 @@ task ${name}Task {
 
   <#if runtimeProperties?? && runtimeProperties?size != 0>
   runtime {
-          docker:
-      <#if runtimeProperties.memory != "">
-          memory: "${runtimeProperties.memory}"
-      </#if>
-      <#if runtimeProperties.disks != "">
-          disks: "${runtimeProperties.disks}"
-      </#if>
+          docker: dockerImage
+          memory: memoryRequirements
+          disks: diskRequirements
   }
   </#if>
 
@@ -210,7 +223,7 @@ task ${name}Task {
     ${outputType} ${name}Task_${outputName?substring(2)} = <#noparse>"${</#noparse>${outputName?substring(2)}<#noparse>}"</#noparse>
             <#if companionResources?? && companionResources[outputName]??>
                 <#list companionResources[outputName] as companion>
-    ${companion.type} ${name}${companion.name?substring(2)} = <#noparse>"${</#noparse>${companion.name?substring(2)}<#noparse>}"</#noparse>
+    ${companion.type} ${name}Task_${companion.name?substring(2)} = <#noparse>"${</#noparse>${companion.name?substring(2)}<#noparse>}"</#noparse>
                 </#list>
             </#if>
         </#list>

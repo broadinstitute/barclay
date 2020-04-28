@@ -1,12 +1,10 @@
 package org.broadinstitute.barclay.help;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.broadinstitute.barclay.argparser.*;
 import org.broadinstitute.barclay.argparser.RuntimeProperties;
 
-import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -30,13 +28,13 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
      */
     public final String RUNTIME_PROPERTIES = "runtimeProperties";
     /**
-     * runtime memory property (stored in "runtimeProperties")
+     * runtime memory property (stored in "runtimeProperties", used to initialize arg value in JSON)
      */
-    public final String RUNTIME_PROPERTY_MEMORY = "memory";
+    public final String RUNTIME_PROPERTY_MEMORY = "memoryRequirements";
     /**
-     * runtime memory property (stored in "runtimeProperties")
+     * runtime disks property (stored in "runtimeProperties", used to initialize arg value in JSON)
      */
-    public final String RUNTIME_PROPERTY_DISKS = "disks";
+    public final String RUNTIME_PROPERTY_DISKS = "diskRequirements";
     /**
      * name of the top level freemarker map entry for runtime outputs
      */
@@ -45,55 +43,6 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
      * name of the top level freemarker map entry for companion resources
      */
     public final String COMPANION_RESOURCES = "companionResources";
-
-    // Map of Java argument types that the WDL generator knows how to convert to a WDL type, along with the
-    // corresponding string substitution that needs to be run on the (Barclay-generated) string that describes
-    // the type. From a purely string perspective, some of these transforms are no-ops in that no actual
-    // conversion is required because the type names are identical in Java and WDL (i.e, File->File or
-    // String->String), but they're included here for completeness, and to document the allowed type transitions.
-    private final static Map<Class<?>, ImmutablePair<String, String>> javaToWDLTypeMap =
-            new HashMap<Class<?>, ImmutablePair<String, String>>() {
-                private static final long serialVersionUID = 1L;
-                {
-                    put(String.class, new ImmutablePair<>("String", "String"));
-
-                    // primitive (or boxed primitive) types
-                    put(boolean.class, new ImmutablePair<>("boolean", "Boolean"));
-                    put(Boolean.class, new ImmutablePair<>("Boolean", "Boolean"));
-
-                    put(byte.class, new ImmutablePair<>("byte", "Int"));
-                    put(Byte.class, new ImmutablePair<>("Byte", "Int"));
-
-                    put(int.class, new ImmutablePair<>("int", "Int"));
-                    put(Integer.class, new ImmutablePair<>("Integer", "Int"));
-
-                    //NOTE: WDL has no long type, map to Int
-                    put(long.class, new ImmutablePair<>("long", "Int"));
-                    put(Long.class, new ImmutablePair<>("Long", "Int"));
-
-                    put(float.class, new ImmutablePair<>("float", "Float"));
-                    put(Float.class, new ImmutablePair<>("Float", "Float"));
-                    put(double.class, new ImmutablePair<>("double", "Float"));
-                    put(Double.class, new ImmutablePair<>("Double", "Float"));
-
-                    // File/Path Types
-                    put(File.class, new ImmutablePair<>("File", "File"));
-            }
-        };
-
-    // Map of Java collection argument types that the WDL generator knows how to convert to a WDL type, along with the
-    // corresponding string substitution that needs to be run on the (Barclay-generated) string that describes
-    // the type.
-    private final static Map<Class<?>, ImmutablePair<String, String>> javaCollectionToWDLCollectionTypeMap =
-            new HashMap<Class<?>, ImmutablePair<String, String>>() {
-                private static final long serialVersionUID = 1L;
-                {
-                    put(List.class, new ImmutablePair<>("List", "Array"));
-                    //TODO: there are a few GATK @Arguments that are typed as "ArrayList", fix these...
-                    put(ArrayList.class, new ImmutablePair<>("ArrayList", "Array"));
-                    put(Set.class, new ImmutablePair<>("Set", "Array"));
-                }
-            };
 
     public WDLWorkUnitHandler(final HelpDoclet doclet) {
         super(doclet);
@@ -159,22 +108,10 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
         argBindings.put("type", wdlType);
 
         // now replace the actual argument name with a wdl-friendly name if necessary ("input" and "output"
-        // are reserved words in WDL and can't be used for arg names, so use the arg's shortName/synonym in
-        // those cases)
+        // are reserved words in WDL and can't be used for arg names;  WDL doesn't accept embedded "-" for
+        // variable names, so use a non-kebab name with an underscore
         final String actualArgName = (String) argBindings.get("name");
-        String wdlName = actualArgName;
-        if (actualArgName.equalsIgnoreCase("--output") || actualArgName.equalsIgnoreCase("--input")) {
-            if (argBindings.get("synonyms") != null) {
-                wdlName = "-" + argBindings.get("synonyms").toString();
-            } else {
-                throw new RuntimeException(String.format(
-                        "Can't generate WDL for argument named %s (which is a WDL reserved word)",
-                        actualArgName));
-            }
-        }
-
-        // WDL doesn't accept embedded "-" for variable names, so use a non-kebab name with an underscore
-        wdlName = "--" + wdlName.substring(2).replace("-", "_");
+        String wdlName = "--" + WDLTransforms.transformJavaNameToWDLName(actualArgName.substring(2));
         argBindings.put("name", wdlName);
 
         // finally, keep track of the outputs
@@ -237,7 +174,7 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
         // if the underlying field is a collection type; it needs to map to "Array", and then the
         // type param has to be converted to a WDL type
         if (argDef.isCollection()) {
-            Pair<String, String> conversionPair = getCollectionTypeConversionPair(argumentClass);
+            Pair<String, String> conversionPair = tranformToWDLCollectionType(argumentClass);
             if (conversionPair != null) {
                 wdlType = wdlType.replace(conversionPair.getLeft(), conversionPair.getRight());
             } else {
@@ -323,7 +260,7 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
      */
     protected String convertJavaTypeToWDLType(final Class<?> argumentClass, final String docType, final String contextMessage) {
         String convertedWDLType;
-        final Pair<String, String> typeConversionPair = getJavaWDLTypeConversion(argumentClass);
+        final Pair<String, String> typeConversionPair = transformToWDLType(argumentClass);
         if (typeConversionPair != null) {
             convertedWDLType = docType.replace(typeConversionPair.getKey(), typeConversionPair.getValue());
         } else if (argumentClass.isEnum()) {
@@ -343,11 +280,23 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
      * Given an argument class, return a String pair representing the string that should be replaced (the Java type),
      * and the string to substitute (the corresponding WDL type), i.e., for an argument with type Java Integer.class,
      * return the Pair ("Integer", "Int") to convert from the Java type to the corresponding WDL type.
+     *
      * @param argumentClass Class of the argument being converter
      * @return a String pair representing the original and replacement type text, or null if no conversion is available
      */
-    protected Pair<String, String> getJavaWDLTypeConversion(final Class<?> argumentClass) {
-        return javaToWDLTypeMap.get(argumentClass);
+    protected Pair<String, String> transformToWDLType(final Class<?> argumentClass) {
+        return WDLTransforms.transformToWDLType(argumentClass);
+    }
+
+    /**
+     * Given {@code candidateName}, transform/mangle the name if it is a WDL reserved word, otherwise
+     * return {@code candidateName}.
+     *
+     * @param candidateName
+     * @return mangled name if {@code candidateName} is a WDL reserved word, otherwise {@code candidateName}
+     */
+    protected String transformWDLReservedWord(final String candidateName) {
+        return WDLTransforms.transformWDLReservedWord(candidateName);
     }
 
     /**
@@ -357,8 +306,8 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
      * @param argumentCollectionClass collection Class of the argument being converter
      * @return a String pair representing the original and replacement type text, or null if no conversion is available
      */
-    protected Pair<String, String> getCollectionTypeConversionPair(final Class<?> argumentCollectionClass) {
-        return javaCollectionToWDLCollectionTypeMap.get(argumentCollectionClass);
+    protected Pair<String, String> tranformToWDLCollectionType(final Class<?> argumentCollectionClass) {
+        return WDLTransforms.tranformToWDLCollectionType(argumentCollectionClass);
     }
 
     /**
@@ -374,12 +323,8 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
         final RuntimeProperties rtProperties = currentWorkUnit.getClazz().getAnnotation(RuntimeProperties.class);
         if (rtProperties != null) {
             final Map<String, String> runtimePropertiesMap = new HashMap<>();
-            if (!rtProperties.memory().isEmpty()) {
-                runtimePropertiesMap.put(RUNTIME_PROPERTY_MEMORY, rtProperties.memory());
-            }
-            if (!rtProperties.disks().isEmpty()) {
-                runtimePropertiesMap.put(RUNTIME_PROPERTY_DISKS, rtProperties.disks());
-            }
+            runtimePropertiesMap.put(RUNTIME_PROPERTY_MEMORY, rtProperties.memoryRequirements());
+            runtimePropertiesMap.put(RUNTIME_PROPERTY_DISKS, rtProperties.diskRequirements());
             currentWorkUnit.setProperty(RUNTIME_PROPERTIES, runtimePropertiesMap);
         }
     }

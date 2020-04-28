@@ -19,12 +19,13 @@ public @interface RuntimeProperties {
     // added to the freemarker WDL template.
 
     /**
-     * @return a WDL-compatible string specifying the runtime memory requirements for this tool
+     * @return a WDL-compatible string specifying the runtime memory requirements for this tool. Defaults to "4G".
      */
-    String memory() default "";
+    String memoryRequirements() default "4G";
 
     /**
-     * @return a WDL-compatible string specifying the runtime disk requirements for this tool
+     * @return a WDL-compatible string specifying the runtime disk requirements for this tool. Defaults to
+     * "local-disk 40 HDD".
      */
-    String disks() default "";
+    String diskRequirements() default "local-disk 40 HDD";
 }

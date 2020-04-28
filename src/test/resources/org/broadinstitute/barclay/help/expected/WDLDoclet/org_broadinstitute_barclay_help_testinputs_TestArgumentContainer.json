@@ -1,6 +1,9 @@
 {
-  "TestArgumentContainer.app": "String",
-  "TestArgumentContainer.docker": "String",
+  "TestArgumentContainer.dockerImage": "String",
+  "TestArgumentContainer.appLocation": "String",
+  "TestArgumentContainer.memoryRequirements: "3G"
+  "TestArgumentContainer.diskRequirements: "local-disk 40 HDD"
+
   "TestArgumentContainer.positionalArgs": "Array[File]",
 
   "TestArgumentContainer.requiredClpEnum": "String",
@@ -10,6 +13,7 @@
   "TestArgumentContainer.requiredStringList": "Array[String]",
   "TestArgumentContainer.usesFieldNameForArgName": "String",
 
+  "TestArgumentContainer.enumSetLong": "[ENUM_VALUE_1]",
   "TestArgumentContainer.fullAnonymousArgName": null,
   "TestArgumentContainer.mutexSourceField": null,
   "TestArgumentContainer.mutexTargetField1": null,

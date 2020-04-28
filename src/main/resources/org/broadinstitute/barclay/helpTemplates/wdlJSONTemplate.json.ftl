@@ -1,8 +1,19 @@
 {
 <#--- Store positional args in a WDL arg called "positionalArgs"--->
 <#assign positionalArgs="positionalArgs"/>
-  "${name}.app": "String",
-  "${name}.docker": "String",
+  "${name}.dockerImage": "String",
+  "${name}.appLocation": "String",
+<#if runtimeProperties.memoryRequirements != "">
+  "${name}.memoryRequirements: "${runtimeProperties.memoryRequirements}"
+<#else>
+  "${name}.memoryRequirements: "String"
+</#if>
+<#if runtimeProperties.diskRequirements != "">
+  "${name}.diskRequirements: "${runtimeProperties.diskRequirements}"
+<#else>
+  "${name}.diskRequirements: "String",
+</#if>
+
 <#assign remainingArgCount=arguments.required?size + arguments.optional?size + arguments.common?size/>
 <@taskinput heading="Positional Arguments" argsToUse=arguments.positional remainingCount=remainingArgCount/>
 <#assign remainingArgCount=arguments.optional?size + arguments.common?size/>

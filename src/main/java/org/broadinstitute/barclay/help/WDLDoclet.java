@@ -29,18 +29,15 @@ public class WDLDoclet extends HelpDoclet {
     public boolean includeInDocs(final DocumentedFeature documentedFeature, final ClassDoc classDoc, final Class<?> clazz) {
         if (super.includeInDocs(documentedFeature, classDoc, clazz)) {
             boolean hasRuntimeProperties = clazz.getAnnotation(RuntimeProperties.class) != null;
-            boolean isCommandLineProgram =  clazz.getAnnotation(CommandLineProgramProperties.class) != null;
+            boolean isCommandLineProgram = clazz.getAnnotation(CommandLineProgramProperties.class) != null;
             if (hasRuntimeProperties) {
                 if (!isCommandLineProgram) {
                     throw new DocException(String.format(
-                            "Class with RuntimeProperties must also have CommandLineProgramProperties (%s)", clazz));
+                            "RuntimeProperties can only be applied to classes that are annotated with CommandLineProgramProperties (%s)",
+                            clazz));
                 }
                 return true;
             }
-            //TODO: temporarily returns true for all command line program to allow testing on a large set of
-            // (GATK and Picard) test inputs that are not yet annotated. This branch should be restored to
-            // return false before this branch is checked in.
-            return isCommandLineProgram;
         }
         return false;
     }

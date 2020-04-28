@@ -5,7 +5,10 @@ version 1.0
 # Argument container class for testing documentation generation.
 #
 # General Workflow (non-tool) Arguments
-#    app                                               Location of app run by this workflow
+#    dockerImage                                        Docker image for this workflow
+#    appLocation                                        Location of app to run for this workflow
+#    memoryRequirements                                 Runtime memory requirements for this workflow
+#    diskRequirements                                   Runtime disk requirements for this workflow
 #
 # Positional Tool Arguments
 #   Array[File] positionalArgs
@@ -19,6 +22,7 @@ version 1.0
 #   usesFieldNameForArgName                            Use field name if no name in annotation.                    
 #
 # Optional Tool Arguments
+#   enumSetLong                                        Some set thing.                                             
 #   fullAnonymousArgName                               Test anonymous class arg                                    
 #   mutexSourceField                                   Undocumented option                                         
 #   mutexTargetField1                                  SAM/BAM/CRAM file(s) with alignment data from the first read of a pair.
@@ -38,9 +42,13 @@ workflow TestArgumentContainer {
 
   input {
     #Docker to use
-    String? docker
+    String dockerImage
     #App location
-    String app
+    String appLocation
+    #Memory to use
+    String memoryRequirements
+    #Disk requirements for this workflow
+    String diskRequirements
 
     # Positional Arguments
     Array[File] positionalArgs
@@ -56,6 +64,7 @@ workflow TestArgumentContainer {
     String usesFieldNameForArgName
 
     # Optional Tool Arguments
+    Array[String]? enumSetLong
     Array[File]? fullAnonymousArgName
     Array[File]? mutexSourceField
     Array[File]? mutexTargetField1
@@ -76,8 +85,15 @@ workflow TestArgumentContainer {
 
     input:
 
+        #Docker
+        dockerImage                                        = dockerImage,
         #App location
-        app                                                = app,
+        appLocation                                        = appLocation,
+        #Memory to use
+        memoryRequirements                                 = memoryRequirements,
+        #Disk requirements for this workflow
+        diskRequirements                                   = diskRequirements,
+
 
         # Positional Arguments
         positionalArgs                                     = positionalArgs,
@@ -93,6 +109,7 @@ workflow TestArgumentContainer {
         usesFieldNameForArgName                            = usesFieldNameForArgName,
 
         # Optional Tool Arguments
+        enumSetLong                                        = enumSetLong,
         fullAnonymousArgName                               = fullAnonymousArgName,
         mutexSourceField                                   = mutexSourceField,
         mutexTargetField1                                  = mutexTargetField1,
@@ -120,7 +137,10 @@ workflow TestArgumentContainer {
 task TestArgumentContainerTask {
 
   input {
-    String app
+    String dockerImage
+    String appLocation
+    String memoryRequirements
+    String diskRequirements
     Array[File] positionalArgs
     String requiredClpEnum
     Array[File] requiredFileList
@@ -130,6 +150,7 @@ task TestArgumentContainerTask {
     String requiredStringInputFromArgCollection
     Array[String] requiredStringList
     String usesFieldNameForArgName
+    Array[String]? enumSetLong
     Array[File]? fullAnonymousArgName
     Array[File]? mutexSourceField
     Array[File]? mutexTargetField1
@@ -147,7 +168,7 @@ task TestArgumentContainerTask {
   }
 
   command <<<
-    ~{app} TestArgumentContainer \
+    ~{appLocation} TestArgumentContainer \
         ~{sep=' ' positionalArgs} \
         --requiredClpEnum ~{sep=' --requiredClpEnum ' requiredClpEnum} \
         --requiredFileList ~{sep=' --requiredFileList ' requiredFileList} \
@@ -155,6 +176,7 @@ task TestArgumentContainerTask {
         --requiredStringInputFromArgCollection ~{sep=' --requiredStringInputFromArgCollection ' requiredStringInputFromArgCollection} \
         --requiredStringList ~{sep=' --requiredStringList ' requiredStringList} \
         --usesFieldNameForArgName ~{sep=' --usesFieldNameForArgName ' usesFieldNameForArgName} \
+        ~{true='--enumSetLong ' false='' defined(enumSetLong)}~{sep=' --enumSetLong ' enumSetLong} \
         ~{true='--fullAnonymousArgName ' false='' defined(fullAnonymousArgName)}~{sep=' --fullAnonymousArgName ' fullAnonymousArgName} \
         ~{true='--mutexSourceField ' false='' defined(mutexSourceField)}~{sep=' --mutexSourceField ' mutexSourceField} \
         ~{true='--mutexTargetField1 ' false='' defined(mutexTargetField1)}~{sep=' --mutexTargetField1 ' mutexTargetField1} \
@@ -171,16 +193,16 @@ task TestArgumentContainerTask {
   >>>
 
   runtime {
-          docker:
-          memory: "3G"
-          disks: "local-disk 20 HDD"
+          docker: dockerImage
+          memory: memoryRequirements
+          disks: diskRequirements
   }
 
   output {
     # Task Outputs                                      
     Array[File] TestArgumentContainerTask_requiredFileList = "${requiredFileList}"
-    Array[File] TestArgumentContainercompanionDictionary = "${companionDictionary}"
-    Array[File] TestArgumentContainercompanionIndex = "${companionIndex}"
+    Array[File] TestArgumentContainerTask_companionDictionary = "${companionDictionary}"
+    Array[File] TestArgumentContainerTask_companionIndex = "${companionIndex}"
   }
  }
 
