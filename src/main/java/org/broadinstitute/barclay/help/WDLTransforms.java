@@ -97,11 +97,13 @@ public class WDLTransforms {
             };
 
     /**
-     * Mangle {@code candidateName} if it is not WDL-compatible (ie. is a WDL reserved word, or contains
-     * embedded "-" characters) to prevent WDL compiler errors.
+     * Return a mangled, WDL compatible variant of {@code candidateArgName} if it is not already
+     * WDL-compatible (ie. it is a WDL reserved word, or contains embedded "-" characters) to
+     * prevent WDL compiler errors. Otherwise return {@code candidateArgName}.
      *
      * @param candidateArgName
-     * @return mangled name if {@code candidateName} is not WDL-compatible, otherwise {@code candidateName}
+     * @return mangled WDL-compatible name if {@code candidateArgName} is not WDL-compatible, otherwise
+     * {@code candidateArgName}
      */
     public static String transformJavaNameToWDLName(final String candidateArgName) {
         return transformWDLReservedWord(candidateArgName.replace("-", "_"));
@@ -141,7 +143,7 @@ public class WDLTransforms {
      * @param argumentCollectionClass collection Class of the argument being converter
      * @return a String pair representing the original and replacement type text, or null if no conversion is available
      */
-    public static Pair<String, String> tranformToWDLCollectionType(final Class<?> argumentCollectionClass) {
+    public static Pair<String, String> transformToWDLCollectionType(final Class<?> argumentCollectionClass) {
         return javaCollectionToWDLCollectionTypeMap.get(argumentCollectionClass);
     }
 

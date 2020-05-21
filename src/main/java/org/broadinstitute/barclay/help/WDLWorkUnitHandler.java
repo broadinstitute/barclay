@@ -111,7 +111,7 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
         // are reserved words in WDL and can't be used for arg names;  WDL doesn't accept embedded "-" for
         // variable names, so use a non-kebab name with an underscore
         final String actualArgName = (String) argBindings.get("name");
-        String wdlName = "--" + WDLTransforms.transformJavaNameToWDLName(actualArgName.substring(2));
+        String wdlName = "--" + transformJavaNameToWDLName(actualArgName.substring(2));
         argBindings.put("name", wdlName);
 
         // finally, keep track of the outputs
@@ -295,8 +295,8 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
      * @param candidateName
      * @return mangled name if {@code candidateName} is a WDL reserved word, otherwise {@code candidateName}
      */
-    protected String transformWDLReservedWord(final String candidateName) {
-        return WDLTransforms.transformWDLReservedWord(candidateName);
+    protected String transformJavaNameToWDLName(final String candidateName) {
+        return WDLTransforms.transformJavaNameToWDLName(candidateName);
     }
 
     /**
@@ -307,7 +307,7 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
      * @return a String pair representing the original and replacement type text, or null if no conversion is available
      */
     protected Pair<String, String> tranformToWDLCollectionType(final Class<?> argumentCollectionClass) {
-        return WDLTransforms.tranformToWDLCollectionType(argumentCollectionClass);
+        return WDLTransforms.transformToWDLCollectionType(argumentCollectionClass);
     }
 
     /**
