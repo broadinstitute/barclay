@@ -107,10 +107,12 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
         final String wdlType = getWDLTypeForArgument(argDef, (String) argBindings.get("type"));
         argBindings.put("type", wdlType);
 
-        // now replace the actual argument name with a wdl-friendly name if necessary ("input" and "output"
-        // are reserved words in WDL and can't be used for arg names;  WDL doesn't accept embedded "-" for
-        // variable names, so use a non-kebab name with an underscore
+        // Store the actual (unmodified) arg name that the app will recognize, for use in the task command block.
+        // Then generate a WDL-friendly name if necessary ("input" and "output" are reserved words in WDL and
+        // can't be used for arg names; also WDL doesn't accept embedded "-" for variable names, so use a non-kebab
+        // name with an underscore) for use in the rest of the WDL source.
         final String actualArgName = (String) argBindings.get("name");
+        argBindings.put("actualArgName", actualArgName);
         String wdlName = "--" + transformJavaNameToWDLName(actualArgName.substring(2));
         argBindings.put("name", wdlName);
 
@@ -174,7 +176,7 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
         // if the underlying field is a collection type; it needs to map to "Array", and then the
         // type param has to be converted to a WDL type
         if (argDef.isCollection()) {
-            Pair<String, String> conversionPair = tranformToWDLCollectionType(argumentClass);
+            Pair<String, String> conversionPair = transformToWDLCollectionType(argumentClass);
             if (conversionPair != null) {
                 wdlType = wdlType.replace(conversionPair.getLeft(), conversionPair.getRight());
             } else {
@@ -306,7 +308,7 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
      * @param argumentCollectionClass collection Class of the argument being converter
      * @return a String pair representing the original and replacement type text, or null if no conversion is available
      */
-    protected Pair<String, String> tranformToWDLCollectionType(final Class<?> argumentCollectionClass) {
+    protected Pair<String, String> transformToWDLCollectionType(final Class<?> argumentCollectionClass) {
         return WDLTransforms.transformToWDLCollectionType(argumentCollectionClass);
     }
 

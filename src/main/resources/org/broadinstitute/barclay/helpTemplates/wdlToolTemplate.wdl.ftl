@@ -236,9 +236,9 @@ task ${name}Task {
             <#if heading?starts_with("Positional")>
         <#noparse>~{sep=' ' </#noparse>${positionalArgs}<#noparse>}</#noparse> \
             <#elseif heading?starts_with("Required")>
-        ${arg.name} <#noparse>~{sep=' </#noparse>${arg.name} <#noparse>' </#noparse>${arg.name?substring(2)}<#noparse>}</#noparse> \
+        ${arg.actualArgName} <#noparse>~{sep=' </#noparse>${arg.actualArgName} <#noparse>' </#noparse>${arg.name?substring(2)}<#noparse>}</#noparse> \
             <#else>
-        <#noparse>~{true='</#noparse>${arg.name} <#noparse>' false='' defined(</#noparse>${arg.name?substring(2)}<#noparse>)}~{sep='</#noparse> ${arg.name} <#noparse>'</#noparse> ${arg.name?substring(2)}<#noparse>}</#noparse> \
+        <#noparse>~{true='</#noparse>${arg.actualArgName} <#noparse>' false='' defined(</#noparse>${arg.actualArgName?substring(2)}<#noparse>)}~{sep='</#noparse> ${arg.actualArgName} <#noparse>'</#noparse> ${arg.name?substring(2)}<#noparse>}</#noparse> \
             </#if>
         </#list>
     </#if>
