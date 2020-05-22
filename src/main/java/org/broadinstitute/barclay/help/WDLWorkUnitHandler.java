@@ -96,6 +96,24 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
         currentWorkUnit.getRootMap().put(COMPANION_RESOURCES, argCompanionResourceArgMaps);
     }
 
+    /**
+     * Add the named argument {@code argDed}to the property map if applicable.
+     * @param currentWorkUnit current work unit
+     * @param args the freemarker arg map
+     * @param argDef the arg to add
+     */
+    protected void processNamedArgument(
+            final DocWorkUnit currentWorkUnit,
+            final Map<String, List<Map<String, Object>>> args,
+            final NamedArgumentDefinition argDef)
+    {
+        // for WDL gen, we don't want the special args such as --help or --version to show up in the
+        // WDL or JSON input files
+        if (!argDef.getUnderlyingField().getDeclaringClass().equals(SpecialArgumentsCollection.class)) {
+            super.processNamedArgument(currentWorkUnit, args, argDef);
+        }
+    }
+
     @Override
     protected String processNamedArgument(
             final Map<String, Object> argBindings,
