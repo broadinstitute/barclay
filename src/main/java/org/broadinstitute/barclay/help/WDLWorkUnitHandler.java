@@ -20,7 +20,7 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
     // keep track of tool outputs (Map<argName, argType>)
     private Map<String, String> runtimeOutputs = new HashMap<>();
 
-    // keep track of companion files (Map<argName, List<companionNames>)
+    // keep track of companion files (Map<argName, List<companionNames>) for a single argument
     private Map<String, List<String>> companionFiles = new HashMap<>();
 
     /**
@@ -121,9 +121,17 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
             final String fieldCommentText) {
         final String argCategory = super.processNamedArgument(argBindings, argDef, fieldCommentText);
 
-        // replace the java type of the argument with the appropriate wdl type
-        final String wdlType = getWDLTypeForArgument(argDef, (String) argBindings.get("type"));
+        // replace the java type of the argument with the appropriate wdl type (don't pass WorkflowResource
+        // for this call site
+        final String wdlType = getWDLTypeForArgument(argDef, null, (String) argBindings.get("type"));
+
+        // for args that are output workflow resources and have a WDL type of File, we need to use a String as
+        // the *input* type to prevent the workflow manager from attempting to localize them on input, so
+        // create a separate property in the property map for use by the template in input definitions
+        final WorkflowResource workflowResource = argDef.getUnderlyingField().getAnnotation(WorkflowResource.class);
+        final String wdlInputType = getWDLTypeForArgument(argDef, workflowResource, (String) argBindings.get("type"));
         argBindings.put("type", wdlType);
+        argBindings.put("wdlinputtype", wdlInputType);
 
         // Store the actual (unmodified) arg name that the app will recognize, for use in the task command block.
         // Then generate a WDL-friendly name if necessary ("input" and "output" are reserved words in WDL and
@@ -135,7 +143,6 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
         argBindings.put("name", wdlName);
 
         // finally, keep track of the outputs
-        final WorkflowResource workflowResource = argDef.getUnderlyingField().getAnnotation(WorkflowResource.class);
         if (workflowResource != null) {
             if (workflowResource.output()) {
                 runtimeOutputs.put(wdlName, wdlType);
@@ -165,9 +172,17 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
 
         final PositionalArgumentDefinition argDef = clp.getPositionalArgumentDefinition();
         if (argDef != null) {
+            final WorkflowResource workflowResource = argDef.getUnderlyingField().getAnnotation(WorkflowResource.class);
+
             // replace the java type of the argument with the appropriate wdl type
-            final String wdlType = getWDLTypeForArgument(argDef, (String) argBindings.get("positional").get(0).get("type"));
+            final String wdlType = getWDLTypeForArgument(argDef, null, (String) argBindings.get("positional").get(0).get("type"));
+
+            // for args that are output workflow resources and have a WDL type of File, we need to use a String as
+            // the *input* type to prevent the workflow manager from attempting to localize them on input, so
+            // create a separate property in the property map for use by the template in input definitions
+            final String wdlInputType = getWDLTypeForArgument(argDef, workflowResource, (String) argBindings.get("positional").get(0).get("type"));
             argBindings.get("positional").get(0).put("type", wdlType);
+            argBindings.get("positional").get(0).put("wdlinputtype", wdlInputType);
         }
     }
 
@@ -182,12 +197,13 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
      */
     protected String getWDLTypeForArgument(
             final ArgumentDefinition argDef,
+            final WorkflowResource workflowResource,
             final String argDocType
     ) {
         final Field argField = argDef.getUnderlyingField();
         final Class<?> argumentClass = argField.getType();
 
-        // start the data type chose by the doc system and transform that based on the underlying
+        // start the data type chosen by the doc system and transform that based on the underlying
         // java class/type
         String wdlType = argDocType;
 
@@ -201,7 +217,7 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
                 throw new IllegalArgumentException(
                         String.format(
                                 "Unrecognized collection type %s for argument %s in work unit %s." +
-                                "Argument collection type must be one of List or Set.",
+                                        "Argument collection type must be one of List or Set.",
                                 argumentClass,
                                 argField.getName(),
                                 argField.getDeclaringClass()));
@@ -244,9 +260,15 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
 
                         nestedTypeClass = Class.forName(pType2.getRawType().getTypeName());
                         wdlType = convertJavaTypeToWDLType(nestedTypeClass, wdlType, argField.getDeclaringClass().toString());
+                        if (workflowResource != null && workflowResource.output() && wdlType.equals("File")) {
+                            wdlType = "String";
+                        }
                     } else {
                         nestedTypeClass = Class.forName(genericTypes[0].getTypeName());
                         wdlType = convertJavaTypeToWDLType(nestedTypeClass, wdlType, argField.getDeclaringClass().toString());
+                        if (workflowResource != null && workflowResource.output() && wdlType.equals("File")) {
+                            wdlType = "String";
+                        }
                     }
                     return wdlType;
                 } catch (ClassNotFoundException e) {
@@ -265,6 +287,9 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
         }
 
         wdlType = convertJavaTypeToWDLType(argumentClass, wdlType, argField.getDeclaringClass().toString());
+        if (workflowResource != null && workflowResource.output() && wdlType.equals("File")) {
+            wdlType = "String";
+        }
 
         return wdlType;
     }

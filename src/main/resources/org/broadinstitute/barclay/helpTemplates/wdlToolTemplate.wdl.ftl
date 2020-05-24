@@ -134,17 +134,17 @@ task ${name}Task {
     # ${heading}
         <#list argsToUse as arg>
             <#if heading?starts_with("Positional")>
-    ${arg.type} ${positionalArgs}
+    ${arg.wdlinputtype} ${positionalArgs}
                 <#if companionResources?? && companionResources[arg.name]??>
                     <#list companionResources[arg.name] as companion>
-    ${companion.type} ${companion.name?substring(2)}
+    ${arg.wdlinputtype} ${companion.name?substring(2)}
                     </#list>
                 </#if>
             <#else>
-    ${arg.type}<#if !heading?starts_with("Required")>?</#if> ${arg.name?substring(2)}
+    ${arg.wdlinputtype}<#if !heading?starts_with("Required")>?</#if> ${arg.name?substring(2)}
                 <#if companionResources?? && companionResources[arg.name]??>
                     <#list companionResources[arg.name] as companion>
-    ${companion.type}<#if !heading?starts_with("Required")>?</#if> ${companion.name?substring(2)}
+    ${arg.wdlinputtype}<#if !heading?starts_with("Required")>?</#if> ${companion.name?substring(2)}
                     </#list>
                 </#if>
             </#if>
@@ -180,17 +180,17 @@ task ${name}Task {
     <#if argsToUse?size != 0>
         <#list argsToUse as arg>
             <#if heading?starts_with("Positional")>
-    ${arg.type} ${positionalArgs}
+    ${arg.wdlinputtype} ${positionalArgs}
                 <#if companionResources?? && companionResources[arg.name]??>
                     <#list companionResources[arg.name] as companion>
-    ${companion.type} ${companion.name?substring(2)}
+    ${arg.wdlinputtype} ${companion.name?substring(2)}
                     </#list>
                 </#if>
             <#else>
-    ${arg.type}<#if !heading?starts_with("Required")>?</#if> ${arg.name?substring(2)}
+    ${arg.wdlinputtype}<#if !heading?starts_with("Required")>?</#if> ${arg.name?substring(2)}
                 <#if companionResources?? && companionResources[arg.name]??>
                     <#list companionResources[arg.name] as companion>
-    ${companion.type}<#if !heading?starts_with("Required")>?</#if> ${companion.name?substring(2)}
+    ${arg.wdlinputtype}<#if !heading?starts_with("Required")>?</#if> ${companion.name?substring(2)}
                     </#list>
                 </#if>
             </#if>
