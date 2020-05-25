@@ -15,7 +15,7 @@ import java.util.*;
  * unit (tool) from Java types to WDL-compatible types by updating the freemarker map with the transformed types.
  */
 public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
-    private final static String GATK_FREEMARKER_TEMPLATE_NAME = "wdlToolTemplate.wdl.ftl";
+    private static final String GATK_FREEMARKER_TEMPLATE_NAME = "wdlToolTemplate.wdl.ftl";
 
     // keep track of tool outputs (Map<argName, argType>)
     private Map<String, String> runtimeOutputs = new HashMap<>();
@@ -26,23 +26,29 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
     /**
      * name of the top level freemarker map entry for runtime properties
      */
-    public final String RUNTIME_PROPERTIES = "runtimeProperties";
+    public static final String RUNTIME_PROPERTIES = "runtimeProperties";
     /**
      * runtime memory property (stored in "runtimeProperties", used to initialize arg value in JSON)
      */
-    public final String RUNTIME_PROPERTY_MEMORY = "memoryRequirements";
+    public static final String RUNTIME_PROPERTY_MEMORY = "memoryRequirements";
     /**
      * runtime disks property (stored in "runtimeProperties", used to initialize arg value in JSON)
      */
-    public final String RUNTIME_PROPERTY_DISKS = "diskRequirements";
+    public static final String RUNTIME_PROPERTY_DISKS = "diskRequirements";
     /**
      * name of the top level freemarker map entry for runtime outputs
      */
-    public final String RUNTIME_OUTPUTS = "runtimeOutputs";
+    public static final String RUNTIME_OUTPUTS = "runtimeOutputs";
     /**
      * name of the top level freemarker map entry for companion resources
      */
-    public final String COMPANION_RESOURCES = "companionResources";
+    public static final String COMPANION_RESOURCES = "companionResources";
+
+    /**
+     * the name used in the freemarker template as an argument placeholder for positional args; this constant
+     * must be kept in sync with the corresponding one used in the template
+     */
+    public static final String POSITIONAL_ARGS = "positionalArgs";
 
     public WDLWorkUnitHandler(final HelpDoclet doclet) {
         super(doclet);
@@ -183,6 +189,25 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
             final String wdlInputType = getWDLTypeForArgument(argDef, workflowResource, (String) argBindings.get("positional").get(0).get("type"));
             argBindings.get("positional").get(0).put("type", wdlType);
             argBindings.get("positional").get(0).put("wdlinputtype", wdlInputType);
+
+            // finally, keep track of the outputs
+            if (workflowResource != null) {
+                if (workflowResource.output()) {
+                    runtimeOutputs.put(POSITIONAL_ARGS, wdlType);
+                }
+                for (final String companion : workflowResource.companionResources()) {
+                    final String companionArgOption = "--" + companion;
+                    companionFiles.merge(
+                            POSITIONAL_ARGS,
+                            Collections.singletonList(companionArgOption),
+                            (oldList, newList) -> {
+                                final List<String> mergedList = new ArrayList<>();
+                                mergedList.addAll(oldList);
+                                mergedList.add(companionArgOption);
+                                return mergedList;
+                            });
+                }
+            }
         }
     }
 

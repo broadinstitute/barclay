@@ -11,11 +11,13 @@ version 1.0
 #    diskRequirements                                   Runtime disk requirements for this workflow
 #
 #  Positional Tool Arguments
-#    Array[File] positionalArgs
+#    positionalArgs                                     Positional arguments, min = 2, max = 2                      
 #
 #  Required Tool Arguments
 #    requiredClpEnum                                    Required Clp enum                                           
 #    requiredFileList                                   Required file list                                          
+#    companionDictionary                                Required file list                                          
+#    companionIndex                                     Required file list                                          
 #    requiredInputFilesFromArgCollection                Required input files from argument collection               
 #    requiredStringInputFromArgCollection               Required string input from argument collection              
 #    requiredStringList                                 A required list of strings                                  

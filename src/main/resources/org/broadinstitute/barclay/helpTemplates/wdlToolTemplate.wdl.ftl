@@ -121,9 +121,19 @@ task ${name}Task {
 #  ${heading}
         <#list argsToUse as arg>
             <#if heading?starts_with("Positional")>
-#    ${arg.type} ${positionalArgs}
+#    ${positionalArgs?right_pad(50)} ${arg.summary?right_pad(60)[0..*80]}
+                <#if companionResources?? && companionResources[positionalArgs]??>
+                    <#list companionResources[positionalArgs] as companion>
+#    ${companion.name?substring(2)?right_pad(50)} ${arg.summary?right_pad(60)[0..*80]}
+                    </#list>
+                </#if>
             <#else>
 #    ${arg.name?substring(2)?right_pad(50)} ${arg.summary?right_pad(60)[0..*80]}
+                <#if companionResources?? && companionResources[arg.name]??>
+                    <#list companionResources[arg.name] as companion>
+#    ${companion.name?substring(2)?right_pad(50)} ${arg.summary?right_pad(60)[0..*80]}
+                    </#list>
+                </#if>
             </#if>
         </#list>
     </#if>
@@ -136,8 +146,8 @@ task ${name}Task {
         <#list argsToUse as arg>
             <#if heading?starts_with("Positional")>
     ${arg.wdlinputtype} ${positionalArgs}
-                <#if companionResources?? && companionResources[arg.name]??>
-                    <#list companionResources[arg.name] as companion>
+                <#if companionResources?? && companionResources[positionalArgs]??>
+                    <#list companionResources[positionalArgs] as companion>
     ${arg.wdlinputtype} ${companion.name?substring(2)}
                     </#list>
                 </#if>
@@ -160,8 +170,8 @@ task ${name}Task {
         <#list argsToUse as arg>
             <#if heading?starts_with("Positional")>
         ${positionalArgs?right_pad(50)} = ${positionalArgs},
-                <#if companionResources?? && companionResources[arg.name]??>
-                    <#list companionResources[arg.name] as companion>
+                <#if companionResources?? && companionResources[positionalArgs]??>
+                    <#list companionResources[positionalArgs] as companion>
         ${companion.name?substring(2)?right_pad(50)} = ${companion.name?substring(2)},
                     </#list>
                 </#if>
@@ -183,7 +193,7 @@ task ${name}Task {
             <#if heading?starts_with("Positional")>
     ${arg.wdlinputtype} ${positionalArgs}
                 <#if companionResources?? && companionResources[arg.name]??>
-                    <#list companionResources[arg.name] as companion>
+                    <#list companionResources[positionalArgs] as companion>
     ${arg.wdlinputtype} Positional_${companion.name?substring(2)}
                     </#list>
                 </#if>
