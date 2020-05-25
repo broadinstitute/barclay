@@ -12,7 +12,7 @@ version 1.0
 #
 # ${summary}
 #
-# General Workflow (non-tool) Arguments
+#  General Workflow (non-tool) Arguments
 #    ${"dockerImage"?right_pad(50)} Docker image for this workflow
 #    ${"appLocation"?right_pad(50)} Location of app to run for this workflow
 #    ${"memoryRequirements"?right_pad(50)} Runtime memory requirements for this workflow
@@ -97,13 +97,14 @@ task ${name}Task {
         <@callTaskCommand heading="Required Arguments" argsToUse=arguments.required/>
         <@callTaskCommand heading="Optional Tool Arguments" argsToUse=arguments.optional/>
         <@callTaskCommand heading="Optional Common Arguments" argsToUse=arguments.common/>
+
   >>>
 
   <#if runtimeProperties?? && runtimeProperties?size != 0>
   runtime {
-          docker: dockerImage
-          memory: memoryRequirements
-          disks: diskRequirements
+      docker: dockerImage
+      memory: memoryRequirements
+      disks: diskRequirements
   }
   </#if>
 
@@ -117,12 +118,12 @@ task ${name}Task {
 
 <#macro addArgumentDescriptions heading argsToUse>
     <#if argsToUse?size != 0>
-# ${heading}
+#  ${heading}
         <#list argsToUse as arg>
             <#if heading?starts_with("Positional")>
-#   ${arg.type} ${positionalArgs}
+#    ${arg.type} ${positionalArgs}
             <#else>
-#   ${arg.name?substring(2)?right_pad(50)} ${arg.summary?right_pad(60)[0..*80]}
+#    ${arg.name?substring(2)?right_pad(50)} ${arg.summary?right_pad(60)[0..*80]}
             </#if>
         </#list>
     </#if>
@@ -161,14 +162,14 @@ task ${name}Task {
         ${positionalArgs?right_pad(50)} = ${positionalArgs},
                 <#if companionResources?? && companionResources[arg.name]??>
                     <#list companionResources[arg.name] as companion>
-        ${companion.name?substring(2)?right_pad(50)} = ${companion.name?substring(2)}
+        ${companion.name?substring(2)?right_pad(50)} = ${companion.name?substring(2)},
                     </#list>
                 </#if>
             <#else>
         ${arg.name?substring(2)?right_pad(50)} = ${arg.name?substring(2)},
                 <#if companionResources?? && companionResources[arg.name]??>
                     <#list companionResources[arg.name] as companion>
-        ${companion.name?substring(2)?right_pad(50)} = ${companion.name?substring(2)}
+        ${companion.name?substring(2)?right_pad(50)} = ${companion.name?substring(2)},
                     </#list>
                 </#if>
             </#if>
@@ -183,7 +184,7 @@ task ${name}Task {
     ${arg.wdlinputtype} ${positionalArgs}
                 <#if companionResources?? && companionResources[arg.name]??>
                     <#list companionResources[arg.name] as companion>
-    ${arg.wdlinputtype} ${companion.name?substring(2)}
+    ${arg.wdlinputtype} Positional_${companion.name?substring(2)}
                     </#list>
                 </#if>
             <#else>
@@ -234,11 +235,11 @@ task ${name}Task {
     <#if argsToUse?size != 0>
         <#list argsToUse as arg>
             <#if heading?starts_with("Positional")>
-        <#noparse>~{sep=' ' </#noparse>${positionalArgs}<#noparse>}</#noparse> \
+    <#noparse>~{sep=' ' </#noparse>${positionalArgs}<#noparse>}</#noparse> \
             <#elseif heading?starts_with("Required")>
-        ${arg.actualArgName} <#noparse>~{sep=' </#noparse>${arg.actualArgName} <#noparse>' </#noparse>${arg.name?substring(2)}<#noparse>}</#noparse> \
+    ${arg.actualArgName} <#noparse>~{sep=' </#noparse>${arg.actualArgName} <#noparse>' </#noparse>${arg.name?substring(2)}<#noparse>}</#noparse> \
             <#else>
-        <#noparse>~{true='</#noparse>${arg.actualArgName} <#noparse>' false='' defined(</#noparse>${arg.actualArgName?substring(2)}<#noparse>)}~{sep='</#noparse> ${arg.actualArgName} <#noparse>'</#noparse> ${arg.name?substring(2)}<#noparse>}</#noparse> \
+    <#noparse>~{true='</#noparse>${arg.actualArgName} <#noparse>' false='' defined(</#noparse>${arg.name?substring(2)}<#noparse>)}~{sep='</#noparse> ${arg.actualArgName} <#noparse>'</#noparse> ${arg.name?substring(2)}<#noparse>}</#noparse> \
             </#if>
         </#list>
     </#if>

@@ -4,38 +4,38 @@ version 1.0
 #
 # Argument container class for testing documentation generation.
 #
-# General Workflow (non-tool) Arguments
+#  General Workflow (non-tool) Arguments
 #    dockerImage                                        Docker image for this workflow
 #    appLocation                                        Location of app to run for this workflow
 #    memoryRequirements                                 Runtime memory requirements for this workflow
 #    diskRequirements                                   Runtime disk requirements for this workflow
 #
-# Positional Tool Arguments
-#   Array[File] positionalArgs
+#  Positional Tool Arguments
+#    Array[File] positionalArgs
 #
-# Required Tool Arguments
-#   requiredClpEnum                                    Required Clp enum                                           
-#   requiredFileList                                   Required file list                                          
-#   requiredInputFilesFromArgCollection                Required input files from argument collection               
-#   requiredStringInputFromArgCollection               Required string input from argument collection              
-#   requiredStringList                                 A required list of strings                                  
-#   usesFieldNameForArgName                            Use field name if no name in annotation.                    
+#  Required Tool Arguments
+#    requiredClpEnum                                    Required Clp enum                                           
+#    requiredFileList                                   Required file list                                          
+#    requiredInputFilesFromArgCollection                Required input files from argument collection               
+#    requiredStringInputFromArgCollection               Required string input from argument collection              
+#    requiredStringList                                 A required list of strings                                  
+#    usesFieldNameForArgName                            Use field name if no name in annotation.                    
 #
-# Optional Tool Arguments
-#   enumSetLong                                        Some set thing.                                             
-#   fullAnonymousArgName                               Test anonymous class arg                                    
-#   mutexSourceField                                   Undocumented option                                         
-#   mutexTargetField1                                  SAM/BAM/CRAM file(s) with alignment data from the first read of a pair.
-#   mutexTargetField2                                  SAM/BAM file(s) with alignment data from the second read of a pair.
-#   optionalClpEnum                                    Optional Clp enum                                           
-#   optionalDouble                                     Optionals double with initial value 2.15                    
-#   optionalDoubleList                                 optionalDoubleList with initial values: 100.0, 99.9, 99.0, 90.0
-#   optionalFileList                                   Optional file list                                          
-#   optionalFlag                                       Optional flag, defaults to false.                           
-#   optionalInputFilesFromArgCollection                Optional input files from argument collection               
-#   optionalStringInputFromArgCollection               Optional string input from argument collection              
-#   optionalStringList                                 An optional list of strings                                 
-#   testPlugin                                         Undocumented option                                         
+#  Optional Tool Arguments
+#    enumSetLong                                        Some set thing.                                             
+#    fullAnonymousArgName                               Test anonymous class arg                                    
+#    mutexSourceField                                   Undocumented option                                         
+#    mutexTargetField1                                  SAM/BAM/CRAM file(s) with alignment data from the first read of a pair.
+#    mutexTargetField2                                  SAM/BAM file(s) with alignment data from the second read of a pair.
+#    optionalClpEnum                                    Optional Clp enum                                           
+#    optionalDouble                                     Optionals double with initial value 2.15                    
+#    optionalDoubleList                                 optionalDoubleList with initial values: 100.0, 99.9, 99.0, 90.0
+#    optionalFileList                                   Optional file list                                          
+#    optionalFlag                                       Optional flag, defaults to false.                           
+#    optionalInputFilesFromArgCollection                Optional input files from argument collection               
+#    optionalStringInputFromArgCollection               Optional string input from argument collection              
+#    optionalStringList                                 An optional list of strings                                 
+#    testPlugin                                         Undocumented option                                         
 #
 
 workflow TestArgumentContainer {
@@ -101,8 +101,8 @@ workflow TestArgumentContainer {
         # Required Arguments
         requiredClpEnum                                    = requiredClpEnum,
         requiredFileList                                   = requiredFileList,
-        companionDictionary                                = companionDictionary
-        companionIndex                                     = companionIndex
+        companionDictionary                                = companionDictionary,
+        companionIndex                                     = companionIndex,
         requiredInputFilesFromArgCollection                = requiredInputFilesFromArgCollection,
         requiredStringInputFromArgCollection               = requiredStringInputFromArgCollection,
         requiredStringList                                 = requiredStringList,
@@ -169,33 +169,34 @@ task TestArgumentContainerTask {
 
   command <<<
     ~{appLocation} TestArgumentContainer \
-        ~{sep=' ' positionalArgs} \
-        --requiredClpEnum ~{sep=' --requiredClpEnum ' requiredClpEnum} \
-        --requiredFileList ~{sep=' --requiredFileList ' requiredFileList} \
-        --requiredInputFilesFromArgCollection ~{sep=' --requiredInputFilesFromArgCollection ' requiredInputFilesFromArgCollection} \
-        --requiredStringInputFromArgCollection ~{sep=' --requiredStringInputFromArgCollection ' requiredStringInputFromArgCollection} \
-        --requiredStringList ~{sep=' --requiredStringList ' requiredStringList} \
-        --usesFieldNameForArgName ~{sep=' --usesFieldNameForArgName ' usesFieldNameForArgName} \
-        ~{true='--enumSetLong ' false='' defined(enumSetLong)}~{sep=' --enumSetLong ' enumSetLong} \
-        ~{true='--fullAnonymousArgName ' false='' defined(fullAnonymousArgName)}~{sep=' --fullAnonymousArgName ' fullAnonymousArgName} \
-        ~{true='--mutexSourceField ' false='' defined(mutexSourceField)}~{sep=' --mutexSourceField ' mutexSourceField} \
-        ~{true='--mutexTargetField1 ' false='' defined(mutexTargetField1)}~{sep=' --mutexTargetField1 ' mutexTargetField1} \
-        ~{true='--mutexTargetField2 ' false='' defined(mutexTargetField2)}~{sep=' --mutexTargetField2 ' mutexTargetField2} \
-        ~{true='--optionalClpEnum ' false='' defined(optionalClpEnum)}~{sep=' --optionalClpEnum ' optionalClpEnum} \
-        ~{true='--optionalDouble ' false='' defined(optionalDouble)}~{sep=' --optionalDouble ' optionalDouble} \
-        ~{true='--optionalDoubleList ' false='' defined(optionalDoubleList)}~{sep=' --optionalDoubleList ' optionalDoubleList} \
-        ~{true='--optionalFileList ' false='' defined(optionalFileList)}~{sep=' --optionalFileList ' optionalFileList} \
-        ~{true='--optionalFlag ' false='' defined(optionalFlag)}~{sep=' --optionalFlag ' optionalFlag} \
-        ~{true='--optionalInputFilesFromArgCollection ' false='' defined(optionalInputFilesFromArgCollection)}~{sep=' --optionalInputFilesFromArgCollection ' optionalInputFilesFromArgCollection} \
-        ~{true='--optionalStringInputFromArgCollection ' false='' defined(optionalStringInputFromArgCollection)}~{sep=' --optionalStringInputFromArgCollection ' optionalStringInputFromArgCollection} \
-        ~{true='--optionalStringList ' false='' defined(optionalStringList)}~{sep=' --optionalStringList ' optionalStringList} \
-        ~{true='--testPlugin ' false='' defined(testPlugin)}~{sep=' --testPlugin ' testPlugin} \
+    ~{sep=' ' positionalArgs} \
+    --requiredClpEnum ~{sep=' --requiredClpEnum ' requiredClpEnum} \
+    --requiredFileList ~{sep=' --requiredFileList ' requiredFileList} \
+    --requiredInputFilesFromArgCollection ~{sep=' --requiredInputFilesFromArgCollection ' requiredInputFilesFromArgCollection} \
+    --requiredStringInputFromArgCollection ~{sep=' --requiredStringInputFromArgCollection ' requiredStringInputFromArgCollection} \
+    --requiredStringList ~{sep=' --requiredStringList ' requiredStringList} \
+    --usesFieldNameForArgName ~{sep=' --usesFieldNameForArgName ' usesFieldNameForArgName} \
+    ~{true='--enumSetLong ' false='' defined(enumSetLong)}~{sep=' --enumSetLong ' enumSetLong} \
+    ~{true='--fullAnonymousArgName ' false='' defined(fullAnonymousArgName)}~{sep=' --fullAnonymousArgName ' fullAnonymousArgName} \
+    ~{true='--mutexSourceField ' false='' defined(mutexSourceField)}~{sep=' --mutexSourceField ' mutexSourceField} \
+    ~{true='--mutexTargetField1 ' false='' defined(mutexTargetField1)}~{sep=' --mutexTargetField1 ' mutexTargetField1} \
+    ~{true='--mutexTargetField2 ' false='' defined(mutexTargetField2)}~{sep=' --mutexTargetField2 ' mutexTargetField2} \
+    ~{true='--optionalClpEnum ' false='' defined(optionalClpEnum)}~{sep=' --optionalClpEnum ' optionalClpEnum} \
+    ~{true='--optionalDouble ' false='' defined(optionalDouble)}~{sep=' --optionalDouble ' optionalDouble} \
+    ~{true='--optionalDoubleList ' false='' defined(optionalDoubleList)}~{sep=' --optionalDoubleList ' optionalDoubleList} \
+    ~{true='--optionalFileList ' false='' defined(optionalFileList)}~{sep=' --optionalFileList ' optionalFileList} \
+    ~{true='--optionalFlag ' false='' defined(optionalFlag)}~{sep=' --optionalFlag ' optionalFlag} \
+    ~{true='--optionalInputFilesFromArgCollection ' false='' defined(optionalInputFilesFromArgCollection)}~{sep=' --optionalInputFilesFromArgCollection ' optionalInputFilesFromArgCollection} \
+    ~{true='--optionalStringInputFromArgCollection ' false='' defined(optionalStringInputFromArgCollection)}~{sep=' --optionalStringInputFromArgCollection ' optionalStringInputFromArgCollection} \
+    ~{true='--optionalStringList ' false='' defined(optionalStringList)}~{sep=' --optionalStringList ' optionalStringList} \
+    ~{true='--testPlugin ' false='' defined(testPlugin)}~{sep=' --testPlugin ' testPlugin} \
+
   >>>
 
   runtime {
-          docker: dockerImage
-          memory: memoryRequirements
-          disks: diskRequirements
+      docker: dockerImage
+      memory: memoryRequirements
+      disks: diskRequirements
   }
 
   output {
