@@ -52,7 +52,7 @@ workflow ${name} {
 
   }
 
-  call ${name}Task {
+  call ${name} {
 
     input:
 
@@ -77,7 +77,7 @@ workflow ${name} {
   }
 }
 
-task ${name}Task {
+task ${name} {
 
   input {
     String dockerImage
@@ -212,13 +212,13 @@ task ${name}Task {
 <#macro defineWorkflowOutputs heading outputs>
     # ${heading?right_pad(50)}
     <#if outputs?size == 0>
-    File ${name}results = ${name}Task.${name}Task_results
+    File ${name}results = ${name}.${name}_results
     <#else>
         <#list outputs as outputName, outputType>
-    ${outputType} ${name}${outputName?substring(2)} = ${name}Task.${name}Task_${outputName?substring(2)}
+    ${outputType} ${name}${outputName?substring(2)} = ${name}.${name}_${outputName?substring(2)}
             <#if companionResources?? && companionResources[outputName]??>
                 <#list companionResources[outputName] as companion>
-    ${companion.type} ${name}${companion.name?substring(2)} = ${name}Task.${name}Task_${companion.name?substring(2)}
+    ${companion.type} ${name}${companion.name?substring(2)} = ${name}.${name}_${companion.name?substring(2)}
                 </#list>
             </#if>
         </#list>
@@ -228,13 +228,13 @@ task ${name}Task {
 <#macro defineTaskOutputs heading outputs>
     # ${heading?right_pad(50)}
     <#if outputs?size == 0>
-    File ${name}Task_results = stdout()
+    File ${name}_results = stdout()
     <#else>
         <#list outputs as outputName, outputType>
-    ${outputType} ${name}Task_${outputName?substring(2)} = <#noparse>"${</#noparse>${outputName?substring(2)}<#noparse>}"</#noparse>
+    ${outputType} ${name}_${outputName?substring(2)} = <#noparse>"${</#noparse>${outputName?substring(2)}<#noparse>}"</#noparse>
             <#if companionResources?? && companionResources[outputName]??>
                 <#list companionResources[outputName] as companion>
-    ${companion.type} ${name}Task_${companion.name?substring(2)} = <#noparse>"${</#noparse>${companion.name?substring(2)}<#noparse>}"</#noparse>
+    ${companion.type} ${name}_${companion.name?substring(2)} = <#noparse>"${</#noparse>${companion.name?substring(2)}<#noparse>}"</#noparse>
                 </#list>
             </#if>
         </#list>

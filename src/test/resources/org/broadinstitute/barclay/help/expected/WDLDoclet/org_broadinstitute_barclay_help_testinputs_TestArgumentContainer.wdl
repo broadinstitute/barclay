@@ -83,7 +83,7 @@ workflow TestArgumentContainer {
 
   }
 
-  call TestArgumentContainerTask {
+  call TestArgumentContainer {
 
     input:
 
@@ -130,13 +130,13 @@ workflow TestArgumentContainer {
 
   output {
     # Workflow Outputs                                  
-    Array[File] TestArgumentContainerrequiredFileList = TestArgumentContainerTask.TestArgumentContainerTask_requiredFileList
-    Array[File] TestArgumentContainercompanionDictionary = TestArgumentContainerTask.TestArgumentContainerTask_companionDictionary
-    Array[File] TestArgumentContainercompanionIndex = TestArgumentContainerTask.TestArgumentContainerTask_companionIndex
+    Array[File] TestArgumentContainerrequiredFileList = TestArgumentContainer.TestArgumentContainer_requiredFileList
+    Array[File] TestArgumentContainercompanionDictionary = TestArgumentContainer.TestArgumentContainer_companionDictionary
+    Array[File] TestArgumentContainercompanionIndex = TestArgumentContainer.TestArgumentContainer_companionIndex
   }
 }
 
-task TestArgumentContainerTask {
+task TestArgumentContainer {
 
   input {
     String dockerImage
@@ -203,9 +203,9 @@ task TestArgumentContainerTask {
 
   output {
     # Task Outputs                                      
-    Array[File] TestArgumentContainerTask_requiredFileList = "${requiredFileList}"
-    Array[File] TestArgumentContainerTask_companionDictionary = "${companionDictionary}"
-    Array[File] TestArgumentContainerTask_companionIndex = "${companionIndex}"
+    Array[File] TestArgumentContainer_requiredFileList = "${requiredFileList}"
+    Array[File] TestArgumentContainer_companionDictionary = "${companionDictionary}"
+    Array[File] TestArgumentContainer_companionIndex = "${companionIndex}"
   }
  }
 
