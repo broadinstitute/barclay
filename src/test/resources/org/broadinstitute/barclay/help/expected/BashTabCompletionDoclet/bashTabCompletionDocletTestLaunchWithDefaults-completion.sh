@@ -11,13 +11,13 @@
 CALLER_SCRIPT_NAME="bashTabCompletionDocletTestLaunchWithDefaults"
 
 # A description of these variables is below in the main completion function (_masterCompletionFunction)
-CS_PREFIX_OPTIONS_ALL_LEGAL_ARGUMENTS=( TestExtraDocs TestArgumentContainer )
-CS_PREFIX_OPTIONS_NORMAL_COMPLETION_ARGUMENTS=( TestExtraDocs TestArgumentContainer )
-CS_PREFIX_OPTIONS_ALL_ARGUMENT_VALUE_TYPES=( "null" "null" )
+CS_PREFIX_OPTIONS_ALL_LEGAL_ARGUMENTS=( TestArgumentContainer )
+CS_PREFIX_OPTIONS_NORMAL_COMPLETION_ARGUMENTS=( TestArgumentContainer )
+CS_PREFIX_OPTIONS_ALL_ARGUMENT_VALUE_TYPES=( "null" )
 CS_PREFIX_OPTIONS_MUTUALLY_EXCLUSIVE_ARGS=()
 CS_PREFIX_OPTIONS_SYNONYMOUS_ARGS=()
-CS_PREFIX_OPTIONS_MIN_OCCURRENCES=( 0 0 )
-CS_PREFIX_OPTIONS_MAX_OCCURRENCES=( 1 1 )
+CS_PREFIX_OPTIONS_MIN_OCCURRENCES=( 0 )
+CS_PREFIX_OPTIONS_MAX_OCCURRENCES=( 1 )
 
 CS_POSTFIX_OPTIONS_ALL_LEGAL_ARGUMENTS=()
 CS_POSTFIX_OPTIONS_NORMAL_COMPLETION_ARGUMENTS=()
@@ -31,7 +31,7 @@ CS_POSTFIX_OPTIONS_MAX_OCCURRENCES=()
 HAS_POSTFIX_OPTIONS="false"
 
 # All the tool names we are able to complete:
-ALL_TOOLS=(TestExtraDocs TestArgumentContainer )
+ALL_TOOLS=(TestArgumentContainer )
 
 ####################################################################################################
 
@@ -422,20 +422,6 @@ _bashTabCompletionDocletTestLaunchWithDefaults_masterCompletionFunction()
         # Set our reply as a list of the possible tool matches:
         COMPREPLY=( $(compgen -W '${possibleToolMatches[@]}' -- $cur) )
 
-    elif [[ ${toolName} == "TestExtraDocs" ]] ; then
-
-        # Set up the completion information for this tool:
-        DEPENDENT_ARGUMENTS=()
-        NORMAL_COMPLETION_ARGUMENTS=(--extraDocsArgument )
-        MUTUALLY_EXCLUSIVE_ARGS=()
-        SYNONYMOUS_ARGS=("--extraDocsArgument;-extDocArg" )
-        MIN_OCCURRENCES=(0 )
-        MAX_OCCURRENCES=(2147483647 )
-        ALL_LEGAL_ARGUMENTS=(--extraDocsArgument )
-        ALL_ARGUMENT_VALUE_TYPES=("String" )
-
-        # Complete the arguments for this tool:
-        _bashTabCompletionDocletTestLaunchWithDefaults_handleArgs
     elif [[ ${toolName} == "TestArgumentContainer" ]] ; then
 
         # Set up the completion information for this tool:

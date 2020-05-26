@@ -296,8 +296,8 @@ public class HelpDoclet {
             final DocumentedFeature documentedFeature = getDocumentedFeatureForClass(clazz);
 
             if (documentedFeature != null) {
-                if (documentedFeature.enable()) {
-                    DocWorkUnit workUnit = createWorkUnit(
+                if (documentedFeature.enable() && includeInDocs(documentedFeature, classDoc, clazz)) {
+                        DocWorkUnit workUnit = createWorkUnit(
                             documentedFeature,
                             classDoc,
                             clazz);
