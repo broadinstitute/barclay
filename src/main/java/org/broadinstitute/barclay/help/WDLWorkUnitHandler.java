@@ -24,7 +24,10 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
     private Map<String, List<String>> companionFiles = new HashMap<>();
 
     /**
-     * name of the top level freemarker map entry for runtime properties
+     * Name of the top level freemarker map entry for runtime properties.
+     *
+     * Note that the property names used in this map will appear as workflow and task argument names in the
+     * generated WDL, and should therefore not collide with any WDL reserved words.
      */
     public static final String RUNTIME_PROPERTIES = "runtimeProperties";
     /**
@@ -36,8 +39,22 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
      */
     public static final String RUNTIME_PROPERTY_DISKS = "diskRequirements";
     /**
+     * cpu property
+     */
+    public static final String RUNTIME_PROPERTY_CPU = "cpuRequirements";
+    /**
+     * bootDiskSizeGb property
+     */
+    public static final String RUNTIME_PROPERTY_BOOT_DISK_SIZE_GB = "bootdisksizegbRequirements";
+
+    /**
+     * preemptible property
+     */
+    public static final String RUNTIME_PROPERTY_PREEMPTIBLE = "preemptibleRequirements";
+    /**
      * name of the top level freemarker map entry for runtime outputs
      */
+
     public static final String RUNTIME_OUTPUTS = "runtimeOutputs";
     /**
      * name of the top level freemarker map entry for companion resources
@@ -393,8 +410,11 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
         final RuntimeProperties rtProperties = currentWorkUnit.getClazz().getAnnotation(RuntimeProperties.class);
         if (rtProperties != null) {
             final Map<String, String> runtimePropertiesMap = new HashMap<>();
-            runtimePropertiesMap.put(RUNTIME_PROPERTY_MEMORY, rtProperties.memoryRequirements());
-            runtimePropertiesMap.put(RUNTIME_PROPERTY_DISKS, rtProperties.diskRequirements());
+            runtimePropertiesMap.put(RUNTIME_PROPERTY_MEMORY, rtProperties.memory());
+            runtimePropertiesMap.put(RUNTIME_PROPERTY_DISKS, rtProperties.disks());
+            runtimePropertiesMap.put(RUNTIME_PROPERTY_CPU, Integer.toString(rtProperties.cpu()));
+            runtimePropertiesMap.put(RUNTIME_PROPERTY_PREEMPTIBLE, Integer.toString(rtProperties.preEmptible()));
+            runtimePropertiesMap.put(RUNTIME_PROPERTY_BOOT_DISK_SIZE_GB, Integer.toString(rtProperties.bootDiskSizeGb()));
             currentWorkUnit.setProperty(RUNTIME_PROPERTIES, runtimePropertiesMap);
         }
     }

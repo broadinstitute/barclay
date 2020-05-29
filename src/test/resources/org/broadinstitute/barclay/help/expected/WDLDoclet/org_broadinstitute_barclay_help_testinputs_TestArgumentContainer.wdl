@@ -9,6 +9,9 @@ version 1.0
 #    appLocation                                        Location of app to run for this workflow
 #    memoryRequirements                                 Runtime memory requirements for this workflow
 #    diskRequirements                                   Runtime disk requirements for this workflow
+#    cpuRequirements                                    Runtime CPU count for this workflow
+#    preemptibleRequirements                            Runtime preemptible count for this workflow
+#    bootdisksizegbRequirements                         Runtime boot disk size for this workflow
 #
 #  Positional Tool Arguments
 #    positionalArgs                                     Positional arguments, min = 2, max = 2                      
@@ -51,6 +54,12 @@ workflow TestArgumentContainer {
     String memoryRequirements
     #Disk requirements for this workflow
     String diskRequirements
+    #CPU requirements for this workflow
+    String cpuRequirements
+    #Preemptible requirements for this workflow
+    String preemptibleRequirements
+    #Boot disk size requirements for this workflow
+    String bootdisksizegbRequirements
 
     # Positional Arguments
     Array[File] positionalArgs
@@ -95,6 +104,12 @@ workflow TestArgumentContainer {
         memoryRequirements                                 = memoryRequirements,
         #Disk requirements for this workflow
         diskRequirements                                   = diskRequirements,
+        #CPU requirements for this workflow
+        cpuRequirements                                    = diskRequirements,
+        #Preemptible requirements for this workflow
+        preemptibleRequirements                            = diskRequirements,
+        #Boot disk size requirements for this workflow
+        bootdisksizegbRequirements                         = diskRequirements,
 
 
         # Positional Arguments
@@ -143,6 +158,9 @@ task TestArgumentContainer {
     String appLocation
     String memoryRequirements
     String diskRequirements
+    String cpuRequirements
+    String preemptibleRequirements
+    String bootdisksizegbRequirements
     Array[File] positionalArgs
     String requiredClpEnum
     Array[File] requiredFileList
@@ -199,6 +217,9 @@ task TestArgumentContainer {
       docker: dockerImage
       memory: memoryRequirements
       disks: diskRequirements
+      cpu: cpuRequirements
+      preemptible: preemptibleRequirements
+      bootDiskSizeGb: bootdisksizegbRequirements
   }
 
   output {

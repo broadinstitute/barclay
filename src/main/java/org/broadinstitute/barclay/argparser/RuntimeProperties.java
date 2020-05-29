@@ -21,11 +21,27 @@ public @interface RuntimeProperties {
     /**
      * @return a WDL-compatible string specifying the runtime memory requirements for this tool. Defaults to "4G".
      */
-    String memoryRequirements() default "4G";
+    String memory() default "4G";
+
+    /**
+     * @return number of CPUs to use for this tool
+     */
+    int cpu() default 1;
+
+    /**
+     * @return maximum number of times the workflow execution engine should request a preemptible machine for this
+     * task before defaulting back to a non-preemptible one
+     */
+    int preEmptible() default 3;
 
     /**
      * @return a WDL-compatible string specifying the runtime disk requirements for this tool. Defaults to
      * "local-disk 40 HDD".
      */
-    String diskRequirements() default "local-disk 40 HDD";
+    String disks() default "local-disk 40 HDD";
+
+    /**
+     * @return boot disk size of the disk where the docker image is booted
+     */
+    int bootDiskSizeGb() default 15;
 }

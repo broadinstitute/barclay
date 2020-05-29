@@ -4,14 +4,29 @@
   "${name}.dockerImage": "String",
   "${name}.appLocation": "String",
 <#if runtimeProperties.memoryRequirements != "">
-  "${name}.memoryRequirements: "${runtimeProperties.memoryRequirements}"
+  "${name}.memoryRequirements": "${runtimeProperties.memoryRequirements}",
 <#else>
-  "${name}.memoryRequirements: "String"
+  "${name}.memoryRequirements": "String",
 </#if>
 <#if runtimeProperties.diskRequirements != "">
-  "${name}.diskRequirements: "${runtimeProperties.diskRequirements}"
+  "${name}.diskRequirements": "${runtimeProperties.diskRequirements}",
 <#else>
-  "${name}.diskRequirements: "String",
+  "${name}.diskRequirements": "String",
+</#if>
+<#if runtimeProperties.cpuRequirements != "">
+  "${name}.cpuRequirements": "${runtimeProperties.cpuRequirements}",
+<#else>
+  "${name}.cpuRequirements": "String",
+</#if>
+<#if runtimeProperties.preemptibleRequirements != "">
+  "${name}.preemptibleRequirements": "${runtimeProperties.preemptibleRequirements}",
+<#else>
+  "${name}.preemptibleRequirements": "String",
+</#if>
+<#if runtimeProperties.bootdisksizegbRequirements != "">
+  "${name}.bootdisksizegbRequirements": "${runtimeProperties.bootdisksizegbRequirements}",
+<#else>
+  "${name}.bootdisksizegbRequirements": "String",
 </#if>
 
 <#assign remainingArgCount=arguments.required?size + arguments.optional?size + arguments.common?size/>

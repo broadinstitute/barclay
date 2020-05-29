@@ -17,6 +17,9 @@ version 1.0
 #    ${"appLocation"?right_pad(50)} Location of app to run for this workflow
 #    ${"memoryRequirements"?right_pad(50)} Runtime memory requirements for this workflow
 #    ${"diskRequirements"?right_pad(50)} Runtime disk requirements for this workflow
+#    ${"cpuRequirements"?right_pad(50)} Runtime CPU count for this workflow
+#    ${"preemptibleRequirements"?right_pad(50)} Runtime preemptible count for this workflow
+#    ${"bootdisksizegbRequirements"?right_pad(50)} Runtime boot disk size for this workflow
 #
 <#if arguments.positional?size != 0>
 <@addArgumentDescriptions heading="Positional Tool Arguments" argsToUse=arguments.positional/>
@@ -45,6 +48,12 @@ workflow ${name} {
     String memoryRequirements
     #Disk requirements for this workflow
     String diskRequirements
+    #CPU requirements for this workflow
+    String cpuRequirements
+    #Preemptible requirements for this workflow
+    String preemptibleRequirements
+    #Boot disk size requirements for this workflow
+    String bootdisksizegbRequirements
     <@defineWorkflowInputs heading="Positional Arguments" argsToUse=arguments.positional/>
     <@defineWorkflowInputs heading="Required Arguments" argsToUse=arguments.required/>
     <@defineWorkflowInputs heading="Optional Tool Arguments" argsToUse=arguments.optional/>
@@ -64,6 +73,12 @@ workflow ${name} {
         ${"memoryRequirements"?right_pad(50)} = memoryRequirements,
         #Disk requirements for this workflow
         ${"diskRequirements"?right_pad(50)} = diskRequirements,
+        #CPU requirements for this workflow
+        ${"cpuRequirements"?right_pad(50)} = diskRequirements,
+        #Preemptible requirements for this workflow
+        ${"preemptibleRequirements"?right_pad(50)} = diskRequirements,
+        #Boot disk size requirements for this workflow
+        ${"bootdisksizegbRequirements"?right_pad(50)} = diskRequirements,
 
         <@callTaskInputs heading="Positional Arguments" argsToUse=arguments.positional/>
         <@callTaskInputs heading="Required Arguments" argsToUse=arguments.required/>
@@ -84,6 +99,9 @@ task ${name} {
     String appLocation
     String memoryRequirements
     String diskRequirements
+    String cpuRequirements
+    String preemptibleRequirements
+    String bootdisksizegbRequirements
     <@defineTaskInputs heading="Positional Arguments" argsToUse=arguments.positional/>
     <@defineTaskInputs heading="Required Arguments" argsToUse=arguments.required/>
     <@defineTaskInputs heading="Optional Tool Arguments" argsToUse=arguments.optional/>
@@ -105,6 +123,9 @@ task ${name} {
       docker: dockerImage
       memory: memoryRequirements
       disks: diskRequirements
+      cpu: cpuRequirements
+      preemptible: preemptibleRequirements
+      bootDiskSizeGb: bootdisksizegbRequirements
   }
   </#if>
 
