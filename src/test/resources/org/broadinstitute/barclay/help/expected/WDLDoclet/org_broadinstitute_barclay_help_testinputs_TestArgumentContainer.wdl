@@ -1,6 +1,6 @@
 version 1.0
 
-# Run TestArgumentContainer (**BETA**) (Tool Version 11.1)
+# Run TestArgumentContainer (**BETA**) (WDL auto generated from: Tool Version 11.1)
 #
 # Argument container class for testing documentation generation.
 #
