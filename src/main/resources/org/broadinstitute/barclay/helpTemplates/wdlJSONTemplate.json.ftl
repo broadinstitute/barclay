@@ -3,27 +3,27 @@
 <#assign positionalArgs="positionalArgs"/>
   "${name}.dockerImage": "String",
   "${name}.appLocation": "String",
-<#if runtimeProperties.memoryRequirements != "">
+<#if runtimeProperties?? && runtimeProperties?size != 0 && runtimeProperties.memoryRequirements != "">
   "${name}.memoryRequirements": "${runtimeProperties.memoryRequirements}",
 <#else>
   "${name}.memoryRequirements": "String",
 </#if>
-<#if runtimeProperties.diskRequirements != "">
+<#if runtimeProperties?? && runtimeProperties?size != 0 && runtimeProperties.diskRequirements != "">
   "${name}.diskRequirements": "${runtimeProperties.diskRequirements}",
 <#else>
   "${name}.diskRequirements": "String",
 </#if>
-<#if runtimeProperties.cpuRequirements != "">
+<#if runtimeProperties?? && runtimeProperties?size != 0 && runtimeProperties.cpuRequirements != "">
   "${name}.cpuRequirements": "${runtimeProperties.cpuRequirements}",
 <#else>
   "${name}.cpuRequirements": "String",
 </#if>
-<#if runtimeProperties.preemptibleRequirements != "">
+<#if runtimeProperties?? && runtimeProperties?size != 0 && runtimeProperties.preemptibleRequirements != "">
   "${name}.preemptibleRequirements": "${runtimeProperties.preemptibleRequirements}",
 <#else>
   "${name}.preemptibleRequirements": "String",
 </#if>
-<#if runtimeProperties.bootdisksizegbRequirements != "">
+<#if runtimeProperties?? && runtimeProperties?size != 0 && runtimeProperties.bootdisksizegbRequirements != "">
   "${name}.bootdisksizegbRequirements": "${runtimeProperties.bootdisksizegbRequirements}",
 <#else>
   "${name}.bootdisksizegbRequirements": "String",
