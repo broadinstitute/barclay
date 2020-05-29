@@ -41,6 +41,11 @@
 <#macro taskinput heading argsToUse remainingCount>
   <#if argsToUse?size != 0>
     <#list argsToUse as arg>
+        <#if companionResources?? && companionResources[arg.name]??>
+            <#list companionResources[arg.name] as companion>
+                <#noparse>  "</#noparse>${name}.${companion.name?substring(2)}<#noparse>"</#noparse>: null,
+            </#list>
+        </#if>
       <#if heading?starts_with("Positional")>
 <#noparse>  "</#noparse>${name}.${positionalArgs}<#noparse>"</#noparse>: <#rt/>
       <#else>

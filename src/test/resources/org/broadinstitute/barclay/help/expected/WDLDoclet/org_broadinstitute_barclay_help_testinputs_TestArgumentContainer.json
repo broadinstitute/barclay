@@ -10,6 +10,8 @@
   "TestArgumentContainer.positionalArgs": "Array[File]",
 
   "TestArgumentContainer.requiredClpEnum": "String",
+                  "TestArgumentContainer.companionDictionary": null,
+                  "TestArgumentContainer.companionIndex": null,
   "TestArgumentContainer.requiredFileList": "Array[File]",
   "TestArgumentContainer.requiredInputFilesFromArgCollection": "Array[File]",
   "TestArgumentContainer.requiredStringInputFromArgCollection": "String",
