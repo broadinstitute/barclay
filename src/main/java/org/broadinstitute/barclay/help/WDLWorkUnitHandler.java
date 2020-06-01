@@ -353,8 +353,7 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
         if (typeConversionPair != null) {
             convertedWDLType = docType.replace(typeConversionPair.getKey(), typeConversionPair.getValue());
         } else if (argumentClass.isEnum()) {
-            //NOTE: we could emit structs for all the ENUM types into a shared/common WDL file ?
-            convertedWDLType = docType.replace(argumentClass.getSimpleName(), "String");
+             convertedWDLType = docType.replace(argumentClass.getSimpleName(), "String");
         } else {
             throw new RuntimeException(
                     String.format(
