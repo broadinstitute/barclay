@@ -17,6 +17,8 @@ import java.util.*;
 public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
     private static final String GATK_FREEMARKER_TEMPLATE_NAME = "wdlToolTemplate.wdl.ftl";
 
+    private static final String LONG_OPTION_PREFIX = "--";
+
     // keep track of tool outputs (Map<argName, argType>)
     private Map<String, String> runtimeOutputs = new HashMap<>();
 
@@ -162,7 +164,7 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
         // name with an underscore) for use in the rest of the WDL source.
         final String actualArgName = (String) argBindings.get("name");
         argBindings.put("actualArgName", actualArgName);
-        String wdlName = "--" + transformJavaNameToWDLName(actualArgName.substring(2));
+        String wdlName = LONG_OPTION_PREFIX + transformJavaNameToWDLName(actualArgName.substring(2));
         argBindings.put("name", wdlName);
 
         // finally, keep track of the outputs
@@ -171,7 +173,7 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
                 runtimeOutputs.put(wdlName, wdlType);
             }
             for (final String companion : workflowResource.companionResources()) {
-                final String companionArgOption = "--" + companion;
+                final String companionArgOption = LONG_OPTION_PREFIX + companion;
                 companionFiles.merge(
                         wdlName,
                         Collections.singletonList(companionArgOption),
@@ -213,7 +215,7 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
                     runtimeOutputs.put(POSITIONAL_ARGS, wdlType);
                 }
                 for (final String companion : workflowResource.companionResources()) {
-                    final String companionArgOption = "--" + companion;
+                    final String companionArgOption = LONG_OPTION_PREFIX + companion;
                     companionFiles.merge(
                             POSITIONAL_ARGS,
                             Collections.singletonList(companionArgOption),
