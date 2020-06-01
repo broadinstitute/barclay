@@ -235,7 +235,7 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
      *
      * @param argDef the Barclay NamedArgumentDefinition for this arg
      * @param argDocType the display type as chosen by the Barclay doc system for this arg. this is what
-     * @return
+     * @return the WDL type to be used for this argument
      */
     protected String getWDLTypeForArgument(
             final ArgumentDefinition argDef,

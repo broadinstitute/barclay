@@ -89,7 +89,7 @@ public class WDLTransforms {
 
                 {
                     put(List.class, new ImmutablePair<>("List", "Array"));
-                    //TODO: there are a few GATK @Arguments that are typed as "ArrayList", fix these...
+                    // Note: occasionally there are @Arguments that are typed as "ArrayList"
                     put(ArrayList.class, new ImmutablePair<>("ArrayList", "Array"));
                     put(Set.class, new ImmutablePair<>("Set", "Array"));
                     put(EnumSet.class, new ImmutablePair<>("EnumSet", "Array"));
