@@ -303,16 +303,10 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
                         }
 
                         nestedTypeClass = Class.forName(pType2.getRawType().getTypeName());
-                        wdlType = convertJavaTypeToWDLType(nestedTypeClass, wdlType, argField.getDeclaringClass().toString());
-                        if (workflowResource != null && workflowResource.output() && wdlType.equals("File")) {
-                            wdlType = "String";
-                        }
+                        wdlType = convertJavaTypeToWDLType(workflowResource, nestedTypeClass, wdlType, argField.getDeclaringClass().toString());
                     } else {
                         nestedTypeClass = Class.forName(genericTypes[0].getTypeName());
-                        wdlType = convertJavaTypeToWDLType(nestedTypeClass, wdlType, argField.getDeclaringClass().toString());
-                        if (workflowResource != null && workflowResource.output() && wdlType.equals("File")) {
-                            wdlType = "String";
-                        }
+                        wdlType = convertJavaTypeToWDLType(workflowResource, nestedTypeClass, wdlType, argField.getDeclaringClass().toString());
                     }
                     return wdlType;
                 } catch (ClassNotFoundException e) {
@@ -330,25 +324,24 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
             }
         }
 
-        wdlType = convertJavaTypeToWDLType(argumentClass, wdlType, argField.getDeclaringClass().toString());
-        if (workflowResource != null && workflowResource.output() && wdlType.equals("File")) {
-            wdlType = "String";
-        }
-
-        return wdlType;
+        return convertJavaTypeToWDLType(workflowResource, argumentClass, wdlType, argField.getDeclaringClass().toString());
     }
 
     /**
      * Given a Java class representing the underlying field  type of an argument, and a human readable doc type,
      * convert the docType to a WDL type.
      *
+     * @param workflowResource the WorkflowResource associated with the instance of argumentClass, if any
      * @param argumentClass the Class for the underlying field of the argument being converted
      * @param docType a string representing the human readable type assigned by the Barclay doc system
-     * @param contextMessage a message describing the context for this argument, used in error reporting
+     * @param sourceContext a String describing the context for this argument, used for error reporting
      * @return the docType string transformed to the corresponding WDL type
      */
-    protected String convertJavaTypeToWDLType(final Class<?> argumentClass, final String docType, final String contextMessage) {
-        String convertedWDLType;
+    protected String convertJavaTypeToWDLType(
+            final WorkflowResource workflowResource,
+            final Class<?> argumentClass,
+            final String docType, final String sourceContext) {
+        final String convertedWDLType;
         final Pair<String, String> typeConversionPair = transformToWDLType(argumentClass);
         if (typeConversionPair != null) {
             convertedWDLType = docType.replace(typeConversionPair.getKey(), typeConversionPair.getValue());
@@ -357,11 +350,32 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
         } else {
             throw new RuntimeException(
                     String.format(
-                            "Can't generate a WDL type for %s, in work unit %s to a WDL type",
+                            "Don't know how to convert Java type %s in %s to a corresponding WDL type. " +
+                                    "The WDL generator type converter code must be updated to support this Java type.",
                             argumentClass,
-                            contextMessage));
+                            sourceContext));
         }
-        return convertedWDLType;
+        // finally, if this type is for an arg that is a WorkflowResource that is a workflow output, and its type
+        // is file, we need to use a different type (String) as the input type for this arg to prevent the workflow
+        // manager from attempting to localize the (non-existent) output file when localizing inputs
+        return transformWorkflowResourceOutputTypeToInputType(workflowResource, convertedWDLType);
+    }
+
+    /**
+     * If this type is for an arg that is a WorkflowResource that is a workflow output, and its type is file,
+     * we need to use a different type (String) as the input type for this arg to prevent the workflow manager
+     * from attempting to localize the (non-existent) output file when localizing inputs. Transform
+     *
+     * @param workflowResource WorkflowResource for this type instance, if any (may be null)
+     * @param convertedWDLType the wdl type for this type instance
+     * @return
+     */
+    protected String transformWorkflowResourceOutputTypeToInputType(
+            final WorkflowResource workflowResource,
+            final String convertedWDLType) {
+        return workflowResource != null && workflowResource.output() && convertedWDLType.equals("File") ?
+                "String" :
+                convertedWDLType;
     }
 
     /**
