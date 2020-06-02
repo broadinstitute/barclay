@@ -146,25 +146,28 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
             final String fieldCommentText) {
         final String argCategory = super.processNamedArgument(argBindings, argDef, fieldCommentText);
 
-        final WorkflowResource workflowResource = argDef.getUnderlyingField().getAnnotation(WorkflowResource.class);
+        final WorkflowResource workflowResource = getWorkflowResource(argDef);
 
-        // replace the java type of the argument with the appropriate wdl type (don't pass WorkflowResource
-        // for this call site
+        // replace the type of the argument (starting with the value stored in the freemarker map, which is the
+        // type chosen by the doc system) with an appropriate wdl type (don't pass WorkflowResource
+        // in this call since we want this returned type to be the raw type, not the transformed "input"
+        // type for output args)
         final String wdlType = getWDLTypeForArgument(argDef, null, (String) argBindings.get("type"));
 
-        // for args that are output workflow resources and have a WDL type of File, we need to use a String as
-        // the *input* type to prevent the workflow manager from attempting to localize them on input, so
-        // create a separate property in the property map for use by the template in input definitions
+        // Now generate the transformed "input" type for args that are output workflow resources and have a WDL type
+        // of "File". These need to use String as the *input* type even though they actually represent a File type,
+        // to prevent the workflow manager from attempting to localize them on input, when they don't exist yet. So
+        // create a separate property in the property map for use by the template in input definitions.
         final String wdlInputType = getWDLTypeForArgument(argDef, workflowResource, (String) argBindings.get("type"));
         argBindings.put("type", wdlType);
         argBindings.put("wdlinputtype", wdlInputType);
 
         // Store the actual (unmodified) arg name that the app will recognize, for use in the task command block.
-        // Then generate a WDL-friendly name if necessary ("input" and "output" are reserved words in WDL and
-        // can't be used for arg names; also WDL doesn't accept embedded "-" for variable names, so use a non-kebab
-        // name with an underscore) for use in the rest of the WDL source.
         final String actualArgName = (String) argBindings.get("name");
         argBindings.put("actualArgName", actualArgName);
+        // Now generate a WDL-friendly name (if necessary "input" and "output" are reserved words in WDL and
+        // can't be used for arg names; also WDL doesn't accept embedded "-" for variable names, so use a non-kebab
+        // name with an underscore) for use as the argument name in the rest of the WDL source.
         String wdlName = LONG_OPTION_PREFIX + transformJavaNameToWDLName(actualArgName.substring(2));
         argBindings.put("name", wdlName);
 
@@ -183,7 +186,7 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
 
         final PositionalArgumentDefinition argDef = clp.getPositionalArgumentDefinition();
         if (argDef != null) {
-            final WorkflowResource workflowResource = argDef.getUnderlyingField().getAnnotation(WorkflowResource.class);
+            final WorkflowResource workflowResource = getWorkflowResource(argDef);
 
             // replace the java type of the argument with the appropriate wdl type
             final String wdlType = getWDLTypeForArgument(argDef, null, (String) argBindings.get("positional").get(0).get("type"));
@@ -203,9 +206,26 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
     }
 
     /**
+     * Retrieve and validate the {@link WorkflowResource} for an {@link ArgumentDefinition}.
+     * @param argDef {@link ArgumentDefinition} from which to retrieve the {@link WorkflowResource}
+     * @return the {@link WorkflowResource} or null if no {@link WorkflowResource} is present on this arg field
+     */
+    final protected WorkflowResource getWorkflowResource(final ArgumentDefinition argDef) {
+        final WorkflowResource workFlowResource = argDef.getUnderlyingField().getAnnotation(WorkflowResource.class);
+        if (workFlowResource != null && workFlowResource.input() == false && workFlowResource.output() == false) {
+            throw new IllegalArgumentException(String.format(
+                    "WorkFlowResource for %s in %s must be marked as either an INPUT or an OUTPUT",
+                    argDef.getUnderlyingField(),
+                    argDef.getContainingObject().getClass()
+            ));
+        }
+        return workFlowResource;
+    }
+
+    /**
      * Update the list of outputs workflow resources and update the corresponding companion files.
      *
-     * @param workflowResource the {@link WorkflowResource} to use when updating runtime outputs
+     * @param workflowResource the {@link WorkflowResource} to use when updating runtime outputs, may not be null
      * @param wdlName the wdlname for this workflow resource
      * @param wdlType the wdltype for this workflow resource
      */
@@ -236,6 +256,7 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
      * determine the resulting WDL type.
      *
      * @param argDef the Barclay NamedArgumentDefinition for this arg
+     * @param workflowResource the WorkflowResource for this argDef, may be null
      * @param argDocType the display type as chosen by the Barclay doc system for this arg. this is what
      * @return the WDL type to be used for this argument
      */
@@ -331,7 +352,7 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
      * Given a Java class representing the underlying field  type of an argument, and a human readable doc type,
      * convert the docType to a WDL type.
      *
-     * @param workflowResource the WorkflowResource associated with the instance of argumentClass, if any
+     * @param workflowResource the WorkflowResource associated with the instance of argumentClass, may be null
      * @param argumentClass the Class for the underlying field of the argument being converted
      * @param docType a string representing the human readable type assigned by the Barclay doc system
      * @param sourceContext a String describing the context for this argument, used for error reporting

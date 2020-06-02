@@ -83,8 +83,8 @@ public class WDLDoclet extends HelpDoclet {
                 wdlTemplate.process(workUnit.getRootMap(), out);
             }
 
-            // Rather than rely on the default Barclay behavior of creating the JSON file directly, use a
-            // second template to allow more control over the initial values. Barlcay would provide the
+            // Rather than rely on the default Barclay JSON file that is created by the doc system, use a
+            // separate template to allow more control over the initial values. Barclay would provide the
             // initial values everywhere, but for required args we want to use a String containing the
             // expected type, like womtool does.
             final Template jsonTemplate = cfg.getTemplate("wdlJSONTemplate.json.ftl");

@@ -13,12 +13,12 @@ public @interface WorkflowResource {
     /**
      * @return true if the argument is an input resource
      */
-    boolean input() default false;
+    boolean input();
 
     /**
      * @return true if the argument is an output resource
      */
-    boolean output() default true;
+    boolean output();
 
     /**
      * @return array of names of companion files that should travel with this resource. For example, a (Genomic

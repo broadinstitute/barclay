@@ -368,7 +368,7 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
     }
 
     /**
-     * Add the named argument {@code argDed}to the property map if applicable.
+     * Add the named argument {@code argDef}to the property map if applicable.
      * @param currentWorkUnit current work unit
      * @param args the freemarker arg map
      * @param argDef the arg to add
