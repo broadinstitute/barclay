@@ -4,6 +4,8 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.File;
+import java.net.URI;
+import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -77,6 +79,9 @@ public class WDLTransforms {
 
                     // File/Path Types
                     put(File.class, new ImmutablePair<>("File", "File"));
+
+                    put(URI.class, new ImmutablePair<>("URI", "String"));
+                    put(URL.class, new ImmutablePair<>("URL", "String"));
                 }
             };
 
