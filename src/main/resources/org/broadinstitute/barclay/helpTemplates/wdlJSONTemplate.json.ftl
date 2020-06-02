@@ -35,8 +35,9 @@
 <@taskinput heading="Required Arguments" argsToUse=arguments.required remainingCount=remainingArgCount/>
 <#assign remainingArgCount=arguments.common?size/>
 <@taskinput heading="Optional Tool Arguments" argsToUse=arguments.optional remainingCount=remainingArgCount/>
-<#assign remainingArgCount=arguments.required?size + arguments.optional?size + arguments.common?size/>
+<#assign remainingArgCount=0/>
 <@taskinput heading="Optional Common Arguments" argsToUse=arguments.common remainingCount=0/>
+
 }
 <#macro taskinput heading argsToUse remainingCount>
   <#if argsToUse?size != 0>
