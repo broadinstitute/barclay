@@ -146,6 +146,8 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
             final String fieldCommentText) {
         final String argCategory = super.processNamedArgument(argBindings, argDef, fieldCommentText);
 
+        final WorkflowResource workflowResource = argDef.getUnderlyingField().getAnnotation(WorkflowResource.class);
+
         // replace the java type of the argument with the appropriate wdl type (don't pass WorkflowResource
         // for this call site
         final String wdlType = getWDLTypeForArgument(argDef, null, (String) argBindings.get("type"));
@@ -153,7 +155,6 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
         // for args that are output workflow resources and have a WDL type of File, we need to use a String as
         // the *input* type to prevent the workflow manager from attempting to localize them on input, so
         // create a separate property in the property map for use by the template in input definitions
-        final WorkflowResource workflowResource = argDef.getUnderlyingField().getAnnotation(WorkflowResource.class);
         final String wdlInputType = getWDLTypeForArgument(argDef, workflowResource, (String) argBindings.get("type"));
         argBindings.put("type", wdlType);
         argBindings.put("wdlinputtype", wdlInputType);
@@ -169,23 +170,8 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
 
         // finally, keep track of the outputs
         if (workflowResource != null) {
-            if (workflowResource.output()) {
-                runtimeOutputs.put(wdlName, wdlType);
-            }
-            for (final String companion : workflowResource.companionResources()) {
-                final String companionArgOption = LONG_OPTION_PREFIX + companion;
-                companionFiles.merge(
-                        wdlName,
-                        Collections.singletonList(companionArgOption),
-                        (oldList, newList) -> {
-                            final List<String> mergedList = new ArrayList<>();
-                            mergedList.addAll(oldList);
-                            mergedList.add(companionArgOption);
-                            return mergedList;
-                        });
-            }
+            updateWorkflowOutputs(workflowResource, wdlName, wdlType);
         }
-
         return argCategory;
     }
 
@@ -211,22 +197,36 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
 
             // finally, keep track of the outputs
             if (workflowResource != null) {
-                if (workflowResource.output()) {
-                    runtimeOutputs.put(POSITIONAL_ARGS, wdlType);
-                }
-                for (final String companion : workflowResource.companionResources()) {
-                    final String companionArgOption = LONG_OPTION_PREFIX + companion;
-                    companionFiles.merge(
-                            POSITIONAL_ARGS,
-                            Collections.singletonList(companionArgOption),
-                            (oldList, newList) -> {
-                                final List<String> mergedList = new ArrayList<>();
-                                mergedList.addAll(oldList);
-                                mergedList.add(companionArgOption);
-                                return mergedList;
-                            });
-                }
+                updateWorkflowOutputs(workflowResource, POSITIONAL_ARGS, wdlType);
             }
+        }
+    }
+
+    /**
+     * Update the list of outputs workflow resources and update the corresponding companion files.
+     *
+     * @param workflowResource the {@link WorkflowResource} to use when updating runtime outputs
+     * @param wdlName the wdlname for this workflow resource
+     * @param wdlType the wdltype for this workflow resource
+     */
+    protected void updateWorkflowOutputs(
+            final WorkflowResource workflowResource,
+            final String wdlName,
+            final String wdlType) {
+        if (workflowResource.output()) {
+            runtimeOutputs.put(wdlName, wdlType);
+        }
+        for (final String companion : workflowResource.companionResources()) {
+            final String companionArgOption = LONG_OPTION_PREFIX + companion;
+            companionFiles.merge(
+                    wdlName,
+                    Collections.singletonList(companionArgOption),
+                    (oldList, newList) -> {
+                        final List<String> mergedList = new ArrayList<>();
+                        mergedList.addAll(oldList);
+                        mergedList.add(companionArgOption);
+                        return mergedList;
+                    });
         }
     }
 
