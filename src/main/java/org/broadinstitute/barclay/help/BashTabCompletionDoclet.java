@@ -1,9 +1,11 @@
 package org.broadinstitute.barclay.help;
 
+import com.sun.javadoc.ClassDoc;
 import com.sun.javadoc.RootDoc;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+import org.broadinstitute.barclay.argparser.CommandLineProgramProperties;
 
 import java.io.*;
 import java.util.*;
@@ -388,6 +390,37 @@ public class BashTabCompletionDoclet extends HelpDoclet {
         }
 
         return hasParsedOption;
+    }
+
+    /**
+     * Filter out features that are not command line programs by selecting only classes with
+     * {@link CommandLineProgramProperties}.
+     * @param documentedFeature feature that is being considered for inclusion in the docs
+     * @param classDoc for the class that is being considered for inclusion in the docs
+     * @param clazz class that is being considered for inclusion in the docs
+     * @return
+     */
+    @Override
+    public boolean includeInDocs(final DocumentedFeature documentedFeature, final ClassDoc classDoc, final Class<?> clazz) {
+        return super.includeInDocs(documentedFeature, classDoc, clazz) &&
+                clazz.getAnnotation(CommandLineProgramProperties.class) != null;
+    }
+
+    /**
+     * Create a work unit and handler capable of handling the feature specified by the input arguments.
+     * Returns null if no appropriate handler is found or doc shouldn't be documented at all.
+     */
+    @Override
+    protected DocWorkUnit createWorkUnit(
+            final DocumentedFeature documentedFeature,
+            final ClassDoc classDoc,
+            final Class<?> clazz)
+    {
+        return new DocWorkUnit(
+                new BashTabCompletionDocWorkUnitHandler(this),
+                documentedFeature,
+                classDoc,
+                clazz);
     }
 
     @Override
