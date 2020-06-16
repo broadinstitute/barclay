@@ -367,7 +367,13 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
         }
     }
 
-    private void processNamedArgument(
+    /**
+     * Add the named argument {@code argDef}to the property map if applicable.
+     * @param currentWorkUnit current work unit
+     * @param args the freemarker arg map
+     * @param argDef the arg to add
+     */
+    protected void processNamedArgument(
             final DocWorkUnit currentWorkUnit,
             final Map<String, List<Map<String, Object>>> args,
             final NamedArgumentDefinition argDef)

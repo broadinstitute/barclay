@@ -1,0 +1,36 @@
+{
+  "TestArgumentContainer.dockerImage": "String",
+  "TestArgumentContainer.appLocation": "String",
+  "TestArgumentContainer.memoryRequirements": "3G",
+  "TestArgumentContainer.diskRequirements": "local-disk 40 HDD",
+  "TestArgumentContainer.cpuRequirements": "1",
+  "TestArgumentContainer.preemptibleRequirements": "3",
+  "TestArgumentContainer.bootdisksizegbRequirements": "15",
+
+  "TestArgumentContainer.positionalArgs":   "Array[File]",
+
+  "TestArgumentContainer.requiredClpEnum":   "String",
+  "TestArgumentContainer.companionDictionary": null,
+  "TestArgumentContainer.companionIndex": null,
+  "TestArgumentContainer.requiredFileList":   "Array[File]",
+  "TestArgumentContainer.requiredInputFilesFromArgCollection":   "Array[File]",
+  "TestArgumentContainer.requiredStringInputFromArgCollection":   "String",
+  "TestArgumentContainer.requiredStringList":   "Array[String]",
+  "TestArgumentContainer.usesFieldNameForArgName":   "String",
+
+  "TestArgumentContainer.enumSetLong": [ENUM_VALUE_1],
+  "TestArgumentContainer.fullAnonymousArgName": [],
+  "TestArgumentContainer.mutexSourceField": [],
+  "TestArgumentContainer.mutexTargetField1": [],
+  "TestArgumentContainer.mutexTargetField2": [],
+  "TestArgumentContainer.optionalClpEnum": ENUM_VALUE_1,
+  "TestArgumentContainer.optionalDouble": 2.15,
+  "TestArgumentContainer.optionalDoubleList": [100.0, 99.9, 99.0, 90.0],
+  "TestArgumentContainer.optionalFileList": [],
+  "TestArgumentContainer.optionalFlag": false,
+  "TestArgumentContainer.optionalInputFilesFromArgCollection": [],
+  "TestArgumentContainer.optionalStringInputFromArgCollection": null,
+  "TestArgumentContainer.optionalStringList": [],
+  "TestArgumentContainer.testPlugin": []
+
+}

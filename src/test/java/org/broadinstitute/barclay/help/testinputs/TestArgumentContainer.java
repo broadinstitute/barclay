@@ -30,6 +30,7 @@ import java.util.*;
         oneLineSummary = TestArgumentContainer.ONE_LINE_SUMMARY,
         programGroup = TestProgramGroup.class)
 @BetaFeature
+@RuntimeProperties(memory ="3G")
 @DocumentedFeature(groupName = TestArgumentContainer.GROUP_NAME, extraDocs = TestExtraDocs.class)
 public class TestArgumentContainer implements CommandLinePluginProvider {
 
@@ -73,6 +74,7 @@ public class TestArgumentContainer implements CommandLinePluginProvider {
     /**
      * Required file list.
      */
+    @WorkflowResource(input=false, output=true, companionResources={"companionDictionary", "companionIndex"})
     @Argument(fullName = "requiredFileList",
             shortName = "reqFilList",
             doc = "Required file list",
@@ -210,6 +212,11 @@ public class TestArgumentContainer implements CommandLinePluginProvider {
             mutex = {"mutexSourceField"},
             optional = true)
     public List<File> mutexTargetField2;
+
+    @Argument(shortName = "ES", fullName = "enumSetLong",
+            doc = "Some set thing.",
+            optional = true)
+    public EnumSet<TestEnum> anEnumSet = EnumSet.of(TestEnum.ENUM_VALUE_1);
 
     // Command line plugin descriptor with optional arguments
     @Override

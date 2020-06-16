@@ -47,6 +47,21 @@
       "options": []
     },
     {
+      "summary": "Some set thing.",
+      "name": "--enumSetLong",
+      "synonyms": "-ES",
+      "type": "EnumSet[TestEnum]",
+      "required": "no",
+      "fulltext": "",
+      "defaultValue": "[ENUM_VALUE_1]",
+      "minValue": "NA",
+      "maxValue": "NA",
+      "minRecValue": "NA",
+      "maxRecValue": "NA",
+      "kind": "optional",
+      "options": []
+    },
+    {
       "summary": "Test anonymous class arg",
       "name": "--fullAnonymousArgName",
       "synonyms": "-anonymousClassArg",
