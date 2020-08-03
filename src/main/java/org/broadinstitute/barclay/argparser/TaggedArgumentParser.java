@@ -60,10 +60,6 @@ public final class TaggedArgumentParser {
     // Map of surrogate keys to Pair(tag_string, raw_argument_value)
     private Map<String, Pair<String, String>> tagSurrogates = new HashMap<>();
 
-    // Prefixes used by the opt parser for short/long prefixes
-    private static final String SHORT_OPTION_PREFIX = "-";
-    private static final String LONG_OPTION_PREFIX = "--";
-
     /**
      * Given an array of raw arguments provided by the user, return an array of args where tagged arguments
      * have been replaced with curated arguments containing a key to be used by the parser to retrieve the actual
@@ -78,9 +74,9 @@ public final class TaggedArgumentParser {
         while (argIt.hasNext()) {
             final String arg = argIt.next();
             if (isShortOptionToken(arg)) {
-                replaceTaggedOption(SHORT_OPTION_PREFIX, arg.substring(SHORT_OPTION_PREFIX.length()), argIt, finalArgs);
+                replaceTaggedOption(CommandLineArgumentParser.SHORT_OPTION_PREFIX, arg.substring(CommandLineArgumentParser.SHORT_OPTION_PREFIX.length()), argIt, finalArgs);
             } else if (isLongOptionToken(arg)) {
-                replaceTaggedOption(LONG_OPTION_PREFIX, arg.substring(LONG_OPTION_PREFIX.length()), argIt, finalArgs);
+                replaceTaggedOption(CommandLineArgumentParser.LONG_OPTION_PREFIX, arg.substring(CommandLineArgumentParser.LONG_OPTION_PREFIX.length()), argIt, finalArgs);
             } else { // Positional arg, etc., just add it
                 finalArgs.add(arg);
             }
@@ -173,14 +169,14 @@ public final class TaggedArgumentParser {
 
     // See if the opt parser would think this is a short option ("-")
     private static boolean isShortOptionToken(final String argument) {
-        return argument.startsWith( SHORT_OPTION_PREFIX )
-                && !SHORT_OPTION_PREFIX.equals( argument )
+        return argument.startsWith( CommandLineArgumentParser.SHORT_OPTION_PREFIX )
+                && !CommandLineArgumentParser.SHORT_OPTION_PREFIX.equals( argument )
                 && !isLongOptionToken( argument );
     }
 
     // See if the opt parser would think this is a long option ("--")
     private static boolean isLongOptionToken(final String argument) {
-        return argument.startsWith( LONG_OPTION_PREFIX );
+        return argument.startsWith( CommandLineArgumentParser.LONG_OPTION_PREFIX );
     }
 
     // Stores the option string and value in the tagSurrogates hash map and returns a surrogate key.
