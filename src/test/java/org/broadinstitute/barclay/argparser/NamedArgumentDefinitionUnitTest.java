@@ -65,7 +65,11 @@ public class NamedArgumentDefinitionUnitTest {
 
                 { new Object(){ @Argument(optional = false) File arg; }, "arg", false, NamedArgumentDefinition.NULL_ARGUMENT_STRING},
                 { new Object(){ @Argument(optional = true) File arg = new File("/some/file"); }, "arg", true, "/some/file"},
+                { new Object(){ @Argument(optional = true) List<File> arg = Arrays.asList(new File("/some/file")); },
+                        "arg", true, "[/some/file]"},
                 { new Object(){ @Argument(optional = true) File arg = new File(URI.create("file:///some/file")); }, "arg", true, "/some/file"},
+                { new Object(){ @Argument(optional = true) List<File> arg = Arrays.asList(new File(URI.create("file:///some/file"))); },
+                        "arg", true, "[/some/file]"},
 
         };
     }
