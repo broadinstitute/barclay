@@ -4,7 +4,9 @@ import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import java.io.File;
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -60,6 +62,11 @@ public class NamedArgumentDefinitionUnitTest {
                 // NOTE: non-intuitive case: it looks like its required but isn't since it has a value
                 { new Object() { @Argument(optional=false) List<String> arg = Arrays.asList(new String[] { "stuff", "more stuff" }); },
                         "arg", true, "[stuff, more stuff]" },
+
+                { new Object(){ @Argument(optional = false) File arg; }, "arg", false, NamedArgumentDefinition.NULL_ARGUMENT_STRING},
+                { new Object(){ @Argument(optional = true) File arg = new File("/some/file"); }, "arg", true, "/some/file"},
+                { new Object(){ @Argument(optional = true) File arg = new File(URI.create("file://some/file")); }, "arg", true, "/some/file"},
+
         };
     }
 

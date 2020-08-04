@@ -2,8 +2,10 @@ package org.broadinstitute.barclay.argparser;
 
 import org.broadinstitute.barclay.utils.Utils;
 
+import java.io.File;
 import java.io.PrintStream;
 import java.lang.reflect.*;
+import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -238,6 +240,13 @@ public abstract class ArgumentDefinition {
                                     getEnumOptions(clazz)));
                 }
             }
+
+            // Some programs like Cromwell will accept URI paths to files but others expect a File (which can be made
+            // from a URI) so if a File is expected and the String begins with the file scheme return a file from the URI
+            if(clazz.equals(File.class) && stringValue.startsWith("file://")){
+                return new File(URI.create(stringValue));
+            }
+
             // Need to use getDeclaredConstructor() instead of getConstructor() in case the constructor
             // is non-public. Set it to be accessible if it isn't already.
             final Constructor<?> ctor = clazz.getDeclaredConstructor(String.class);
