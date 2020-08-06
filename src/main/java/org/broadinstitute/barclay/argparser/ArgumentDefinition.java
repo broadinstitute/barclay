@@ -244,7 +244,7 @@ public abstract class ArgumentDefinition {
             // Some programs like Cromwell will accept URI paths to files but others expect a File (which can be made
             // from a URI) so if a File is expected and the String begins with the file scheme return a file from the URI
             if(clazz.equals(File.class) && stringValue.startsWith("file://")){
-                return new File(URI.create(stringValue));
+                return fileFromFileSchemeURI(stringValue);
             }
 
             // Need to use getDeclaredConstructor() instead of getConstructor() in case the constructor
@@ -268,6 +268,17 @@ public abstract class ArgumentDefinition {
                     stringValue,
                     String.format("Failure constructing '%s' from the string '%s'.", clazz.getSimpleName(), stringValue));
         }
+    }
+
+    /**
+     * Construct a File from a String in the form of a file scheme URI ("file:///some/file")
+     * Equivalent of: <code>File(URI.create(uri))</code>
+     * @param uri the file URI
+     * @return a File representing the URI
+     */
+    public static File fileFromFileSchemeURI(final String uri) {
+        if (uri == null) throw new IllegalArgumentException("File URI cannot be null");
+        return new File(URI.create(uri));
     }
 
     /**

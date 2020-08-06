@@ -161,4 +161,29 @@ public class NamedArgumentDefinitionUnitTest {
         throw new IllegalArgumentException("Can't find field");
     }
 
+    @Test
+    public void testFileFromUri(){
+        final String uri = "file:///some/file";
+        final String malformed = "file///some/file";
+        final File f = ArgumentDefinition.fileFromFileSchemeURI(uri);
+        Assert.assertEquals(f, new File("/some/file"));
+        Assert.assertThrows(IllegalArgumentException.class, () -> ArgumentDefinition.fileFromFileSchemeURI(malformed));
+        Assert.assertThrows(IllegalArgumentException.class, () -> ArgumentDefinition.fileFromFileSchemeURI(null));
+    }
+    
+    @Test
+    public void testConstructFromStringForFiles(){
+        String uri = "file:///some/file";
+        String filePath = "/some/file";
+        String fieldName = "file";
+        
+        final Object o = new Object(){ @Argument(optional = false, shortName = "file") File file;};
+        final Field field = getFieldForFieldName(o, fieldName);
+        final ArgumentDefinition def = new NamedArgumentDefinition(field.getAnnotation(Argument.class), o, field, null);
+
+        //both the uri and the file path should result in the same file
+        Assert.assertEquals(def.constructFromString(uri, "file"), new File(filePath));
+        Assert.assertEquals(def.constructFromString(filePath, "file"), new File(filePath));
+    }
+
 }
