@@ -47,6 +47,30 @@
       "options": []
     },
     {
+      "summary": "Undocumented option",
+      "name": "--enumCollection",
+      "synonyms": "NA",
+      "type": "List[TestEnum]",
+      "required": "yes",
+      "fulltext": "",
+      "defaultValue": "[]",
+      "minValue": "NA",
+      "maxValue": "NA",
+      "minRecValue": "NA",
+      "maxRecValue": "NA",
+      "kind": "required",
+      "options": [
+        {
+          "summary": "",
+          "name": "ENUM_VALUE_1"
+        },
+        {
+          "summary": "",
+          "name": "ENUM_VALUE_2"
+        }
+      ]
+    },
+    {
       "summary": "Some set thing.",
       "name": "--enumSetLong",
       "synonyms": "-ES",
@@ -59,7 +83,16 @@
       "minRecValue": "NA",
       "maxRecValue": "NA",
       "kind": "optional",
-      "options": []
+      "options": [
+        {
+          "summary": "",
+          "name": "ENUM_VALUE_1"
+        },
+        {
+          "summary": "",
+          "name": "ENUM_VALUE_2"
+        }
+      ]
     },
     {
       "summary": "Test anonymous class arg",
