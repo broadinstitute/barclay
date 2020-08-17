@@ -482,7 +482,7 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
             argBindings.put("defaultValue", "NA");
             argBindings.put("minElements", positionalArgDef.getPositionalArgumentsAnnotation().minElements());
             argBindings.put("maxElements", positionalArgDef.getPositionalArgumentsAnnotation().maxElements());
-
+            argBindings.put("collection", positionalArgDef.isCollection());
             args.get("positional").add(argBindings);
             args.get("all").add(argBindings);
         }
@@ -770,40 +770,37 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
             attributes.add("deprecated");
         }
         argBindings.put("attributes", attributes.size() > 0 ? String.join(", ", attributes) : "NA");
-
+        argBindings.put("collection", argDef.isCollection());
         return kind;
     }
 
     /**
      * Return a (possibly empty) list of possible values that can be specified for this argument. Each
-     * value in the list is a map with "name" and "summary" keys, used to handle enums that implement the
-     * {@link CommandLineParser.ClpEnum} interface.
+     * value in the list is a map with "name" and "summary" keys.
      * @param argDef {ArgumentDefinition}
-     * @return list of possible options for {@code argDef}, may not be null
+     * @return list of possible options for {@code argDef}. May be empty. May may not be null.
      */
-    private List<Map<String, Object>> getPossibleValues(final ArgumentDefinition argDef, final String displayName) {
+    private List<Map<String, String>> getPossibleValues(final ArgumentDefinition argDef, final String displayName) {
         Utils.nonNull(argDef);
 
         final Field underlyingField = argDef.getUnderlyingField();
         Class<?> targetClass = underlyingField.getType();
 
         // enum options
-        // if this argument is a Collection, get the type param to see if its an enum
         if (argDef.isCollection() && underlyingField.getGenericType() instanceof ParameterizedType) {
-            final ParameterizedType parameterizedType = (ParameterizedType) underlyingField.getGenericType();
-            final Type types[] = parameterizedType.getActualTypeArguments();
-            if (types.length != 1) { // if there are multiple (or no!) type parameters, give up
-                logger.warn(String.format(
-                        "Unable to determine possible values for a collection (%s) with generic type parameter(s)",
-                        displayName));
+            // if this argument is a Collection (including an EnumSet), use the type of the generic type
+            // parameter as the target class, instead of the collection class itself
+            final Type typeParamType = underlyingField.getGenericType();
+            final ParameterizedType pType = (ParameterizedType) typeParamType;
+            final Type genericTypes[] = pType.getActualTypeArguments();
+            if (genericTypes.length != 1 || genericTypes[0] instanceof ParameterizedType) {
                 return Collections.emptyList();
             }
             try {
-                // use the type param of the underlying field as the target instead
-                targetClass = Class.forName(types[0].getTypeName());
+                targetClass = Class.forName(genericTypes[0].getTypeName());
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(String.format("No class found for type parameter (%s) used for argument (%s)",
-                                types[0].getTypeName(), displayName), e);
+                        genericTypes[0].getTypeName(), displayName), e);
             }
         }
 
@@ -817,47 +814,43 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
      * values of the enum and their associated javadoc or {@link CommandLineArgumentParser.ClpEnum} documentation.
      *
      * @param enumClass an enum Class that may optionally implement {@link CommandLineArgumentParser.ClpEnum}
-     * @return a mpa with keys for name and summary for the class's
+     * @return a List of maps with keys for "name" and "summary" for each of the class's possible enum constants
      */
     @SuppressWarnings("unchecked")
-    private <T extends Enum<T>> List<Map<String, Object>> docForEnumArgument(final Class<?> enumClass) {
+    private <T extends Enum<T>> List<Map<String, String>> docForEnumArgument(final Class<?> enumClass) {
         final ClassDoc doc = this.getDoclet().getClassDocForClass(enumClass);
         if ( doc == null ) {
-            throw new RuntimeException("Tried to get docs for enum " + enumClass + " but got null instead");
+            throw new RuntimeException(String.format("Unable to get ClassDoc for enum %s", enumClass));
         }
 
-        final List<Map<String, Object>> bindings = new ArrayList<>();
+        final List<Map<String, String>> bindings = new ArrayList<>();
         if (CommandLineArgumentParser.ClpEnum.class.isAssignableFrom(enumClass)) {
             final T[] enumConstants = (T[]) enumClass.getEnumConstants();
             for ( final T enumConst : enumConstants ) {
-                bindings.add(
-                        new HashMap<String, Object>() {
-                            static final long serialVersionUID = 0L;
-                            {
-                                put("name", enumConst.name());
-                                put("summary", ((CommandLineArgumentParser.ClpEnum) enumConst).getHelpDoc());
-                            }
-                        }
-                );
+                bindings.add(createPossibleValuesMap(
+                        enumConst.name(),
+                        ((CommandLineArgumentParser.ClpEnum) enumConst).getHelpDoc()));
             }
         } else {
             final Set<String> enumConstantFieldNames = enumConstantsNames(enumClass);
             for (final FieldDoc fieldDoc : doc.fields(false)) {
                 if (enumConstantFieldNames.contains(fieldDoc.name())) {
-                    bindings.add(
-                            new HashMap<String, Object>() {
-                                static final long serialVersionUID = 0L;
-                                {
-                                    put("name", fieldDoc.name());
-                                    put("summary", fieldDoc.commentText());
-                                }
-                            }
-                    );
+                    bindings.add(createPossibleValuesMap(fieldDoc.name(), fieldDoc.commentText()));
                 }
             }
         }
 
         return bindings;
+    }
+
+    private HashMap<String, String> createPossibleValuesMap(final String name, final String summary) {
+        return new HashMap<String, String>() {
+            static final long serialVersionUID = 0L;
+            {
+                put("name", name);
+                put("summary", summary);
+            }
+        };
     }
 
     /**
