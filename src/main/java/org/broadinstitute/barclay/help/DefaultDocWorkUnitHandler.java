@@ -814,30 +814,46 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
 
     /**
      * Helper routine that provides a FreeMarker map for an enumClass, grabbing the
-     * values of the enum and their associated javadoc documentation.
+     * values of the enum and their associated javadoc or {@link CommandLineArgumentParser.ClpEnum} documentation.
      *
-     * @param enumClass
-     * @return
+     * @param enumClass an enum Class that may optionally implement {@link CommandLineArgumentParser.ClpEnum}
+     * @return a mpa with keys for name and summary for the class's
      */
-    private List<Map<String, Object>> docForEnumArgument(final Class<?> enumClass) {
+    @SuppressWarnings("unchecked")
+    private <T extends Enum<T>> List<Map<String, Object>> docForEnumArgument(final Class<?> enumClass) {
         final ClassDoc doc = this.getDoclet().getClassDocForClass(enumClass);
         if ( doc == null ) {
             throw new RuntimeException("Tried to get docs for enum " + enumClass + " but got null instead");
         }
 
-        final Set<String> enumConstantFieldNames = enumConstantsNames(enumClass);
-        final List<Map<String, Object>> bindings = new ArrayList<Map<String, Object>>();
-        for (final FieldDoc fieldDoc : doc.fields(false)) {
-            if (enumConstantFieldNames.contains(fieldDoc.name()) ) {
+        final List<Map<String, Object>> bindings = new ArrayList<>();
+        if (CommandLineArgumentParser.ClpEnum.class.isAssignableFrom(enumClass)) {
+            final T[] enumConstants = (T[]) enumClass.getEnumConstants();
+            for ( final T enumConst : enumConstants ) {
                 bindings.add(
                         new HashMap<String, Object>() {
                             static final long serialVersionUID = 0L;
                             {
-                                put("name", fieldDoc.name());
-                                put("summary", fieldDoc.commentText());
+                                put("name", enumConst.name());
+                                put("summary", ((CommandLineArgumentParser.ClpEnum) enumConst).getHelpDoc());
                             }
                         }
                 );
+            }
+        } else {
+            final Set<String> enumConstantFieldNames = enumConstantsNames(enumClass);
+            for (final FieldDoc fieldDoc : doc.fields(false)) {
+                if (enumConstantFieldNames.contains(fieldDoc.name())) {
+                    bindings.add(
+                            new HashMap<String, Object>() {
+                                static final long serialVersionUID = 0L;
+                                {
+                                    put("name", fieldDoc.name());
+                                    put("summary", fieldDoc.commentText());
+                                }
+                            }
+                    );
+                }
             }
         }
 

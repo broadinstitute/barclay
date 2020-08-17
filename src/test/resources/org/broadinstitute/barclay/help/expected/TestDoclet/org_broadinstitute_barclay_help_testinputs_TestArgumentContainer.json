@@ -61,11 +61,11 @@
       "kind": "required",
       "options": [
         {
-          "summary": "",
+          "summary": "This is enum value 1.",
           "name": "ENUM_VALUE_1"
         },
         {
-          "summary": "",
+          "summary": "This is enum value 2.",
           "name": "ENUM_VALUE_2"
         }
       ]
@@ -85,11 +85,11 @@
       "kind": "optional",
       "options": [
         {
-          "summary": "",
+          "summary": "This is enum value 1.",
           "name": "ENUM_VALUE_1"
         },
         {
-          "summary": "",
+          "summary": "This is enum value 2.",
           "name": "ENUM_VALUE_2"
         }
       ]
@@ -169,11 +169,11 @@
       "kind": "optional",
       "options": [
         {
-          "summary": "",
+          "summary": "This is enum value 1.",
           "name": "ENUM_VALUE_1"
         },
         {
-          "summary": "",
+          "summary": "This is enum value 2.",
           "name": "ENUM_VALUE_2"
         }
       ]
@@ -298,11 +298,11 @@
       "kind": "required",
       "options": [
         {
-          "summary": "",
+          "summary": "This is enum value 1.",
           "name": "ENUM_VALUE_1"
         },
         {
-          "summary": "",
+          "summary": "This is enum value 2.",
           "name": "ENUM_VALUE_2"
         }
       ]
