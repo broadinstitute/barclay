@@ -30,7 +30,7 @@ import java.util.*;
         oneLineSummary = TestArgumentContainer.ONE_LINE_SUMMARY,
         programGroup = TestProgramGroup.class)
 @BetaFeature
-@RuntimeProperties(memory ="3G")
+@WorkflowProperties(memory ="3G")
 @DocumentedFeature(groupName = TestArgumentContainer.GROUP_NAME, extraDocs = TestExtraDocs.class)
 public class TestArgumentContainer implements CommandLinePluginProvider {
 
@@ -74,7 +74,7 @@ public class TestArgumentContainer implements CommandLinePluginProvider {
     /**
      * Required file list.
      */
-    @WorkflowResource(input=false, output=true, companionResources={"companionDictionary", "companionIndex"})
+    @WorkflowOutput(requiredCompanions ={"companionDictionary", "companionIndex"})
     @Argument(fullName = "requiredFileList",
             shortName = "reqFilList",
             doc = "Required file list",

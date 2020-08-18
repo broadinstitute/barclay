@@ -55,6 +55,10 @@ public final class CommandLineArgumentParser implements CommandLineParser {
     protected static final Set<String> EXPANSION_FILE_EXTENSIONS = new HashSet<>(
             Arrays.asList(EXPANSION_FILE_EXTENSION_LIST, EXPANSION_FILE_EXTENSIONS_ARGS));
 
+    // Prefixes used by the opt parser for short/long prefixes
+    public static final String SHORT_OPTION_PREFIX = "-";
+    public static final String LONG_OPTION_PREFIX = "--";
+
     // This is the object that the caller has provided that contains annotations,
     // and into which the values will be assigned.
     private final Object callerArguments;

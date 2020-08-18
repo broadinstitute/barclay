@@ -19,8 +19,8 @@ version 1.0
 #  Required Tool Arguments
 #    requiredClpEnum                                    Required Clp enum                                           
 #    requiredFileList                                   Required file list                                          
-#    companionDictionary                                Required file list                                          
-#    companionIndex                                     Required file list                                          
+#    companionDictionary                                Companion resource for requiredFileList                     
+#    companionIndex                                     Companion resource for requiredFileList                     
 #    requiredInputFilesFromArgCollection                Required input files from argument collection               
 #    requiredStringInputFromArgCollection               Required string input from argument collection              
 #    requiredStringList                                 A required list of strings                                  
@@ -66,9 +66,9 @@ workflow TestArgumentContainer {
 
     # Required Arguments
     String requiredClpEnum
-    Array[File] requiredFileList
-    Array[File] companionDictionary
-    Array[File] companionIndex
+    Array[String] requiredFileList
+    Array[String] companionDictionary
+    Array[String] companionIndex
     Array[File] requiredInputFilesFromArgCollection
     String requiredStringInputFromArgCollection
     Array[String] requiredStringList
@@ -105,11 +105,11 @@ workflow TestArgumentContainer {
         #Disk requirements for this workflow
         diskRequirements                                   = diskRequirements,
         #CPU requirements for this workflow
-        cpuRequirements                                    = diskRequirements,
+        cpuRequirements                                    = cpuRequirements,
         #Preemptible requirements for this workflow
-        preemptibleRequirements                            = diskRequirements,
+        preemptibleRequirements                            = preemptibleRequirements,
         #Boot disk size requirements for this workflow
-        bootdisksizegbRequirements                         = diskRequirements,
+        bootdisksizegbRequirements                         = bootdisksizegbRequirements,
 
 
         # Positional Arguments
@@ -149,6 +149,45 @@ workflow TestArgumentContainer {
     Array[File] TestArgumentContainercompanionDictionary = TestArgumentContainer.TestArgumentContainer_companionDictionary
     Array[File] TestArgumentContainercompanionIndex = TestArgumentContainer.TestArgumentContainer_companionIndex
   }
+
+  parameter_meta {
+    dockerImage: { description: "Docker image for this task" }
+    appLocation: { description: "Location of app to run for this task" }
+    memoryRequirements: { description: "Runtime memory requirements for this task" }
+    diskRequirements: { description: "Runtime disk requirements for this task" }
+    cpuRequirements: { description: "Runtime CPU count for this task" }
+    preemptibleRequirements: { description: "Runtime preemptible count for this task" }
+    bootdisksizegbRequirements: { description: "Runtime boot disk size for this task" }
+
+    # Positional Arguments
+    positionalArgs: { description: "Positional arguments, min = 2, max = 2" }
+
+    # Required Arguments
+    requiredClpEnum: { description: "Required Clp enum" }
+    requiredFileList: { description: "Required file list" }
+    companionDictionary: { description: "Companion resource for requiredFileList" }
+    companionIndex: { description: "Companion resource for requiredFileList" }
+    requiredInputFilesFromArgCollection: { description: "Required input files from argument collection" }
+    requiredStringInputFromArgCollection: { description: "Required string input from argument collection" }
+    requiredStringList: { description: "A required list of strings" }
+    usesFieldNameForArgName: { description: "Use field name if no name in annotation." }
+
+    # Optional Tool Arguments
+    enumSetLong: { description: "Some set thing." }
+    fullAnonymousArgName: { description: "Test anonymous class arg" }
+    mutexSourceField: { description: "Undocumented option" }
+    mutexTargetField1: { description: "SAM/BAM/CRAM file(s) with alignment data from the first read of a pair." }
+    mutexTargetField2: { description: "SAM/BAM file(s) with alignment data from the second read of a pair." }
+    optionalClpEnum: { description: "Optional Clp enum" }
+    optionalDouble: { description: "Optionals double with initial value 2.15" }
+    optionalDoubleList: { description: "optionalDoubleList with initial values: 100.0, 99.9, 99.0, 90.0" }
+    optionalFileList: { description: "Optional file list" }
+    optionalFlag: { description: "Optional flag, defaults to false." }
+    optionalInputFilesFromArgCollection: { description: "Optional input files from argument collection" }
+    optionalStringInputFromArgCollection: { description: "Optional string input from argument collection" }
+    optionalStringList: { description: "An optional list of strings" }
+    testPlugin: { description: "Undocumented option" }
+  }
 }
 
 task TestArgumentContainer {
@@ -163,9 +202,9 @@ task TestArgumentContainer {
     String bootdisksizegbRequirements
     Array[File] positionalArgs
     String requiredClpEnum
-    Array[File] requiredFileList
-    Array[File] companionDictionary
-    Array[File] companionIndex
+    Array[String] requiredFileList
+    Array[String] companionDictionary
+    Array[String] companionIndex
     Array[File] requiredInputFilesFromArgCollection
     String requiredStringInputFromArgCollection
     Array[String] requiredStringList
@@ -224,9 +263,48 @@ task TestArgumentContainer {
 
   output {
     # Task Outputs                                      
-    Array[File] TestArgumentContainer_requiredFileList = "${requiredFileList}"
-    Array[File] TestArgumentContainer_companionDictionary = "${companionDictionary}"
-    Array[File] TestArgumentContainer_companionIndex = "${companionIndex}"
+    Array[File] TestArgumentContainer_requiredFileList = requiredFileList
+    Array[File] TestArgumentContainer_companionDictionary = companionDictionary
+    Array[File] TestArgumentContainer_companionIndex = companionIndex
   }
- }
+
+  parameter_meta {
+    dockerImage: { description: "Docker image for this task" }
+    appLocation: { description: "Location of app to run for this task" }
+    memoryRequirements: { description: "Runtime memory requirements for this task" }
+    diskRequirements: { description: "Runtime disk requirements for this task" }
+    cpuRequirements: { description: "Runtime CPU count for this task" }
+    preemptibleRequirements: { description: "Runtime preemptible count for this task" }
+    bootdisksizegbRequirements: { description: "Runtime boot disk size for this task" }
+
+    # Positional Arguments
+    positionalArgs: { description: "Positional arguments, min = 2, max = 2" }
+
+    # Required Arguments
+    requiredClpEnum: { description: "Required Clp enum" }
+    requiredFileList: { description: "Required file list" }
+    companionDictionary: { description: "Companion resource for requiredFileList" }
+    companionIndex: { description: "Companion resource for requiredFileList" }
+    requiredInputFilesFromArgCollection: { description: "Required input files from argument collection" }
+    requiredStringInputFromArgCollection: { description: "Required string input from argument collection" }
+    requiredStringList: { description: "A required list of strings" }
+    usesFieldNameForArgName: { description: "Use field name if no name in annotation." }
+
+    # Optional Tool Arguments
+    enumSetLong: { description: "Some set thing." }
+    fullAnonymousArgName: { description: "Test anonymous class arg" }
+    mutexSourceField: { description: "Undocumented option" }
+    mutexTargetField1: { description: "SAM/BAM/CRAM file(s) with alignment data from the first read of a pair." }
+    mutexTargetField2: { description: "SAM/BAM file(s) with alignment data from the second read of a pair." }
+    optionalClpEnum: { description: "Optional Clp enum" }
+    optionalDouble: { description: "Optionals double with initial value 2.15" }
+    optionalDoubleList: { description: "optionalDoubleList with initial values: 100.0, 99.9, 99.0, 90.0" }
+    optionalFileList: { description: "Optional file list" }
+    optionalFlag: { description: "Optional flag, defaults to false." }
+    optionalInputFilesFromArgCollection: { description: "Optional input files from argument collection" }
+    optionalStringInputFromArgCollection: { description: "Optional string input from argument collection" }
+    optionalStringList: { description: "An optional list of strings" }
+    testPlugin: { description: "Undocumented option" }
+  }
+}
 

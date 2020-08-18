@@ -3,12 +3,13 @@ package org.broadinstitute.barclay.help;
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.broadinstitute.barclay.argparser.*;
-import org.broadinstitute.barclay.argparser.RuntimeProperties;
+import org.broadinstitute.barclay.argparser.WorkflowProperties;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * The WDL work unit handler. Its main task is to convert the types for all arguments for a given work
@@ -17,58 +18,34 @@ import java.util.*;
 public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
     private static final String GATK_FREEMARKER_TEMPLATE_NAME = "wdlToolTemplate.wdl.ftl";
 
-    private static final String LONG_OPTION_PREFIX = "--";
-
-    // keep track of tool outputs (Map<argName, argType>)
-    private Map<String, String> runtimeOutputs = new HashMap<>();
-
-    // keep track of companion files (Map<argName, List<companionNames>) for a single argument
-    private Map<String, List<String>> companionFiles = new HashMap<>();
-
-    /**
-     * Name of the top level freemarker map entry for runtime properties.
-     *
-     * Note that the property names used in this map will appear as workflow and task argument names in the
-     * generated WDL, and should therefore not collide with any WDL reserved words.
-     */
-    public static final String RUNTIME_PROPERTIES = "runtimeProperties";
-    /**
-     * runtime memory property (stored in "runtimeProperties", used to initialize arg value in JSON)
-     */
-    public static final String RUNTIME_PROPERTY_MEMORY = "memoryRequirements";
-    /**
-     * runtime disks property (stored in "runtimeProperties", used to initialize arg value in JSON)
-     */
-    public static final String RUNTIME_PROPERTY_DISKS = "diskRequirements";
-    /**
-     * cpu property
-     */
-    public static final String RUNTIME_PROPERTY_CPU = "cpuRequirements";
-    /**
-     * bootDiskSizeGb property
-     */
-    public static final String RUNTIME_PROPERTY_BOOT_DISK_SIZE_GB = "bootdisksizegbRequirements";
-
-    /**
-     * preemptible property
-     */
-    public static final String RUNTIME_PROPERTY_PREEMPTIBLE = "preemptibleRequirements";
-    /**
-     * name of the top level freemarker map entry for runtime outputs
-     */
-
-    public static final String RUNTIME_OUTPUTS = "runtimeOutputs";
-    /**
-     * name of the top level freemarker map entry for companion resources
-     */
-    public static final String COMPANION_RESOURCES = "companionResources";
-
     /**
      * the name used in the freemarker template as an argument placeholder for positional args; this constant
      * must be kept in sync with the corresponding one used in the template
      */
-    public static final String POSITIONAL_ARGS = "positionalArgs";
+    public static final String POSITIONAL_ARGS = CommandLineArgumentParser.LONG_OPTION_PREFIX + "positionalArgs";
 
+    // keep track of tool outputs (Map<argName, argType>)
+    protected final Map<String, String> runtimeOutputs = new LinkedHashMap<>();
+
+    // requiredOutputs is a subset of runtimeOutputs; the data is somewhat redundant with runtimeOutputs but
+    // simplifies access from within the template
+    protected final Map<String, String> requiredOutputs = new LinkedHashMap<>();
+
+    // keep track of required companion files (Map<argName, List<Map<companionName, attributes>>>) for
+    // arguments for this work unit
+    protected final Map<String, List<Map<String, String>>> requiredCompanionFiles = new HashMap<>();
+
+    // keep track of optional companion files (Map<argName, List<Map<companionName, attributes>>>) for
+    // arguments for this work unit
+    protected final Map<String, List<Map<String, String>>> optionalCompanionFiles = new HashMap<>();
+
+    // Set of inputs that should appear in the param_meta section with localization optional set to true
+    protected final Set<String> localizationOptional = new LinkedHashSet<>();
+
+    /**
+     * Create the WDL work unit handler for a single work unit.
+     * @param doclet the controlling doclet for this work unit
+     */
     public WDLWorkUnitHandler(final HelpDoclet doclet) {
         super(doclet);
     }
@@ -86,39 +63,13 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
     protected void addCommandLineArgumentBindings(final DocWorkUnit currentWorkUnit, final CommandLineArgumentParser clp) {
         super.addCommandLineArgumentBindings(currentWorkUnit, clp);
 
-        // add the property used by the WDL freemarker template to emit workflow outputs
-        final Map<String, String> runtimeOutputsForFreemarker = new HashMap<>();
-        runtimeOutputsForFreemarker.putAll(runtimeOutputs);
-        currentWorkUnit.getRootMap().put(RUNTIME_OUTPUTS, runtimeOutputsForFreemarker);
-        runtimeOutputs.clear();
-
-        // synthesize arguments for the companion resources
-        @SuppressWarnings("unchecked")
-        final Map<String, List<Map<String, Object>>> argMap =
-                (Map<String, List<Map<String, Object>>>) currentWorkUnit.getRootMap().get("arguments");
-        final List<Map<String, Object>> allArgsMap = argMap.get("all");
-        // <arg, List<companions>>
-        final Map<String, List<Map<String, Object>>> argCompanionResourceArgMaps = new HashMap<>();
-        allArgsMap.forEach(m -> {
-            final String argName = (String) m.get("name");
-            final Map<String, Object> argPropertiesMap = m;
-            final List<Map<String, Object>> argCompanions = new ArrayList<>();
-            if (companionFiles.containsKey(argName)) {
-                for (final String companion : companionFiles.get(argName)) {
-                    // the companion files retain all properties of the original arg, except for name and synonyms
-                    final Map<String, Object> companionMap = new HashMap<>();
-                    companionMap.putAll(argPropertiesMap);
-                    companionMap.put("name", companion);
-                    companionMap.put("synonyms", "");
-                    companionMap.put("summary", "Companion resource for: " + companionMap.get("summary"));
-                    argCompanions.add(companionMap);
-                }
-                argCompanionResourceArgMaps.put(argName, argCompanions);
-            }
-        });
-
-        // add the property used by the WDL freemarker template for companion resources
-        currentWorkUnit.getRootMap().put(COMPANION_RESOURCES, argCompanionResourceArgMaps);
+        // add the properties required by the WDL template for workflow outputs, required outputs and companions
+        // and localization optional
+        currentWorkUnit.getRootMap().put(TemplateProperties.WDL_RUNTIME_OUTPUTS, runtimeOutputs);
+        currentWorkUnit.getRootMap().put(TemplateProperties.WDL_REQUIRED_OUTPUTS, requiredOutputs);
+        currentWorkUnit.getRootMap().put(TemplateProperties.WDL_REQUIRED_COMPANIONS, requiredCompanionFiles);
+        currentWorkUnit.getRootMap().put(TemplateProperties.WDL_OPTIONAL_COMPANIONS, optionalCompanionFiles);
+        currentWorkUnit.getRootMap().put(TemplateProperties.WDL_LOCALIZATION_OPTIONAL, localizationOptional);
     }
 
     /**
@@ -132,8 +83,7 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
             final Map<String, List<Map<String, Object>>> args,
             final NamedArgumentDefinition argDef)
     {
-        // for WDL gen, we don't want the special args such as --help or --version to show up in the
-        // WDL or JSON input files
+        // suppress special args such as --help and --version from showing up in the WDL
         if (!argDef.getUnderlyingField().getDeclaringClass().equals(SpecialArgumentsCollection.class)) {
             super.processNamedArgument(currentWorkUnit, args, argDef);
         }
@@ -146,35 +96,17 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
             final String fieldCommentText) {
         final String argCategory = super.processNamedArgument(argBindings, argDef, fieldCommentText);
 
-        final WorkflowResource workflowResource = getWorkflowResource(argDef);
-
-        // replace the type of the argument (starting with the value stored in the freemarker map, which is the
-        // type chosen by the doc system) with an appropriate wdl type (don't pass WorkflowResource
-        // in this call since we want this returned type to be the raw type, not the transformed "input"
-        // type for output args)
-        final String wdlType = getWDLTypeForArgument(argDef, null, (String) argBindings.get("type"));
-
-        // Now generate the transformed "input" type for args that are output workflow resources and have a WDL type
-        // of "File". These need to use String as the *input* type even though they actually represent a File type,
-        // to prevent the workflow manager from attempting to localize them on input, when they don't exist yet. So
-        // create a separate property in the property map for use by the template in input definitions.
-        final String wdlInputType = getWDLTypeForArgument(argDef, workflowResource, (String) argBindings.get("type"));
-        argBindings.put("type", wdlType);
-        argBindings.put("wdlinputtype", wdlInputType);
-
         // Store the actual (unmodified) arg name that the app will recognize, for use in the task command block.
-        final String actualArgName = (String) argBindings.get("name");
-        argBindings.put("actualArgName", actualArgName);
-        // Now generate a WDL-friendly name (if necessary "input" and "output" are reserved words in WDL and
+        // Now generate a WDL-friendly name if necessary (if "input" and "output" are reserved words in WDL and
         // can't be used for arg names; also WDL doesn't accept embedded "-" for variable names, so use a non-kebab
         // name with an underscore) for use as the argument name in the rest of the WDL source.
-        String wdlName = LONG_OPTION_PREFIX + transformJavaNameToWDLName(actualArgName.substring(2));
-        argBindings.put("name", wdlName);
+        final String actualArgName = (String) argBindings.get(TemplateProperties.ARGUMENT_NAME);
+        argBindings.put(TemplateProperties.WDL_ARGUMENT_ACTUAL_NAME, actualArgName);
+        String wdlName = CommandLineArgumentParser.LONG_OPTION_PREFIX + transformJavaNameToWDLName(actualArgName.substring(2));
+        argBindings.put(TemplateProperties.ARGUMENT_NAME, wdlName);
 
-        // finally, keep track of the outputs
-        if (workflowResource != null) {
-            updateWorkflowOutputs(workflowResource, wdlName, wdlType);
-        }
+        propagateArgument(wdlName, argDef, argBindings);
+
         return argCategory;
     }
 
@@ -183,71 +115,123 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
             final CommandLineArgumentParser clp,
             final Map<String, List<Map<String, Object>>> argBindings) {
         super.processPositionalArguments(clp, argBindings);
-
         final PositionalArgumentDefinition argDef = clp.getPositionalArgumentDefinition();
         if (argDef != null) {
-            final WorkflowResource workflowResource = getWorkflowResource(argDef);
+            final Map<String, Object> positionalArgBindings = argBindings.get(TemplateProperties.ARGUMENTS_POSITIONAL).get(0);
+            propagateArgument(POSITIONAL_ARGS, argDef, positionalArgBindings);
+        }
+    }
 
-            // replace the java type of the argument with the appropriate wdl type
-            final String wdlType = getWDLTypeForArgument(argDef, null, (String) argBindings.get("positional").get(0).get("type"));
+    @SuppressWarnings("unchecked")
+    protected void propagateArgument(
+            final String wdlArgName,
+            final ArgumentDefinition argDef,
+            final Map<String, Object> argBindings) {
+        final WorkflowInput workFlowInput = argDef.getUnderlyingField().getAnnotation(WorkflowInput.class);
+        final WorkflowOutput workFlowOutput = argDef.getUnderlyingField().getAnnotation(WorkflowOutput.class);
 
-            // for args that are output workflow resources and have a WDL type of File, we need to use a String as
-            // the *input* type to prevent the workflow manager from attempting to localize them on input, so
-            // create a separate property in the property map for use by the template in input definitions
-            final String wdlInputType = getWDLTypeForArgument(argDef, workflowResource, (String) argBindings.get("positional").get(0).get("type"));
-            argBindings.get("positional").get(0).put("type", wdlType);
-            argBindings.get("positional").get(0).put("wdlinputtype", wdlInputType);
+        // replace the java type of the argument with the appropriate wdl type, and set the WDL input type
+        final String preProcessedType = (String) argBindings.get(TemplateProperties.ARGUMENT_TYPE);
+        final String wdlType = getWDLTypeForArgument(argDef, null, preProcessedType);
+        final String wdlInputType = getWDLTypeForArgument(argDef, workFlowOutput, preProcessedType);
 
-            // finally, keep track of the outputs
-            if (workflowResource != null) {
-                updateWorkflowOutputs(workflowResource, POSITIONAL_ARGS, wdlType);
+        argBindings.put(TemplateProperties.ARGUMENT_TYPE, wdlType);
+        argBindings.put(TemplateProperties.WDL_ARGUMENT_INPUT_TYPE, wdlInputType);
+        argBindings.put(TemplateProperties.ARGUMENT_DEFAULT_VALUE, defaultValueAsJSON(
+                wdlType,
+                (String) argBindings.get(TemplateProperties.ARGUMENT_DEFAULT_VALUE)));
+
+        // finally, keep track of the outputs and companions
+        final boolean argIsRequired = wdlArgName.equals(POSITIONAL_ARGS) || ((argBindings.get(TemplateProperties.ARGUMENT_REQUIRED)).equals("yes"));
+        propagateWorkflowAttributes(
+                workFlowInput,
+                workFlowOutput,
+                wdlArgName,
+                wdlType,
+                !argIsRequired);
+    }
+
+    /**
+     * Update the list of workflow output resources, and update companion files.
+     *
+     * @param workflowInput the {@link WorkflowInput} to use when updating runtime outputs, may be null
+     * @param workflowOutput the {@link WorkflowOutput} to use when updating runtime outputs, may be null
+     * @param targetArgWDLName the wdlname for the target argument for this workflow resource
+     * @param targetArgWDLType the wdltype for the target argument for this workflow resource
+     * @param targetArgIsOptional true if the target argument being considered is optional, otherwise false
+     */
+    protected void propagateWorkflowAttributes(
+            final WorkflowInput workflowInput,
+            final WorkflowOutput workflowOutput,
+            final String targetArgWDLName,
+            final String targetArgWDLType,
+            final boolean targetArgIsOptional) {
+        final List<Map<String, String>> requiredCompanions = new ArrayList<>();
+        final List<Map<String, String>> optionalCompanions = new ArrayList<>();
+
+        if (workflowInput != null) {
+            if (workflowInput.localizationOptional() == true) {
+                localizationOptional.add(targetArgWDLName);
+            }
+            for (final String requiredInputCompanion : workflowInput.requiredCompanions()) {
+                final Map<String, String> requiredInputCompanionMap = createCompanionMapEntry(targetArgWDLName, requiredInputCompanion);
+                if (targetArgIsOptional) {
+                    // if the target is optional, then the companions also have to be optional, even when they're
+                    // annotated as required
+                    optionalCompanions.add(requiredInputCompanionMap);
+                } else {
+                    requiredCompanions.add(requiredInputCompanionMap);
+                }
+                if (workflowInput.localizationOptional() == true) {
+                    localizationOptional.add(requiredInputCompanionMap.get(TemplateProperties.ARGUMENT_NAME));
+                }
+            }
+
+            for (final String optionalInputCompanion : workflowInput.optionalCompanions()) {
+                final Map<String, String> companionMap = createCompanionMapEntry(targetArgWDLName, optionalInputCompanion);
+                optionalCompanions.add(companionMap);
+                if (workflowInput.localizationOptional() == true) {
+                    localizationOptional.add(companionMap.get(TemplateProperties.ARGUMENT_NAME));
+                }
             }
         }
+
+        if (workflowOutput != null) {
+            // add the target argument to the list of workflow outputs
+            runtimeOutputs.put(targetArgWDLName, targetArgWDLType);
+            if (!targetArgIsOptional) {
+                requiredOutputs.put(targetArgWDLName, targetArgWDLType);
+            }
+
+            for (final String requiredOutputCompanion : workflowOutput.requiredCompanions()) {
+                final Map<String, String> companionMap = createCompanionMapEntry(targetArgWDLName, requiredOutputCompanion);
+                runtimeOutputs.put(companionMap.get(TemplateProperties.ARGUMENT_NAME), targetArgWDLType);
+                if (targetArgIsOptional) {
+                    // if the target is optional, then the companions also have to be optional, even when they're
+                    // annotated as required
+                    optionalCompanions.add(companionMap);
+                } else {
+                    requiredCompanions.add(companionMap);
+                    requiredOutputs.put(companionMap.get(TemplateProperties.ARGUMENT_NAME), targetArgWDLType);
+                }
+            }
+            for (final String optionalOutputCompanion : workflowOutput.optionalCompanions()) {
+                final Map<String, String> companionMap = createCompanionMapEntry(targetArgWDLName, optionalOutputCompanion);
+                runtimeOutputs.put(companionMap.get(TemplateProperties.ARGUMENT_NAME), targetArgWDLType);
+                optionalCompanions.add(companionMap);
+            }
+        }
+        requiredCompanionFiles.put(targetArgWDLName, requiredCompanions);
+        optionalCompanionFiles.put(targetArgWDLName, optionalCompanions);
     }
 
-    /**
-     * Retrieve and validate the {@link WorkflowResource} for an {@link ArgumentDefinition}.
-     * @param argDef {@link ArgumentDefinition} from which to retrieve the {@link WorkflowResource}
-     * @return the {@link WorkflowResource} or null if no {@link WorkflowResource} is present on this arg field
-     */
-    final protected WorkflowResource getWorkflowResource(final ArgumentDefinition argDef) {
-        final WorkflowResource workFlowResource = argDef.getUnderlyingField().getAnnotation(WorkflowResource.class);
-        if (workFlowResource != null && workFlowResource.input() == false && workFlowResource.output() == false) {
-            throw new IllegalArgumentException(String.format(
-                    "WorkFlowResource for %s in %s must be marked as either an INPUT or an OUTPUT",
-                    argDef.getUnderlyingField(),
-                    argDef.getContainingObject().getClass()
-            ));
-        }
-        return workFlowResource;
-    }
-
-    /**
-     * Update the list of outputs workflow resources and update the corresponding companion files.
-     *
-     * @param workflowResource the {@link WorkflowResource} to use when updating runtime outputs, may not be null
-     * @param wdlName the wdlname for this workflow resource
-     * @param wdlType the wdltype for this workflow resource
-     */
-    protected void updateWorkflowOutputs(
-            final WorkflowResource workflowResource,
-            final String wdlName,
-            final String wdlType) {
-        if (workflowResource.output()) {
-            runtimeOutputs.put(wdlName, wdlType);
-        }
-        for (final String companion : workflowResource.companionResources()) {
-            final String companionArgOption = LONG_OPTION_PREFIX + companion;
-            companionFiles.merge(
-                    wdlName,
-                    Collections.singletonList(companionArgOption),
-                    (oldList, newList) -> {
-                        final List<String> mergedList = new ArrayList<>();
-                        mergedList.addAll(oldList);
-                        mergedList.add(companionArgOption);
-                        return mergedList;
-                    });
-        }
+    protected Map<String, String> createCompanionMapEntry(final String targetArgName, final String companionName) {
+        final Map<String, String> companionMap = new HashMap<>();
+        final String companionArgOption = CommandLineArgumentParser.LONG_OPTION_PREFIX + companionName;
+        companionMap.put(TemplateProperties.ARGUMENT_NAME, companionArgOption);
+        companionMap.put(TemplateProperties.ARGUMENT_SUMMARY,
+                String.format("Companion resource for %s", targetArgName.substring(2)));
+        return companionMap;
     }
 
     /**
@@ -256,13 +240,13 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
      * determine the resulting WDL type.
      *
      * @param argDef the Barclay NamedArgumentDefinition for this arg
-     * @param workflowResource the WorkflowResource for this argDef, may be null
+     * @param workflowOutput the WorkflowOutput for this argDef, may be null
      * @param argDocType the display type as chosen by the Barclay doc system for this arg. this is what
      * @return the WDL type to be used for this argument
      */
     protected String getWDLTypeForArgument(
             final ArgumentDefinition argDef,
-            final WorkflowResource workflowResource,
+            final WorkflowOutput workflowOutput,
             final String argDocType
     ) {
         final Field argField = argDef.getUnderlyingField();
@@ -324,10 +308,10 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
                         }
 
                         nestedTypeClass = Class.forName(pType2.getRawType().getTypeName());
-                        wdlType = convertJavaTypeToWDLType(workflowResource, nestedTypeClass, wdlType, argField.getDeclaringClass().toString());
+                        wdlType = convertJavaTypeToWDLType(workflowOutput, nestedTypeClass, wdlType, argField.getDeclaringClass().toString());
                     } else {
                         nestedTypeClass = Class.forName(genericTypes[0].getTypeName());
-                        wdlType = convertJavaTypeToWDLType(workflowResource, nestedTypeClass, wdlType, argField.getDeclaringClass().toString());
+                        wdlType = convertJavaTypeToWDLType(workflowOutput, nestedTypeClass, wdlType, argField.getDeclaringClass().toString());
                     }
                     return wdlType;
                 } catch (ClassNotFoundException e) {
@@ -345,29 +329,37 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
             }
         }
 
-        return convertJavaTypeToWDLType(workflowResource, argumentClass, wdlType, argField.getDeclaringClass().toString());
+        return convertJavaTypeToWDLType(workflowOutput, argumentClass, wdlType, argField.getDeclaringClass().toString());
     }
 
     /**
      * Given a Java class representing the underlying field  type of an argument, and a human readable doc type,
      * convert the docType to a WDL type.
      *
-     * @param workflowResource the WorkflowResource associated with the instance of argumentClass, may be null
+     * @param workflowOutput the WorkflowOutput associated with the instance of argumentClass, may be null
      * @param argumentClass the Class for the underlying field of the argument being converted
      * @param docType a string representing the human readable type assigned by the Barclay doc system
      * @param sourceContext a String describing the context for this argument, used for error reporting
      * @return the docType string transformed to the corresponding WDL type
      */
     protected String convertJavaTypeToWDLType(
-            final WorkflowResource workflowResource,
+            final WorkflowOutput workflowOutput,
             final Class<?> argumentClass,
             final String docType, final String sourceContext) {
         final String convertedWDLType;
         final Pair<String, String> typeConversionPair = transformToWDLType(argumentClass);
+
+        // If this type is for an arg that is a workflow resource that is a workflow output, and its type
+        // is file, we need to use String as the input type for this arg to prevent the workflow
+        // manager from attempting to localize the (non-existent) output file when localizing inputs
         if (typeConversionPair != null) {
-            convertedWDLType = docType.replace(typeConversionPair.getKey(), typeConversionPair.getValue());
+            convertedWDLType = docType.replace(
+                    typeConversionPair.getKey(),
+                    transformWorkflowOutputTypeToInputType(workflowOutput, typeConversionPair.getValue()));
         } else if (argumentClass.isEnum()) {
-             convertedWDLType = docType.replace(argumentClass.getSimpleName(), "String");
+             convertedWDLType = docType.replace(
+                     argumentClass.getSimpleName(),
+                     "String");
         } else {
             throw new RuntimeException(
                     String.format(
@@ -376,25 +368,22 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
                             argumentClass,
                             sourceContext));
         }
-        // finally, if this type is for an arg that is a WorkflowResource that is a workflow output, and its type
-        // is file, we need to use a different type (String) as the input type for this arg to prevent the workflow
-        // manager from attempting to localize the (non-existent) output file when localizing inputs
-        return transformWorkflowResourceOutputTypeToInputType(workflowResource, convertedWDLType);
+        return convertedWDLType;
     }
 
     /**
-     * If this type is for an arg that is a WorkflowResource that is a workflow output, and its type is file,
+     * If this type is for an arg that is a workflow resource that is a workflow output, and its type is File,
      * we need to use a different type (String) as the input type for this arg to prevent the workflow manager
-     * from attempting to localize the (non-existent) output file when localizing inputs. Transform
+     * from attempting to localize the (non-existent) output file when localizing inputs.
      *
-     * @param workflowResource WorkflowResource for this type instance, if any (may be null)
+     * @param workflowOutput WorkflowOutput for this type instance, if any (may be null)
      * @param convertedWDLType the wdl type for this type instance
-     * @return
+     * @return the type to use for the workflow/task input for this argument
      */
-    protected String transformWorkflowResourceOutputTypeToInputType(
-            final WorkflowResource workflowResource,
+    protected String transformWorkflowOutputTypeToInputType(
+            final WorkflowOutput workflowOutput,
             final String convertedWDLType) {
-        return workflowResource != null && workflowResource.output() && convertedWDLType.equals("File") ?
+        return workflowOutput != null && convertedWDLType.equals("File") ?
                 "String" :
                 convertedWDLType;
     }
@@ -409,6 +398,50 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
      */
     protected Pair<String, String> transformToWDLType(final Class<?> argumentClass) {
         return WDLTransforms.transformToWDLType(argumentClass);
+    }
+
+    /**
+     * Return the default value suitably formatted as a JSON value. This primarily involves quoting strings and enum
+     * values, including arrays thereof.
+     *
+     * @param wdlType a wdl type
+     * @param defaultWDLValue the default wdl value for this type
+     * @return the default value formatted as a JSON value
+     */
+    protected String defaultValueAsJSON(
+            final String wdlType,
+            final String defaultWDLValue) {
+
+        if (defaultWDLValue.equals("null") || defaultWDLValue.equals("\"\"")) {
+            return defaultWDLValue;
+        } else if (defaultWDLValue.equals("[]")) {
+            return "null";
+        } else if (defaultWDLValue.startsWith("[") && wdlType.equals("Array[String]")) {
+            // the array is already populated with a value (since we didn't execute the "[]" branch above),
+            // so quote the individual values
+            return quoteWDLArrayValues(defaultWDLValue);
+        } else if (wdlType.equals("String")) {
+            return "\"" + defaultWDLValue + "\"";
+        } else if (wdlType.equals("Float")) {
+            if (defaultWDLValue.equalsIgnoreCase("Infinity") || defaultWDLValue.equalsIgnoreCase("Nan")) {
+                // JSON does not recognize "Infinity" or "Nan" as valid float values (!), so we
+                // need to treat them as String values
+                return "\"" + defaultWDLValue + "\"";
+            }
+        }
+        return defaultWDLValue;
+    }
+
+    /**
+     * Parse the wdlArrayString and replace the elements with quoted elements
+     * @param wdlArray
+     * @return a wdlArrayString with each element quoted
+     */
+    protected String quoteWDLArrayValues(final String wdlArray) {
+        final String wdlValues = wdlArray.substring(1, wdlArray.length() - 1);
+        final String[] wdlValueArray = wdlValues.split(",");
+        return String.format("[%s]",
+                Arrays.stream(wdlValueArray).map(s -> String.format("\"%s\"", s.trim())).collect(Collectors.joining(",")));
     }
 
     /**
@@ -443,15 +476,15 @@ public class WDLWorkUnitHandler extends DefaultDocWorkUnitHandler {
     protected void addCustomBindings(final DocWorkUnit currentWorkUnit) {
         super.addCustomBindings(currentWorkUnit);
 
-        final RuntimeProperties rtProperties = currentWorkUnit.getClazz().getAnnotation(RuntimeProperties.class);
+        final WorkflowProperties rtProperties = currentWorkUnit.getClazz().getAnnotation(WorkflowProperties.class);
         if (rtProperties != null) {
-            final Map<String, String> runtimePropertiesMap = new HashMap<>();
-            runtimePropertiesMap.put(RUNTIME_PROPERTY_MEMORY, rtProperties.memory());
-            runtimePropertiesMap.put(RUNTIME_PROPERTY_DISKS, rtProperties.disks());
-            runtimePropertiesMap.put(RUNTIME_PROPERTY_CPU, Integer.toString(rtProperties.cpu()));
-            runtimePropertiesMap.put(RUNTIME_PROPERTY_PREEMPTIBLE, Integer.toString(rtProperties.preEmptible()));
-            runtimePropertiesMap.put(RUNTIME_PROPERTY_BOOT_DISK_SIZE_GB, Integer.toString(rtProperties.bootDiskSizeGb()));
-            currentWorkUnit.setProperty(RUNTIME_PROPERTIES, runtimePropertiesMap);
+            final Map<String, String> workflowPropertiesMap = new HashMap<>();
+            workflowPropertiesMap.put(TemplateProperties.WDL_WORKFLOW_MEMORY, rtProperties.memory());
+            workflowPropertiesMap.put(TemplateProperties.WDL_WORKFLOW_DISKS, rtProperties.disks());
+            workflowPropertiesMap.put(TemplateProperties.WDL_WORKFLOW_CPU, Integer.toString(rtProperties.cpu()));
+            workflowPropertiesMap.put(TemplateProperties.WDL_WORKFLOW_PREEMPTIBLE, Integer.toString(rtProperties.preEmptible()));
+            workflowPropertiesMap.put(TemplateProperties.WDL_WORKFLOW_BOOT_DISK_SIZE_GB, Integer.toString(rtProperties.bootDiskSizeGb()));
+            currentWorkUnit.setProperty(TemplateProperties.WDL_WORKFLOW_PROPERTIES, workflowPropertiesMap);
         }
     }
 

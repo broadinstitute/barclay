@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RuntimeProperties {
+public @interface WorkflowProperties {
 
     // NOTE: When a new attribute is added here, code should also be added to WDLWorkUnitHandler.addCustomBindings
     // to propagate the value to the freemarker map, and the corresponding expansion of the value should be
@@ -26,7 +26,7 @@ public @interface RuntimeProperties {
     /**
      * @return number of CPUs to use for this tool
      */
-    int cpu() default 1;
+    int cpu() default 2;
 
     /**
      * @return maximum number of times the workflow execution engine should request a preemptible machine for this
