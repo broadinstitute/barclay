@@ -278,7 +278,9 @@ public abstract class ArgumentDefinition {
      */
     public static File fileFromFileSchemeURI(final String uri) {
         if (uri == null) throw new IllegalArgumentException("File URI cannot be null");
-        return new File(URI.create(uri));
+        // compensate for applications that don't correctly endode # and ? which may never legally appear in a URI
+        String tolerantUri = uri.replace("#", "%23").replace("?", "%3F");
+        return new File(URI.create(tolerantUri));
     }
 
     /**

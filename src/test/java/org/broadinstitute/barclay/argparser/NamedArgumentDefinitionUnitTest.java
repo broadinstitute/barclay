@@ -183,7 +183,20 @@ public class NamedArgumentDefinitionUnitTest {
         Assert.assertEquals(f, new File(decoded));
         Assert.assertEquals(f2, new File(decoded2));
     }
-    
+
+    @Test
+    public void testUriTolerance(){
+        //test tolerance of illegal unencoded fragment (#) and query (?) uri characters
+        final String fragment = "file:///foo/baa#baz";
+        final String query = "file:///foo/baa?baz";
+        final File f1 = new File("/foo/baa#baz");
+        final File f2 = new File("/foo/baa?baz");
+
+        Assert.assertEquals(ArgumentDefinition.fileFromFileSchemeURI(fragment), f1);
+        Assert.assertEquals(ArgumentDefinition.fileFromFileSchemeURI(query), f2);
+
+    }
+
     @Test
     public void testConstructFromStringForFiles(){
         String uri = "file:///some/file";
