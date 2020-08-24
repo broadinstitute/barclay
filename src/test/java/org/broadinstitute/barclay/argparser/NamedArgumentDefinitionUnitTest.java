@@ -170,6 +170,19 @@ public class NamedArgumentDefinitionUnitTest {
         Assert.assertThrows(IllegalArgumentException.class, () -> ArgumentDefinition.fileFromFileSchemeURI(malformed));
         Assert.assertThrows(IllegalArgumentException.class, () -> ArgumentDefinition.fileFromFileSchemeURI(null));
     }
+
+    @Test
+    public void testFileFromEncodedUri(){
+        final String encoded = "file:///some/file%23foo";
+        final String decoded = "/some/file#foo";
+        final String encoded2 = "file:///some/file%3Ffoo";
+        final String decoded2 = "/some/file?foo";
+        final File f = ArgumentDefinition.fileFromFileSchemeURI(encoded);
+        final File f2 = ArgumentDefinition.fileFromFileSchemeURI(encoded2);
+
+        Assert.assertEquals(f, new File(decoded));
+        Assert.assertEquals(f2, new File(decoded2));
+    }
     
     @Test
     public void testConstructFromStringForFiles(){
