@@ -110,6 +110,13 @@
 				<th colspan="4" id="row-divider">Required Arguments</th>
 			</tr>
 				<tr>
+					<td><a href="#--enumCollection">--enumCollection</a><br />
+					</td>
+					<!--<td>List[TestEnum]</td> -->
+					<td>[]</td>
+					<td>Undocumented option</td>
+				</tr>
+				<tr>
 					<td><a href="#--requiredClpEnum">--requiredClpEnum</a><br />
 					</td>
 					<!--<td>TestEnum</td> -->
@@ -331,6 +338,28 @@
 				&nbsp;<span class="label label-warning">∞ ] ]</span>
 		</p>
 		<hr style="border-bottom: dotted 1px #C0C0C0;" />
+		<h3><a name="--enumCollection">--enumCollection </a>
+			
+		</h3>
+		<p class="args">
+			<b>Undocumented option</b><br />
+			
+		</p>
+			<p>
+				The --enumCollection argument is an enumerated type (List[TestEnum]), which can accept the following values:
+			<dl class="enum">
+					<dt class="enum">ENUM_VALUE_1</dt>
+					<dd class="enum">This is enum value 1.</dd>
+					<dt class="enum">ENUM_VALUE_2</dt>
+					<dd class="enum">This is enum value 2.</dd>
+			</dl>
+			</p>
+		<p>
+				<span class="badge badge-important">R</span>
+			<span class="label label-info ">List[TestEnum]</span>
+				&nbsp;<span class="label">[]</span>
+		</p>
+		<hr style="border-bottom: dotted 1px #C0C0C0;" />
 		<h3><a name="--enumSetLong">--enumSetLong </a>
 			 / <small>-ES</small>
 		</h3>
@@ -338,6 +367,15 @@
 			<b>Some set thing.</b><br />
 			
 		</p>
+			<p>
+				The --enumSetLong argument is an enumerated type (EnumSet[TestEnum]), which can accept the following values:
+			<dl class="enum">
+					<dt class="enum">ENUM_VALUE_1</dt>
+					<dd class="enum">This is enum value 1.</dd>
+					<dt class="enum">ENUM_VALUE_2</dt>
+					<dd class="enum">This is enum value 2.</dd>
+			</dl>
+			</p>
 		<p>
 			<span class="label label-info ">EnumSet[TestEnum]</span>
 				&nbsp;<span class="label">[ENUM_VALUE_1]</span>
@@ -402,12 +440,12 @@
 			
 		</p>
 			<p>
-				The --optionalClpEnum argument is an enumerated type (TestEnum), which can have one of the following values:
+				The --optionalClpEnum argument is a list of an enumerated type (TestEnum), which can accept one or more of the following values:
 			<dl class="enum">
 					<dt class="enum">ENUM_VALUE_1</dt>
-					<dd class="enum"></dd>
+					<dd class="enum">This is enum value 1.</dd>
 					<dt class="enum">ENUM_VALUE_2</dt>
-					<dd class="enum"></dd>
+					<dd class="enum">This is enum value 2.</dd>
 			</dl>
 			</p>
 		<p>
@@ -509,12 +547,12 @@
 			
 		</p>
 			<p>
-				The --requiredClpEnum argument is an enumerated type (TestEnum), which can have one of the following values:
+				The --requiredClpEnum argument is a list of an enumerated type (TestEnum), which can accept one or more of the following values:
 			<dl class="enum">
 					<dt class="enum">ENUM_VALUE_1</dt>
-					<dd class="enum"></dd>
+					<dd class="enum">This is enum value 1.</dd>
 					<dt class="enum">ENUM_VALUE_2</dt>
-					<dd class="enum"></dd>
+					<dd class="enum">This is enum value 2.</dd>
 			</dl>
 			</p>
 		<p>

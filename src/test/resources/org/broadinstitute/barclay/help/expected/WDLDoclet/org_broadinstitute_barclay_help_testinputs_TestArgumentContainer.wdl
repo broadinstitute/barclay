@@ -17,6 +17,7 @@ version 1.0
 #    positionalArgs                                     Positional arguments, min = 2, max = 2                      
 #
 #  Required Tool Arguments
+#    enumCollection                                     Undocumented option                                         
 #    requiredClpEnum                                    Required Clp enum                                           
 #    requiredFileList                                   Required file list                                          
 #    companionDictionary                                Companion resource for requiredFileList                     
@@ -65,6 +66,7 @@ workflow TestArgumentContainer {
     Array[File] positionalArgs
 
     # Required Arguments
+    Array[String] enumCollection
     String requiredClpEnum
     Array[String] requiredFileList
     Array[String] companionDictionary
@@ -116,6 +118,7 @@ workflow TestArgumentContainer {
         positionalArgs                                     = positionalArgs,
 
         # Required Arguments
+        enumCollection                                     = enumCollection,
         requiredClpEnum                                    = requiredClpEnum,
         requiredFileList                                   = requiredFileList,
         companionDictionary                                = companionDictionary,
@@ -201,6 +204,7 @@ task TestArgumentContainer {
     String preemptibleRequirements
     String bootdisksizegbRequirements
     Array[File] positionalArgs
+    Array[String] enumCollection
     String requiredClpEnum
     Array[String] requiredFileList
     Array[String] companionDictionary
@@ -229,6 +233,7 @@ task TestArgumentContainer {
   command <<<
     ~{appLocation} TestArgumentContainer \
     ~{sep=' ' positionalArgs} \
+    --enumCollection ~{sep=' --enumCollection ' enumCollection} \
     --requiredClpEnum ~{sep=' --requiredClpEnum ' requiredClpEnum} \
     --requiredFileList ~{sep=' --requiredFileList ' requiredFileList} \
     --requiredInputFilesFromArgCollection ~{sep=' --requiredInputFilesFromArgCollection ' requiredInputFilesFromArgCollection} \

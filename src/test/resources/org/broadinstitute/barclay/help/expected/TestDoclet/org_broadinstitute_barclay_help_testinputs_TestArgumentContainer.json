@@ -47,6 +47,30 @@
       "options": []
     },
     {
+      "summary": "Undocumented option",
+      "name": "--enumCollection",
+      "synonyms": "NA",
+      "type": "List[TestEnum]",
+      "required": "yes",
+      "fulltext": "",
+      "defaultValue": "[]",
+      "minValue": "NA",
+      "maxValue": "NA",
+      "minRecValue": "NA",
+      "maxRecValue": "NA",
+      "kind": "required",
+      "options": [
+        {
+          "summary": "This is enum value 1.",
+          "name": "ENUM_VALUE_1"
+        },
+        {
+          "summary": "This is enum value 2.",
+          "name": "ENUM_VALUE_2"
+        }
+      ]
+    },
+    {
       "summary": "Some set thing.",
       "name": "--enumSetLong",
       "synonyms": "-ES",
@@ -59,7 +83,16 @@
       "minRecValue": "NA",
       "maxRecValue": "NA",
       "kind": "optional",
-      "options": []
+      "options": [
+        {
+          "summary": "This is enum value 1.",
+          "name": "ENUM_VALUE_1"
+        },
+        {
+          "summary": "This is enum value 2.",
+          "name": "ENUM_VALUE_2"
+        }
+      ]
     },
     {
       "summary": "Test anonymous class arg",
@@ -136,11 +169,11 @@
       "kind": "optional",
       "options": [
         {
-          "summary": "",
+          "summary": "This is enum value 1.",
           "name": "ENUM_VALUE_1"
         },
         {
-          "summary": "",
+          "summary": "This is enum value 2.",
           "name": "ENUM_VALUE_2"
         }
       ]
@@ -265,11 +298,11 @@
       "kind": "required",
       "options": [
         {
-          "summary": "",
+          "summary": "This is enum value 1.",
           "name": "ENUM_VALUE_1"
         },
         {
-          "summary": "",
+          "summary": "This is enum value 2.",
           "name": "ENUM_VALUE_2"
         }
       ]

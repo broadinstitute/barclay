@@ -9,6 +9,7 @@
 
   "TestArgumentContainer.positionalArgs":   "Array[File]",
 
+  "TestArgumentContainer.enumCollection":   "Array[String]",
   "TestArgumentContainer.requiredClpEnum":   "String",
   "TestArgumentContainer.companionDictionary": "Array[String]",
   "TestArgumentContainer.companionIndex": "Array[String]",
