@@ -166,6 +166,7 @@ workflow TestArgumentContainer {
     positionalArgs: { description: "Positional arguments, min = 2, max = 2" }
 
     # Required Arguments
+    enumCollection: { description: "Undocumented option" }
     requiredClpEnum: { description: "Required Clp enum" }
     requiredFileList: { description: "Required file list" }
     companionDictionary: { description: "Companion resource for requiredFileList" }
@@ -286,6 +287,7 @@ task TestArgumentContainer {
     positionalArgs: { description: "Positional arguments, min = 2, max = 2" }
 
     # Required Arguments
+    enumCollection: { description: "Undocumented option" }
     requiredClpEnum: { description: "Required Clp enum" }
     requiredFileList: { description: "Required file list" }
     companionDictionary: { description: "Companion resource for requiredFileList" }
