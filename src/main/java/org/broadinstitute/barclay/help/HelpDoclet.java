@@ -80,14 +80,14 @@ public class HelpDoclet {
     // Variables that are set on the command line when running javadoc
     //
     // ----------------------------------------------------------------------
-    protected static File settingsDir = DEFAULT_SETTINGS_DIR;
+    protected File settingsDir = DEFAULT_SETTINGS_DIR;
     protected boolean isSettingsDirSet = false;
-    protected static File destinationDir = DEFAULT_DESTINATION_DIR;
-    protected static String outputFileExtension = DEFAULT_OUTPUT_FILE_EXTENSION;
-    protected static String indexFileExtension = DEFAULT_OUTPUT_FILE_EXTENSION;
-    protected static String buildTimestamp = "[no timestamp available]";
-    protected static String absoluteVersion = "[no version available]";
-    protected static boolean showHiddenFeatures = false;
+    protected File destinationDir = DEFAULT_DESTINATION_DIR;
+    protected String outputFileExtension = DEFAULT_OUTPUT_FILE_EXTENSION;
+    protected String indexFileExtension = DEFAULT_OUTPUT_FILE_EXTENSION;
+    protected String buildTimestamp = "[no timestamp available]";
+    protected String absoluteVersion = "[no version available]";
+    protected boolean showHiddenFeatures = false;
     protected boolean useDefaultTemplates = false;
 
     // Variables to store data for Freemarker:
