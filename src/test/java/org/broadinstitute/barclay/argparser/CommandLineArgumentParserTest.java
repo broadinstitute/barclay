@@ -96,6 +96,32 @@ public final class CommandLineArgumentParserTest {
         public String OSCILLATION_FREQUENCY;
     }
 
+    @DataProvider(name="argUsageCases")
+    public Object[][] argUsageCases() {
+        return new Object[][]{
+                {
+                    new FrobnicateArguments(), Arrays.asList(
+                        "--FROBNICATION_FLAVOR <FrobnicationFlavor>",
+                        "--SHMIGGLE_TYPE <String>",
+                        "--arguments_file <File>",
+                        "--FROBNICATION_THRESHOLD,-T <Integer>",
+                        "--TRUTHINESS <Boolean>")
+                },
+                {
+                    new MixedCardinalityMutexArguments(), Arrays.asList(
+                        "--collection <String>",
+                        "--scalar <String>")
+                }
+        };
+    }
+
+    @Test(dataProvider = "argUsageCases")
+    public void testArgUsage(final Object argContainer, final List<String> expectedUsageStrings) {
+        final CommandLineArgumentParser clp = new CommandLineArgumentParser(argContainer);
+        final String usageString = clp.usage(true, false);
+        expectedUsageStrings.forEach(s -> Assert.assertTrue(usageString.contains(s)));
+    }
+
     @Test
     public void testRequiredOnlyUsage() {
         final RequiredOnlyArguments nr = new RequiredOnlyArguments();

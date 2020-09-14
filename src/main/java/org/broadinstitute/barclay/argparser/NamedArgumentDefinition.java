@@ -443,7 +443,7 @@ public class NamedArgumentDefinition extends ArgumentDefinition {
             sb.append(",-").append(getShortName());
         }
 
-        sb.append(":").append(getUnderlyingFieldClass().getSimpleName());
+        sb.append(String.format(" <%s>", getUnderlyingFieldClass().getSimpleName()));
 
         int labelLength = sb.toString().length();
         int numSpaces = argumentColumnWidth - labelLength;
