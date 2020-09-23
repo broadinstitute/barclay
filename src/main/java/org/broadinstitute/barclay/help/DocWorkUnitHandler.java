@@ -52,7 +52,7 @@ public abstract class DocWorkUnitHandler {
      * @return the name of the destination file to which documentation output will be written
      */
     public String getDestinationFilename(final DocWorkUnit workUnit) {
-        return DocletUtils.phpFilenameForClass(workUnit.getClazz(), HelpDoclet.outputFileExtension);
+        return DocletUtils.phpFilenameForClass(workUnit.getClazz(), getDoclet().outputFileExtension);
     }
 
     /**

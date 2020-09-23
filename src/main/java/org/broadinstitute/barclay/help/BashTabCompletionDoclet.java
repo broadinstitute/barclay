@@ -250,12 +250,6 @@ public class BashTabCompletionDoclet extends HelpDoclet {
 
     // =============================================
 
-    // Member variables:
-    protected static String outputFileExtension = "sh";
-    protected static String indexFileExtension = "sh";
-
-    // =============================================
-
     public static boolean start(RootDoc rootDoc) {
         try {
             return new BashTabCompletionDoclet().startProcessDocs(rootDoc);
