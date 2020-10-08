@@ -1,5 +1,6 @@
 package org.broadinstitute.barclay.argparser;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.testng.Assert;
@@ -14,6 +15,7 @@ import java.util.*;
 import java.util.function.Consumer;
 
 public final class CommandLineArgumentParserTest {
+
     enum FrobnicationFlavor {
         FOO, BAR, BAZ
     }
@@ -1398,6 +1400,35 @@ public final class CommandLineArgumentParserTest {
         Assert.assertEquals(result.substring(0, expected.length()), expected);
     }
 
+    protected static class ArgumentsWithSameAndDifferentShortNames{
+        final static String REPEATED = "repeated";
+        public static final String NOT_REPEATED = "notRepeated";
+        public static final String NR = "nr";
+        public static final String ONLY_FULL_NAME = "onlyFullName";
+        @Argument(fullName = REPEATED, shortName = REPEATED)
+        String repeated;
+
+        @Argument(fullName = NOT_REPEATED, shortName = NR)
+        String notRepeated;
+
+        @Argument(fullName = ONLY_FULL_NAME)
+        String onlyFullName;
+    }
+
+    @Test
+    public void testOnlyPrintNameOnce() {
+        final CommandLineArgumentParser clp = new CommandLineArgumentParser(new ArgumentsWithSameAndDifferentShortNames());
+
+        final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        final PrintStream stream = new PrintStream(byteArrayOutputStream);
+        stream.append(clp.usage(true, true));
+
+        final String result = byteArrayOutputStream.toString();
+        Assert.assertEquals(StringUtils.countMatches(result, "-"+ArgumentsWithSameAndDifferentShortNames.REPEATED), 1,result);
+        Assert.assertEquals(StringUtils.countMatches(result, "-"+ArgumentsWithSameAndDifferentShortNames.NOT_REPEATED), 1, result);
+        Assert.assertEquals(StringUtils.countMatches(result, "-"+ArgumentsWithSameAndDifferentShortNames.NR), 1, result);
+        Assert.assertEquals(StringUtils.countMatches(result, "-"+ArgumentsWithSameAndDifferentShortNames.ONLY_FULL_NAME), 1, result);
+    }
 
     /***************************************************************************************
      * End of tests and helper classes for CommandLineParser.gatherArgumentValuesOfType()
