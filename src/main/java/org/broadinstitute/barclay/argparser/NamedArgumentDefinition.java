@@ -439,7 +439,7 @@ public class NamedArgumentDefinition extends ArgumentDefinition {
 
         final StringBuilder sb = new StringBuilder();
         sb.append("--").append(getLongName());
-        if (!getShortName().isEmpty()) {
+        if (!getShortName().isEmpty() && !getShortName().equals(getLongName())) {
             sb.append(",-").append(getShortName());
         }
 
