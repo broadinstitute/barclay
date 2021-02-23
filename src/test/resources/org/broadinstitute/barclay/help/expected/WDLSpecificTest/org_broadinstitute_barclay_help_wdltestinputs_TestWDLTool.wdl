@@ -361,48 +361,33 @@ workflow TestWDLTool {
     bootdisksizegbRequirements: { description: "Runtime boot disk size for this task" }
 
     # Positional Arguments
-    positionalArgs: {
-      description: "Positional args doc",
-      localization_optional : true 
-    }
-    posDictionary: {
-      description: "Companion resource for positionalArgs",
-      localization_optional : true 
-    }
-    posIndex: {
-      description: "Companion resource for positionalArgs",
-      localization_optional : true 
-    }
+    positionalArgs: { description: "Positional args doc" }
+    posDictionary: { description: "Companion resource for positionalArgs" }
+    posIndex: { description: "Companion resource for positionalArgs" }
 
     # Required Arguments
-    requiredListFileInputMixedCompanions: { description: "requiredListFileInputMixedCompanions doc" }
-    requiredListFileInputMixedCompanionsRequired: { description: "Companion resource for requiredListFileInputMixedCompanions" }
-    requiredListFileInputMixedCompanionsOptional: { description: "Companion resource for requiredListFileInputMixedCompanions" }
-    requiredListFileInputNoCompanions: { description: "requiredListFileInputNoCompanions doc" }
-    requiredListFileInputOptionalCompanions: {
-      description: "requiredListFileInputOptionalCompanions doc",
+    requiredListFileInputMixedCompanions: {
+      description: "requiredListFileInputMixedCompanions doc",
       localization_optional : true 
     }
-    requiredListFileInputOptionalCompanionsDictionary: {
-      description: "Companion resource for requiredListFileInputOptionalCompanions",
+    requiredListFileInputMixedCompanionsRequired: {
+      description: "Companion resource for requiredListFileInputMixedCompanions",
       localization_optional : true 
     }
-    requiredListFileInputOptionalCompanionsIndex: {
-      description: "Companion resource for requiredListFileInputOptionalCompanions",
+    requiredListFileInputMixedCompanionsOptional: {
+      description: "Companion resource for requiredListFileInputMixedCompanions",
       localization_optional : true 
     }
-    requiredListFileInputRequiredCompanions: {
-      description: "requiredListFileInputRequiredCompanions doc",
+    requiredListFileInputNoCompanions: {
+      description: "requiredListFileInputNoCompanions doc",
       localization_optional : true 
     }
-    requiredListFileInputRequiredCompanionsDictionary: {
-      description: "Companion resource for requiredListFileInputRequiredCompanions",
-      localization_optional : true 
-    }
-    requiredListFileInputRequiredCompanionsIndex: {
-      description: "Companion resource for requiredListFileInputRequiredCompanions",
-      localization_optional : true 
-    }
+    requiredListFileInputOptionalCompanions: { description: "requiredListFileInputOptionalCompanions doc" }
+    requiredListFileInputOptionalCompanionsDictionary: { description: "Companion resource for requiredListFileInputOptionalCompanions" }
+    requiredListFileInputOptionalCompanionsIndex: { description: "Companion resource for requiredListFileInputOptionalCompanions" }
+    requiredListFileInputRequiredCompanions: { description: "requiredListFileInputRequiredCompanions doc" }
+    requiredListFileInputRequiredCompanionsDictionary: { description: "Companion resource for requiredListFileInputRequiredCompanions" }
+    requiredListFileInputRequiredCompanionsIndex: { description: "Companion resource for requiredListFileInputRequiredCompanions" }
     requiredListFileOutputMixedCompanions: { description: "requiredListFileOutputMixedCompanions doc" }
     requiredListFileOutputMixedCompanionsRequired: { description: "Companion resource for requiredListFileOutputMixedCompanions" }
     requiredListFileOutputMixedCompanionsOptional: { description: "Companion resource for requiredListFileOutputMixedCompanions" }
@@ -413,31 +398,16 @@ workflow TestWDLTool {
     requiredListFileOutputRequiredCompanions: { description: "requiredListFileOutputRequiredCompanions doc" }
     requiredListFileOutputRequiredCompanionsDictionary: { description: "Companion resource for requiredListFileOutputRequiredCompanions" }
     requiredListFileOutputRequiredCompanionsIndex: { description: "Companion resource for requiredListFileOutputRequiredCompanions" }
-    requiredScalarFileInputNoCompanions: { description: "requiredScalarFileInputNoCompanions doc" }
-    requiredScalarFileInputOptionalCompanions: {
-      description: "requiredScalarFileInputOptionalCompanions doc",
+    requiredScalarFileInputNoCompanions: {
+      description: "requiredScalarFileInputNoCompanions doc",
       localization_optional : true 
     }
-    requiredScalarFileInputOptionalCompanionsDictionary: {
-      description: "Companion resource for requiredScalarFileInputOptionalCompanions",
-      localization_optional : true 
-    }
-    requiredScalarFileInputOptionalCompanionsIndex: {
-      description: "Companion resource for requiredScalarFileInputOptionalCompanions",
-      localization_optional : true 
-    }
-    requiredScalarFileInputRequiredCompanions: {
-      description: "requiredScalarFileInputRequiredCompanions doc",
-      localization_optional : true 
-    }
-    requiredScalarFileInputRequiredCompanionsDictionary: {
-      description: "Companion resource for requiredScalarFileInputRequiredCompanions",
-      localization_optional : true 
-    }
-    requiredScalarFileInputRequiredCompanionsIndex: {
-      description: "Companion resource for requiredScalarFileInputRequiredCompanions",
-      localization_optional : true 
-    }
+    requiredScalarFileInputOptionalCompanions: { description: "requiredScalarFileInputOptionalCompanions doc" }
+    requiredScalarFileInputOptionalCompanionsDictionary: { description: "Companion resource for requiredScalarFileInputOptionalCompanions" }
+    requiredScalarFileInputOptionalCompanionsIndex: { description: "Companion resource for requiredScalarFileInputOptionalCompanions" }
+    requiredScalarFileInputRequiredCompanions: { description: "requiredScalarFileInputRequiredCompanions doc" }
+    requiredScalarFileInputRequiredCompanionsDictionary: { description: "Companion resource for requiredScalarFileInputRequiredCompanions" }
+    requiredScalarFileInputRequiredCompanionsIndex: { description: "Companion resource for requiredScalarFileInputRequiredCompanions" }
     requiredScalarFileOutputNoCompanions: { description: "requiredScalarFileOutputNoCompanions doc" }
     requiredScalarFileOutputOptionalCompanions: { description: "requiredScalarFileOutputOptionalCompanions doc" }
     requiredScalarFileOutputOptionalCompanionsDictionary: { description: "Companion resource for requiredScalarFileOutputOptionalCompanions" }
@@ -448,16 +418,46 @@ workflow TestWDLTool {
 
     # Optional Tool Arguments
     optionalListDoubleInput: { description: "optionalListDoubleInput doc" }
-    optionalListFileInputMixedCompanions: { description: "optionalListFileInputMixedCompanions doc" }
-    optionalListFileInputMixedCompanionsRequired: { description: "Companion resource for optionalListFileInputMixedCompanions" }
-    optionalListFileInputMixedCompanionsOptional: { description: "Companion resource for optionalListFileInputMixedCompanions" }
-    optionalListFileInputNoCompanions: { description: "optionalListFileInputNoCompanions doc" }
-    optionalListFileInputOptionalCompanions: { description: "optionalListFileInputOptionalCompanions doc" }
-    optionalListFileInputOptionalCompanionsDictionary: { description: "Companion resource for optionalListFileInputOptionalCompanions" }
-    optionalListFileInputOptionalCompanionsIndex: { description: "Companion resource for optionalListFileInputOptionalCompanions" }
-    optionalListFileInputRequiredCompanions: { description: "optionalListFileInputRequiredCompanions doc" }
-    optionalListFileInputRequiredCompanionsDictionary: { description: "Companion resource for optionalListFileInputRequiredCompanions" }
-    optionalListFileInputRequiredCompanionsIndex: { description: "Companion resource for optionalListFileInputRequiredCompanions" }
+    optionalListFileInputMixedCompanions: {
+      description: "optionalListFileInputMixedCompanions doc",
+      localization_optional : true 
+    }
+    optionalListFileInputMixedCompanionsRequired: {
+      description: "Companion resource for optionalListFileInputMixedCompanions",
+      localization_optional : true 
+    }
+    optionalListFileInputMixedCompanionsOptional: {
+      description: "Companion resource for optionalListFileInputMixedCompanions",
+      localization_optional : true 
+    }
+    optionalListFileInputNoCompanions: {
+      description: "optionalListFileInputNoCompanions doc",
+      localization_optional : true 
+    }
+    optionalListFileInputOptionalCompanions: {
+      description: "optionalListFileInputOptionalCompanions doc",
+      localization_optional : true 
+    }
+    optionalListFileInputOptionalCompanionsDictionary: {
+      description: "Companion resource for optionalListFileInputOptionalCompanions",
+      localization_optional : true 
+    }
+    optionalListFileInputOptionalCompanionsIndex: {
+      description: "Companion resource for optionalListFileInputOptionalCompanions",
+      localization_optional : true 
+    }
+    optionalListFileInputRequiredCompanions: {
+      description: "optionalListFileInputRequiredCompanions doc",
+      localization_optional : true 
+    }
+    optionalListFileInputRequiredCompanionsDictionary: {
+      description: "Companion resource for optionalListFileInputRequiredCompanions",
+      localization_optional : true 
+    }
+    optionalListFileInputRequiredCompanionsIndex: {
+      description: "Companion resource for optionalListFileInputRequiredCompanions",
+      localization_optional : true 
+    }
     optionalListFileOutputMixedCompanions: { description: "optionalListFileOutputMixedCompanions doc" }
     optionalListFileOutputMixedCompanionsRequired: { description: "Companion resource for optionalListFileOutputMixedCompanions" }
     optionalListFileOutputMixedCompanionsOptional: { description: "Companion resource for optionalListFileOutputMixedCompanions" }
@@ -470,13 +470,34 @@ workflow TestWDLTool {
     optionalListStringInput: { description: "optionalListStringInput doc" }
     optionalScalarDoubleInput: { description: "optionalScalarDoubleInput doc" }
     optionalScalarDoublePrimitiveInput: { description: "optionalScalarDoublePrimitiveInput doc" }
-    optionalScalarFileInputNoCompanions: { description: "optionalScalarFileInputNoCompanions doc" }
-    optionalScalarFileInputOptionalCompanions: { description: "optionalScalarFileInputOptionalCompanions doc" }
-    optionalScalarFileInputOptionalCompanionsDictionary: { description: "Companion resource for optionalScalarFileInputOptionalCompanions" }
-    optionalScalarFileInputOptionalCompanionsIndex: { description: "Companion resource for optionalScalarFileInputOptionalCompanions" }
-    optionalScalarFileInputRequiredCompanions: { description: "optionalScalarFileInputRequiredCompanions doc" }
-    optionalScalarFileInputRequiredCompanionsDictionary: { description: "Companion resource for optionalScalarFileInputRequiredCompanions" }
-    optionalScalarFileInputRequiredCompanionsIndex: { description: "Companion resource for optionalScalarFileInputRequiredCompanions" }
+    optionalScalarFileInputNoCompanions: {
+      description: "optionalScalarFileInputNoCompanions doc",
+      localization_optional : true 
+    }
+    optionalScalarFileInputOptionalCompanions: {
+      description: "optionalScalarFileInputOptionalCompanions doc",
+      localization_optional : true 
+    }
+    optionalScalarFileInputOptionalCompanionsDictionary: {
+      description: "Companion resource for optionalScalarFileInputOptionalCompanions",
+      localization_optional : true 
+    }
+    optionalScalarFileInputOptionalCompanionsIndex: {
+      description: "Companion resource for optionalScalarFileInputOptionalCompanions",
+      localization_optional : true 
+    }
+    optionalScalarFileInputRequiredCompanions: {
+      description: "optionalScalarFileInputRequiredCompanions doc",
+      localization_optional : true 
+    }
+    optionalScalarFileInputRequiredCompanionsDictionary: {
+      description: "Companion resource for optionalScalarFileInputRequiredCompanions",
+      localization_optional : true 
+    }
+    optionalScalarFileInputRequiredCompanionsIndex: {
+      description: "Companion resource for optionalScalarFileInputRequiredCompanions",
+      localization_optional : true 
+    }
     optionalScalarFileOutputNoCompanions: { description: "optionalScalarFileOutputNoCompanions doc" }
     optionalScalarFileOutputOptionalCompanions: { description: "optionalScalarFileOutputOptionalCompanions doc" }
     optionalScalarFileOutputOptionalCompanionsDictionary: { description: "Companion resource for optionalScalarFileOutputOptionalCompanions" }
@@ -687,48 +708,33 @@ task TestWDLTool {
     bootdisksizegbRequirements: { description: "Runtime boot disk size for this task" }
 
     # Positional Arguments
-    positionalArgs: {
-      description: "Positional args doc",
-      localization_optional : true 
-    }
-    posDictionary: {
-      description: "Companion resource for positionalArgs",
-      localization_optional : true 
-    }
-    posIndex: {
-      description: "Companion resource for positionalArgs",
-      localization_optional : true 
-    }
+    positionalArgs: { description: "Positional args doc" }
+    posDictionary: { description: "Companion resource for positionalArgs" }
+    posIndex: { description: "Companion resource for positionalArgs" }
 
     # Required Arguments
-    requiredListFileInputMixedCompanions: { description: "requiredListFileInputMixedCompanions doc" }
-    requiredListFileInputMixedCompanionsRequired: { description: "Companion resource for requiredListFileInputMixedCompanions" }
-    requiredListFileInputMixedCompanionsOptional: { description: "Companion resource for requiredListFileInputMixedCompanions" }
-    requiredListFileInputNoCompanions: { description: "requiredListFileInputNoCompanions doc" }
-    requiredListFileInputOptionalCompanions: {
-      description: "requiredListFileInputOptionalCompanions doc",
+    requiredListFileInputMixedCompanions: {
+      description: "requiredListFileInputMixedCompanions doc",
       localization_optional : true 
     }
-    requiredListFileInputOptionalCompanionsDictionary: {
-      description: "Companion resource for requiredListFileInputOptionalCompanions",
+    requiredListFileInputMixedCompanionsRequired: {
+      description: "Companion resource for requiredListFileInputMixedCompanions",
       localization_optional : true 
     }
-    requiredListFileInputOptionalCompanionsIndex: {
-      description: "Companion resource for requiredListFileInputOptionalCompanions",
+    requiredListFileInputMixedCompanionsOptional: {
+      description: "Companion resource for requiredListFileInputMixedCompanions",
       localization_optional : true 
     }
-    requiredListFileInputRequiredCompanions: {
-      description: "requiredListFileInputRequiredCompanions doc",
+    requiredListFileInputNoCompanions: {
+      description: "requiredListFileInputNoCompanions doc",
       localization_optional : true 
     }
-    requiredListFileInputRequiredCompanionsDictionary: {
-      description: "Companion resource for requiredListFileInputRequiredCompanions",
-      localization_optional : true 
-    }
-    requiredListFileInputRequiredCompanionsIndex: {
-      description: "Companion resource for requiredListFileInputRequiredCompanions",
-      localization_optional : true 
-    }
+    requiredListFileInputOptionalCompanions: { description: "requiredListFileInputOptionalCompanions doc" }
+    requiredListFileInputOptionalCompanionsDictionary: { description: "Companion resource for requiredListFileInputOptionalCompanions" }
+    requiredListFileInputOptionalCompanionsIndex: { description: "Companion resource for requiredListFileInputOptionalCompanions" }
+    requiredListFileInputRequiredCompanions: { description: "requiredListFileInputRequiredCompanions doc" }
+    requiredListFileInputRequiredCompanionsDictionary: { description: "Companion resource for requiredListFileInputRequiredCompanions" }
+    requiredListFileInputRequiredCompanionsIndex: { description: "Companion resource for requiredListFileInputRequiredCompanions" }
     requiredListFileOutputMixedCompanions: { description: "requiredListFileOutputMixedCompanions doc" }
     requiredListFileOutputMixedCompanionsRequired: { description: "Companion resource for requiredListFileOutputMixedCompanions" }
     requiredListFileOutputMixedCompanionsOptional: { description: "Companion resource for requiredListFileOutputMixedCompanions" }
@@ -739,31 +745,16 @@ task TestWDLTool {
     requiredListFileOutputRequiredCompanions: { description: "requiredListFileOutputRequiredCompanions doc" }
     requiredListFileOutputRequiredCompanionsDictionary: { description: "Companion resource for requiredListFileOutputRequiredCompanions" }
     requiredListFileOutputRequiredCompanionsIndex: { description: "Companion resource for requiredListFileOutputRequiredCompanions" }
-    requiredScalarFileInputNoCompanions: { description: "requiredScalarFileInputNoCompanions doc" }
-    requiredScalarFileInputOptionalCompanions: {
-      description: "requiredScalarFileInputOptionalCompanions doc",
+    requiredScalarFileInputNoCompanions: {
+      description: "requiredScalarFileInputNoCompanions doc",
       localization_optional : true 
     }
-    requiredScalarFileInputOptionalCompanionsDictionary: {
-      description: "Companion resource for requiredScalarFileInputOptionalCompanions",
-      localization_optional : true 
-    }
-    requiredScalarFileInputOptionalCompanionsIndex: {
-      description: "Companion resource for requiredScalarFileInputOptionalCompanions",
-      localization_optional : true 
-    }
-    requiredScalarFileInputRequiredCompanions: {
-      description: "requiredScalarFileInputRequiredCompanions doc",
-      localization_optional : true 
-    }
-    requiredScalarFileInputRequiredCompanionsDictionary: {
-      description: "Companion resource for requiredScalarFileInputRequiredCompanions",
-      localization_optional : true 
-    }
-    requiredScalarFileInputRequiredCompanionsIndex: {
-      description: "Companion resource for requiredScalarFileInputRequiredCompanions",
-      localization_optional : true 
-    }
+    requiredScalarFileInputOptionalCompanions: { description: "requiredScalarFileInputOptionalCompanions doc" }
+    requiredScalarFileInputOptionalCompanionsDictionary: { description: "Companion resource for requiredScalarFileInputOptionalCompanions" }
+    requiredScalarFileInputOptionalCompanionsIndex: { description: "Companion resource for requiredScalarFileInputOptionalCompanions" }
+    requiredScalarFileInputRequiredCompanions: { description: "requiredScalarFileInputRequiredCompanions doc" }
+    requiredScalarFileInputRequiredCompanionsDictionary: { description: "Companion resource for requiredScalarFileInputRequiredCompanions" }
+    requiredScalarFileInputRequiredCompanionsIndex: { description: "Companion resource for requiredScalarFileInputRequiredCompanions" }
     requiredScalarFileOutputNoCompanions: { description: "requiredScalarFileOutputNoCompanions doc" }
     requiredScalarFileOutputOptionalCompanions: { description: "requiredScalarFileOutputOptionalCompanions doc" }
     requiredScalarFileOutputOptionalCompanionsDictionary: { description: "Companion resource for requiredScalarFileOutputOptionalCompanions" }
@@ -774,16 +765,46 @@ task TestWDLTool {
 
     # Optional Tool Arguments
     optionalListDoubleInput: { description: "optionalListDoubleInput doc" }
-    optionalListFileInputMixedCompanions: { description: "optionalListFileInputMixedCompanions doc" }
-    optionalListFileInputMixedCompanionsRequired: { description: "Companion resource for optionalListFileInputMixedCompanions" }
-    optionalListFileInputMixedCompanionsOptional: { description: "Companion resource for optionalListFileInputMixedCompanions" }
-    optionalListFileInputNoCompanions: { description: "optionalListFileInputNoCompanions doc" }
-    optionalListFileInputOptionalCompanions: { description: "optionalListFileInputOptionalCompanions doc" }
-    optionalListFileInputOptionalCompanionsDictionary: { description: "Companion resource for optionalListFileInputOptionalCompanions" }
-    optionalListFileInputOptionalCompanionsIndex: { description: "Companion resource for optionalListFileInputOptionalCompanions" }
-    optionalListFileInputRequiredCompanions: { description: "optionalListFileInputRequiredCompanions doc" }
-    optionalListFileInputRequiredCompanionsDictionary: { description: "Companion resource for optionalListFileInputRequiredCompanions" }
-    optionalListFileInputRequiredCompanionsIndex: { description: "Companion resource for optionalListFileInputRequiredCompanions" }
+    optionalListFileInputMixedCompanions: {
+      description: "optionalListFileInputMixedCompanions doc",
+      localization_optional : true 
+    }
+    optionalListFileInputMixedCompanionsRequired: {
+      description: "Companion resource for optionalListFileInputMixedCompanions",
+      localization_optional : true 
+    }
+    optionalListFileInputMixedCompanionsOptional: {
+      description: "Companion resource for optionalListFileInputMixedCompanions",
+      localization_optional : true 
+    }
+    optionalListFileInputNoCompanions: {
+      description: "optionalListFileInputNoCompanions doc",
+      localization_optional : true 
+    }
+    optionalListFileInputOptionalCompanions: {
+      description: "optionalListFileInputOptionalCompanions doc",
+      localization_optional : true 
+    }
+    optionalListFileInputOptionalCompanionsDictionary: {
+      description: "Companion resource for optionalListFileInputOptionalCompanions",
+      localization_optional : true 
+    }
+    optionalListFileInputOptionalCompanionsIndex: {
+      description: "Companion resource for optionalListFileInputOptionalCompanions",
+      localization_optional : true 
+    }
+    optionalListFileInputRequiredCompanions: {
+      description: "optionalListFileInputRequiredCompanions doc",
+      localization_optional : true 
+    }
+    optionalListFileInputRequiredCompanionsDictionary: {
+      description: "Companion resource for optionalListFileInputRequiredCompanions",
+      localization_optional : true 
+    }
+    optionalListFileInputRequiredCompanionsIndex: {
+      description: "Companion resource for optionalListFileInputRequiredCompanions",
+      localization_optional : true 
+    }
     optionalListFileOutputMixedCompanions: { description: "optionalListFileOutputMixedCompanions doc" }
     optionalListFileOutputMixedCompanionsRequired: { description: "Companion resource for optionalListFileOutputMixedCompanions" }
     optionalListFileOutputMixedCompanionsOptional: { description: "Companion resource for optionalListFileOutputMixedCompanions" }
@@ -796,13 +817,34 @@ task TestWDLTool {
     optionalListStringInput: { description: "optionalListStringInput doc" }
     optionalScalarDoubleInput: { description: "optionalScalarDoubleInput doc" }
     optionalScalarDoublePrimitiveInput: { description: "optionalScalarDoublePrimitiveInput doc" }
-    optionalScalarFileInputNoCompanions: { description: "optionalScalarFileInputNoCompanions doc" }
-    optionalScalarFileInputOptionalCompanions: { description: "optionalScalarFileInputOptionalCompanions doc" }
-    optionalScalarFileInputOptionalCompanionsDictionary: { description: "Companion resource for optionalScalarFileInputOptionalCompanions" }
-    optionalScalarFileInputOptionalCompanionsIndex: { description: "Companion resource for optionalScalarFileInputOptionalCompanions" }
-    optionalScalarFileInputRequiredCompanions: { description: "optionalScalarFileInputRequiredCompanions doc" }
-    optionalScalarFileInputRequiredCompanionsDictionary: { description: "Companion resource for optionalScalarFileInputRequiredCompanions" }
-    optionalScalarFileInputRequiredCompanionsIndex: { description: "Companion resource for optionalScalarFileInputRequiredCompanions" }
+    optionalScalarFileInputNoCompanions: {
+      description: "optionalScalarFileInputNoCompanions doc",
+      localization_optional : true 
+    }
+    optionalScalarFileInputOptionalCompanions: {
+      description: "optionalScalarFileInputOptionalCompanions doc",
+      localization_optional : true 
+    }
+    optionalScalarFileInputOptionalCompanionsDictionary: {
+      description: "Companion resource for optionalScalarFileInputOptionalCompanions",
+      localization_optional : true 
+    }
+    optionalScalarFileInputOptionalCompanionsIndex: {
+      description: "Companion resource for optionalScalarFileInputOptionalCompanions",
+      localization_optional : true 
+    }
+    optionalScalarFileInputRequiredCompanions: {
+      description: "optionalScalarFileInputRequiredCompanions doc",
+      localization_optional : true 
+    }
+    optionalScalarFileInputRequiredCompanionsDictionary: {
+      description: "Companion resource for optionalScalarFileInputRequiredCompanions",
+      localization_optional : true 
+    }
+    optionalScalarFileInputRequiredCompanionsIndex: {
+      description: "Companion resource for optionalScalarFileInputRequiredCompanions",
+      localization_optional : true 
+    }
     optionalScalarFileOutputNoCompanions: { description: "optionalScalarFileOutputNoCompanions doc" }
     optionalScalarFileOutputOptionalCompanions: { description: "optionalScalarFileOutputOptionalCompanions doc" }
     optionalScalarFileOutputOptionalCompanionsDictionary: { description: "Companion resource for optionalScalarFileOutputOptionalCompanions" }

@@ -37,8 +37,8 @@ public @interface WorkflowInput {
 
     /**
      * Return a boolean specifying whether this input should have the "localization optional" attribute set.
-     * Defaults to false. A value of true should only be used for input arguments on tools that can handle
+     * Defaults to true. A value of false should only be used for input arguments on tools that can't handle
      * inputs on non-local/remote file systems. This attribute is propagated to this input's companion files.
      */
-    boolean localizationOptional() default false;
+    boolean localizationOptional() default true;
 }

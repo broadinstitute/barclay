@@ -37,7 +37,7 @@ public class TestWDLTool {
     public static final String GROUP_NAME = "WDL feature group name";
 
     @PositionalArguments(doc = "Positional args doc")
-    @WorkflowInput(requiredCompanions={"posDictionary", "posIndex"}, localizationOptional = true)
+    @WorkflowInput(requiredCompanions={"posDictionary", "posIndex"}, localizationOptional = false)
     public List<File> positionalListFileInput;
 
     // required input Files
@@ -53,14 +53,13 @@ public class TestWDLTool {
             shortName = "requiredScalarFileInputRequiredCompanions",
             doc = "requiredScalarFileInputRequiredCompanions doc",
             optional = false)
-    @WorkflowInput(requiredCompanions={"requiredScalarFileInputRequiredCompanionsDictionary", "requiredScalarFileInputRequiredCompanionsIndex"}, localizationOptional = true)
-    public File requiredScalarFileInputRequiredCompanions;
+    @WorkflowInput(requiredCompanions={"requiredScalarFileInputRequiredCompanionsDictionary", "requiredScalarFileInputRequiredCompanionsIndex"}, localizationOptional = false)    public File requiredScalarFileInputRequiredCompanions;
 
     @Argument(fullName = "requiredScalarFileInputOptionalCompanions",
             shortName = "requiredScalarFileInputOptionalCompanions",
             doc = "requiredScalarFileInputOptionalCompanions doc",
             optional = false)
-    @WorkflowInput(optionalCompanions={"requiredScalarFileInputOptionalCompanionsDictionary", "requiredScalarFileInputOptionalCompanionsIndex"}, localizationOptional = true)
+    @WorkflowInput(optionalCompanions={"requiredScalarFileInputOptionalCompanionsDictionary", "requiredScalarFileInputOptionalCompanionsIndex"}, localizationOptional = false)
     public File requiredScalarFileInputOptionalCompanions;
 
     @Argument(fullName = "requiredListFileInputNoCompanions",
@@ -74,14 +73,14 @@ public class TestWDLTool {
             shortName = "requiredListFileInputRequiredCompanions",
             doc = "requiredListFileInputRequiredCompanions doc",
             optional = false)
-    @WorkflowInput(requiredCompanions={"requiredListFileInputRequiredCompanionsDictionary", "requiredListFileInputRequiredCompanionsIndex"}, localizationOptional = true)
+    @WorkflowInput(requiredCompanions={"requiredListFileInputRequiredCompanionsDictionary", "requiredListFileInputRequiredCompanionsIndex"}, localizationOptional = false)
     public List<File> requiredListFileInputRequiredCompanions;
 
     @Argument(fullName = "requiredListFileInputOptionalCompanions",
             shortName = "requiredListFileInputOptionalCompanions",
             doc = "requiredListFileInputOptionalCompanions doc",
             optional = false)
-    @WorkflowInput(optionalCompanions={"requiredListFileInputOptionalCompanionsDictionary", "requiredListFileInputOptionalCompanionsIndex"}, localizationOptional = true)
+    @WorkflowInput(optionalCompanions={"requiredListFileInputOptionalCompanionsDictionary", "requiredListFileInputOptionalCompanionsIndex"}, localizationOptional = false)
     public List<File> requiredListFileInputOptionalCompanions;
 
     @Argument(fullName = "requiredListFileInputMixedCompanions",
