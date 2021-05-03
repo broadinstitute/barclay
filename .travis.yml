@@ -12,11 +12,6 @@ jdk:
 - oraclejdk8
 - openjdk8
 script: ./gradlew jacocoTestReport ;
-env:
-  matrix:
-  - ARTIFACTORY_USERNAME=gatkci
-  global:
-    secure: rF9xJaWR1LRF6y0Ujq+zvfg2wO0DRgs1vqoUgS9BoHuXKRDNWyiEYbX0Mxef5LxXgqHSoIxirIBnjGxpDYaM+kRwNm1IqcW/C5Z5slKY12lbwFgTFdROfKS4lGMVo6U5/w+hyknrEVxEV4ULw7I2Z4sUWHU0X+uOhf7JP2sYTXcl0kyUPP4crSAMGQ+J/Epc4mvmxuNaSCbAq74+JW+GJ8KqbEmrDPRBpDFAoeISjmnmXGlvPECgIuPjFp3pJ3nOv3hDJqIb6jWs8Jt2w4xeByg4ENPI2z+oAzWM7QqqyybK706LMy/jppNqVa3AOUCCiQIjTnJYgapAthIatfSrJrtwKxmrxyq1v2XfPuXqeMi3PB8Yz/ikOWk2dWU/XQnqV9u1ZEuFwcs+0InsDVVYkLQ3A7RJ570CdDYsqejzdGDk25r+BIxob8TViCneG1UzWydKd3XFmtaxLORMWqu0vyoQ6OM+w7Yc9x1fJm+yW458UplKdQW9yyxcMl9uFMcn/shwTPlPDIN/ktVsF1Q8bA7fGl9WEoxRtpXZYtNhhTkI9zTLMGjU8JZhTfV6QGmEbtGs1+uD2HAFWueuoRiHGlH+uqIapjCK81hWUcIwY6Q1B0bvVnjw58ifst/irB4pP82SzC0KQXxNzjBVLpU275/inhmA9/ZTji/7wHFgqIk=
 after_success:
 - echo "TRAVIS_BRANCH='$TRAVIS_BRANCH'"; echo "JAVA_HOME='$JAVA_HOME'";
 - bash <(curl -s https://codecov.io/bash); if [ "$TRAVIS_BRANCH" == "master" ]; then
