@@ -1,6 +1,7 @@
 package org.broadinstitute.barclay.argparser;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Interface for arguments that can have tags and attributes. The command line argument parser
@@ -35,5 +36,18 @@ public interface TaggedArgument {
      * @return Map of attribute/value pairs for this instance. May be empty if no tags are present. May not be null.
      */
     Map<String, String> getTagAttributes();
+
+    /**
+     * Return true if the tag name and attributes for two {@code TaggedArgument} are the equal to be
+     * used by TaggedArgument implementations.
+     *
+     * @param first first {@code TaggedArgument} to compare
+     * @param second second {@code TaggedArgument}
+     * @return true if the tag name and attributes are equal
+     */
+    static boolean tagNameAndAttributesAreEqual(final TaggedArgument first, final TaggedArgument second) {
+        return Objects.equals(first.getTag(), second.getTag()) &&
+                Objects.equals(first.getTagAttributes(), second.getTagAttributes());
+    }
 
 }
