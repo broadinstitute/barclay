@@ -464,6 +464,7 @@ public class NamedArgumentDefinition extends ArgumentDefinition {
             sb.append("\n");
         }
         sb.append("\n");
+
         return sb.toString();
     }
 
@@ -617,7 +618,7 @@ public class NamedArgumentDefinition extends ArgumentDefinition {
                     } else {
                         sb.append(OPTION_DOC_PREFIX);
                         sb.append(String.join(", ", allowedValues.stream().sorted(String::compareToIgnoreCase).collect(Collectors.toList())));
-                        sb.append(OPTION_DOC_PREFIX);
+                        sb.append(OPTION_DOC_SUFFIX);
                     }
                     return true;
                 }
