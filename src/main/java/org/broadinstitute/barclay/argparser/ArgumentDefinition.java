@@ -179,7 +179,7 @@ public abstract class ArgumentDefinition {
         final Object callerArguments = containingObject;
         try {
             if (field.get(containingObject) == null) {
-                field.set(callerArguments, field.getType().newInstance());
+                field.set(callerArguments, field.getType().getDeclaredConstructor().newInstance());
             }
         } catch (final Exception ex) {
             // If we can't instantiate the collection, try falling back to Note: I assume this catches Exception to

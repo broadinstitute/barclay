@@ -16,13 +16,13 @@ public class CollectionArgumentUnitTests {
 
     private class UninitializedCollections {
         @Argument
-        public List<String> LIST;
+        private List<String> LIST;
         @Argument
-        public ArrayList<String> ARRAY_LIST;
+        private ArrayList<String> ARRAY_LIST;
         @Argument
-        public HashSet<String> HASH_SET;
+        private HashSet<String> HASH_SET;
         @PositionalArguments
-        public Collection<File> COLLECTION;
+        private Collection<File> COLLECTION;
     }
 
     @DataProvider(name="uninitializedCollections")
@@ -75,7 +75,7 @@ public class CollectionArgumentUnitTests {
 
     private class InitializedCollections {
         @Argument
-        public List<String> LIST = makeList("foo", "bar");
+        private List<String> LIST = makeList("foo", "bar");
     }
 
     @DataProvider(name="initializedCollections")
@@ -154,10 +154,10 @@ public class CollectionArgumentUnitTests {
     private class EnabledListFileArguments extends CollectionForListFileArguments {
 
         @Argument
-        public List<String> LIST = makeList("foo", "bar");
+        private List<String> LIST = makeList("foo", "bar");
 
         @Argument
-        public List<String> LIST2 = makeList("baz");
+        private List<String> LIST2 = makeList("baz");
 
 
         public List<String> getList1() { return LIST; };
@@ -167,10 +167,10 @@ public class CollectionArgumentUnitTests {
     private class SuppressedListFileArguments extends CollectionForListFileArguments {
 
         @Argument(suppressFileExpansion = true)
-        public List<String> LIST = makeList("foo", "bar");
+        private List<String> LIST = makeList("foo", "bar");
 
         @Argument(suppressFileExpansion = true)
-        public List<String> LIST2 = makeList("baz");
+        private List<String> LIST2 = makeList("baz");
 
         public List<String> getList1() { return LIST; };
         public List<String> getList2() { return LIST2; };
@@ -305,7 +305,7 @@ public class CollectionArgumentUnitTests {
 
     private class PositionalCollection {
         @PositionalArguments
-        public List<String> positionalCollection = new ArrayList<>();
+        private List<String> positionalCollection = new ArrayList<>();
     }
 
     @Test
@@ -418,7 +418,7 @@ public class CollectionArgumentUnitTests {
 
     private class NonCollectionFileExpansionSuppression {
         @Argument(suppressFileExpansion = true)
-        public int bogusFileExpansionArg;
+        private int bogusFileExpansionArg;
     }
 
     @Test(expectedExceptions = CommandLineException.CommandLineParserInternalException.class)
@@ -429,7 +429,7 @@ public class CollectionArgumentUnitTests {
 
     private class UninitializedCollectionThatCannotBeAutoInitializedArguments {
         @Argument
-        public Set<String> SET;
+        private Set<String> SET;
     }
 
     @Test(expectedExceptions = CommandLineException.CommandLineParserInternalException.class)

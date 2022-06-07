@@ -1,12 +1,12 @@
 package org.broadinstitute.barclay.help;
 
-import com.sun.javadoc.ClassDoc;
-import com.sun.javadoc.RootDoc;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+import jdk.javadoc.doclet.DocletEnvironment;
 import org.broadinstitute.barclay.argparser.CommandLineProgramProperties;
 
+import javax.lang.model.element.Element;
 import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -34,17 +34,17 @@ public class BashTabCompletionDoclet extends HelpDoclet {
 
     final private static String CALLER_SCRIPT_NAME = "-caller-script-name";
 
-    final private static String CALLER_SCRIPT_PREFIX_LEGAL_ARGS          = "-caller-pre-legal-args";
-    final private static String CALLER_SCRIPT_PREFIX_ARG_VALUE_TYPES     = "-caller-pre-arg-val-types";
-    final private static String CALLER_SCRIPT_PREFIX_MUTEX_ARGS          = "-caller-pre-mutex-args";
-    final private static String CALLER_SCRIPT_PREFIX_ALIAS_ARGS          = "-caller-pre-alias-args";
+    final private static String CALLER_SCRIPT_PREFIX_LEGAL_ARGS = "-caller-pre-legal-args";
+    final private static String CALLER_SCRIPT_PREFIX_ARG_VALUE_TYPES = "-caller-pre-arg-val-types";
+    final private static String CALLER_SCRIPT_PREFIX_MUTEX_ARGS = "-caller-pre-mutex-args";
+    final private static String CALLER_SCRIPT_PREFIX_ALIAS_ARGS = "-caller-pre-alias-args";
     final private static String CALLER_SCRIPT_PREFIX_ARG_MIN_OCCURRENCES = "-caller-pre-arg-min-occurs";
     final private static String CALLER_SCRIPT_PREFIX_ARG_MAX_OCCURRENCES = "-caller-pre-arg-max-occurs";
 
-    final private static String CALLER_SCRIPT_POSTFIX_LEGAL_ARGS          = "-caller-post-legal-args";
-    final private static String CALLER_SCRIPT_POSTFIX_ARG_VALUE_TYPES     = "-caller-post-arg-val-types";
-    final private static String CALLER_SCRIPT_POSTFIX_MUTEX_ARGS          = "-caller-post-mutex-args";
-    final private static String CALLER_SCRIPT_POSTFIX_ALIAS_ARGS          = "-caller-post-alias-args";
+    final private static String CALLER_SCRIPT_POSTFIX_LEGAL_ARGS = "-caller-post-legal-args";
+    final private static String CALLER_SCRIPT_POSTFIX_ARG_VALUE_TYPES = "-caller-post-arg-val-types";
+    final private static String CALLER_SCRIPT_POSTFIX_MUTEX_ARGS = "-caller-post-mutex-args";
+    final private static String CALLER_SCRIPT_POSTFIX_ALIAS_ARGS = "-caller-post-alias-args";
     final private static String CALLER_SCRIPT_POSTFIX_ARG_MIN_OCCURRENCES = "-caller-post-arg-min-occurs";
     final private static String CALLER_SCRIPT_POSTFIX_ARG_MAX_OCCURRENCES = "-caller-post-arg-max-occurs";
 
@@ -60,172 +60,184 @@ public class BashTabCompletionDoclet extends HelpDoclet {
 
     /**
      * Arguments to the executable / wrapper script that come before any Java class names / tools.
-     *
+     * <p>
      * This is expected to be a space-delimited string with the options themselves as they should be
      * typed by the user.
-     *
+     * <p>
      * This syntax is used to pass this information to directly to the bash completion script.
-     *
+     * <p>
      * Example: {@code "--help --info --list --inputFile --outFolder --memSize --multiplier"}
      */
-    private String callerScriptPrefixLegalArgs       = "";
+    private String callerScriptPrefixLegalArgs = "";
 
     /**
      * Types of the arguments that the executable / wrapper script is expecting before any Java class names / tools.
-     * The order of these space-delimited types should correspond to the contents of {@link #callerScriptPrefixLegalArgs}
-     *
+     * The order of these space-delimited types should correspond to the contents of
+     * {@link #callerScriptPrefixLegalArgs}
+     * <p>
      * This is expected to be a space-delimited string of types.
-     *
+     * <p>
      * Currently accepted type values are the following (not case-sensitive):
-     *
-     *      {@code file}
-     *      {@code folder}
-     *      {@code directory}
-     *      {@code int}
-     *      {@code long}
-     *      {@code double}
-     *      {@code float}
-     *      {@code null}   (to be used in the case of an argument that acts as a flag [i.e. one that takes no additional input])
-     *
+     * <p>
+     * {@code file}
+     * {@code folder}
+     * {@code directory}
+     * {@code int}
+     * {@code long}
+     * {@code double}
+     * {@code float}
+     * {@code null}   (to be used in the case of an argument that acts as a flag [i.e. one that takes no additional
+     * input])
+     * <p>
      * This syntax is used to pass this information to directly to the bash completion script.
-     *
+     * <p>
      * Example: {@code "null null null file directory int double"}
      */
-    private String callerScriptPrefixArgValueTypes   = "";
+    private String callerScriptPrefixArgValueTypes = "";
 
     /**
      * Sets of arguments to the executable / wrapper script that are mutually exclusive to each other and
      * are expected before any Java class names / tools.
-     *
+     * <p>
      * This is expected to be a string with mutex information for each argument that is mutually exclusive with another
      * argument.  The format for this string is:
-     *
+     * <p>
      * {@code FOO;mutexToFoo1[,mutexToFoo2][,mutexToFoo3]... BAR;mutexToBar1[,mutexToBar2][,mutexToBar3]... }
-     *
-     *  where:
-     *
+     * <p>
+     * where:
+     * <p>
      * {@code FOO} is an argument to the wrapper script which is expected before any Java class names / tools
-     * {@code mutexToFoo1} is an argument with which {@code FOO} is mutually exclusive without leading decorators (usually - or --)
-     * {@code mutexToFoo2} is an argument with which {@code FOO} is mutually exclusive without leading decorators (usually - or --)
-     * {@code mutexToFoo3} is an argument with which {@code FOO} is mutually exclusive without leading decorators (usually - or --)
-     *  and
+     * {@code mutexToFoo1} is an argument with which {@code FOO} is mutually exclusive without leading decorators
+     * (usually - or --)
+     * {@code mutexToFoo2} is an argument with which {@code FOO} is mutually exclusive without leading decorators
+     * (usually - or --)
+     * {@code mutexToFoo3} is an argument with which {@code FOO} is mutually exclusive without leading decorators
+     * (usually - or --)
+     * and
      * {@code BAR} is an argument to the wrapper script which is expected before any Java class names / tools
-     * {@code mutexToBar1} is an argument with which {@code BAR} is mutually exclusive without leading decorators (usually - or --)
-     * {@code mutexToBar2} is an argument with which {@code BAR} is mutually exclusive without leading decorators (usually - or --)
-     * {@code mutexToBar3} is an argument with which {@code BAR} is mutually exclusive without leading decorators (usually - or --)
-     *
+     * {@code mutexToBar1} is an argument with which {@code BAR} is mutually exclusive without leading decorators
+     * (usually - or --)
+     * {@code mutexToBar2} is an argument with which {@code BAR} is mutually exclusive without leading decorators
+     * (usually - or --)
+     * {@code mutexToBar3} is an argument with which {@code BAR} is mutually exclusive without leading decorators
+     * (usually - or --)
+     * <p>
      * This can be thought of as a set of such argument relationships and does not have any ordering scheme.
-     *
+     * <p>
      * This syntax is used to pass this information to directly to the bash completion script.
-     *
+     * <p>
      * Example: {@code "--help;info,list,inputFile --info;help,list,inputFile"}
      */
-    private String callerScriptPrefixMutexArgs       = "";
+    private String callerScriptPrefixMutexArgs = "";
 
     /**
      * Sets of arguments to the executable / wrapper script that are aliases of each other and
      * are expected before any Java class names / tools.
      * For example, full argument names and short names for those arguments.
-     *
+     * <p>
      * This is expected to be a string with alias information for each argument that is an alias of another
      * argument.  The format for this string is:
-     *
+     * <p>
      * {@code FOO;aliasToFoo1[,aliasToFoo2][,aliasToFoo3]... BAR;aliasToBar1[,aliasToBar2][,aliasToBar3]... }
-     *
-     *  where:
-     *
+     * <p>
+     * where:
+     * <p>
      * {@code FOO} is an argument to the wrapper script which is expected before any Java class names / tools
      * {@code aliasToFoo1} is an argument which is an alias to {@code FOO}
      * {@code aliasToFoo2} is an argument which is an alias to {@code FOO}
      * {@code aliasToFoo3} is an argument which is an alias to {@code FOO}
-     *  and
+     * and
      * {@code BAR} is an argument to the wrapper script which is expected before any Java class names / tools
      * {@code aliasToBar1} is an argument which is an alias to {@code BAR}
      * {@code aliasToBar2} is an argument which is an alias to {@code BAR}
      * {@code aliasToBar3} is an argument which is an alias to {@code BAR}
-     *
+     * <p>
      * This can be thought of as a set of such argument relationships and does not have any ordering scheme.
-     *
+     * <p>
      * This syntax is used to pass this information to directly to the bash completion script.
-     *
+     * <p>
      * Example: {@code "--help;-h --info;-i --inputFile;-if,-infile,-inny"}
      */
-    private String callerScriptPrefixAliasArgs       = "";
+    private String callerScriptPrefixAliasArgs = "";
 
     /**
      * The minimum number of occurrences of each argument that the executable / wrapper script is expecting
      * before any Java class names / tools.
      * This is expected to be a space-delimited string with the min occurrences as {@code integer} values.
-     *
-     * The order of these space-delimited values should correspond to the contents of {@link #callerScriptPrefixLegalArgs}
-     *
+     * <p>
+     * The order of these space-delimited values should correspond to the contents of
+     * {@link #callerScriptPrefixLegalArgs}
+     * <p>
      * This is used in the logic that tracks the number of times an option is specified.
-     *
+     * <p>
      * This syntax is used to pass this information to directly to the bash completion script.
-     *
+     * <p>
      * Example: {@code "0 0 0 1 1 0 0 0"}
      */
-    private String callerScriptPrefixMinOccurrences  = "";
+    private String callerScriptPrefixMinOccurrences = "";
 
     /**
      * The maximum number of occurrences of each argument that the executable / wrapper script is expecting
      * before any Java class names / tools.
      * This is expected to be a space-delimited string with the max occurrences as {@code integer} values.
-     *
-     * The order of these space-delimited values should correspond to the contents of {@link #callerScriptPrefixLegalArgs}
-     *
+     * <p>
+     * The order of these space-delimited values should correspond to the contents of
+     * {@link #callerScriptPrefixLegalArgs}
+     * <p>
      * This is used in the logic that tracks the number of times an option is specified.
-     *
+     * <p>
      * This syntax is used to pass this information to directly to the bash completion script.
-     *
+     * <p>
      * Example: {@code "1 1 1 1 1 1 1 1"}
      */
-    private String callerScriptPrefixMaxOccurrences  = "";
+    private String callerScriptPrefixMaxOccurrences = "";
 
 
     /**
      * Arguments to the executable / wrapper script that come after any Java class names / tools.  The start of these
      * options is indicated by the user inputting the special option {@code --}
-     *
+     * <p>
      * The format of this variable is identical to {@link #callerScriptPrefixLegalArgs}
      */
-    private String callerScriptPostfixLegalArgs      = "";
+    private String callerScriptPostfixLegalArgs = "";
 
     /**
      * Types of the arguments that the executable / wrapper script is expecting after any Java class
      * names / tools.  The start of these options is indicated by the user inputting the special option {@code --}
-     *
-     * The order of these space-delimited types should correspond to the contents of {@link #callerScriptPostfixLegalArgs}
-     *
+     * <p>
+     * The order of these space-delimited types should correspond to the contents of
+     * {@link #callerScriptPostfixLegalArgs}
+     * <p>
      * The format of this variable is identical to {@link #callerScriptPrefixArgValueTypes}
      */
-    private String callerScriptPostfixArgValueTypes  = "";
+    private String callerScriptPostfixArgValueTypes = "";
 
     /**
      * Sets of arguments to the executable / wrapper script that are mutually exclusive to each other and
      * are expected after any Java class names / tools.  The start of these options is indicated by the user
      * inputting the special option {@code --}
-     *
+     * <p>
      * The format of this variable is identical to {@link #callerScriptPrefixMutexArgs}
      */
-    private String callerScriptPostfixMutexArgs      = "";
+    private String callerScriptPostfixMutexArgs = "";
 
     /**
      * Sets of arguments to the executable / wrapper script that are aliases of each other and
      * are expected after any Java class names / tools.  The start of these options is indicated by the user
      * inputting the special option {@code --}
-     *
+     * <p>
      * The format of this variable is identical to {@link #callerScriptPrefixAliasArgs}
      */
-    private String callerScriptPostfixAliasArgs      = "";
+    private String callerScriptPostfixAliasArgs = "";
 
     /**
      * The minimum number of occurrences of each argument that the executable / wrapper script is expecting
      * after any Java class names / tools.  The start of these options is indicated by the user
      * inputting the special option {@code --}
-     *
-     * The order of these space-delimited types should correspond to the contents of {@link #callerScriptPostfixLegalArgs}
-     *
+     * <p>
+     * The order of these space-delimited types should correspond to the contents of
+     * {@link #callerScriptPostfixLegalArgs}
+     * <p>
      * The format of this variable is identical to {@link #callerScriptPrefixMinOccurrences}
      */
     private String callerScriptPostfixMinOccurrences = "";
@@ -234,9 +246,10 @@ public class BashTabCompletionDoclet extends HelpDoclet {
      * The maximum number of occurrences of each argument that the executable / wrapper script is expecting
      * after any Java class names / tools.  The start of these options is indicated by the user
      * inputting the special option {@code --}
-     *
-     * The order of these space-delimited types should correspond to the contents of {@link #callerScriptPostfixLegalArgs}
-     *
+     * <p>
+     * The order of these space-delimited types should correspond to the contents of
+     * {@link #callerScriptPostfixLegalArgs}
+     * <p>
      * The format of this variable is identical to {@link #callerScriptPrefixMaxOccurrences}
      */
     private String callerScriptPostfixMaxOccurrences = "";
@@ -246,21 +259,14 @@ public class BashTabCompletionDoclet extends HelpDoclet {
      * The start of these options is indicated by the user inputting the special option {@code --}
      * The value of this is set internally based on the contents of {@link #callerScriptPostfixLegalArgs}
      */
-    private boolean hasCallerScriptPostfixArgs       = false;
+    private boolean hasCallerScriptPostfixArgs = false;
 
     // =============================================
-
-    public static boolean start(RootDoc rootDoc) {
-        try {
-            return new BashTabCompletionDoclet().startProcessDocs(rootDoc);
-        } catch (IOException e) {
-            throw new DocException("Exception processing javadoc", e);
-        }
-    }
 
     private String quoteEachWord(final String sentence) {
         return quoteEachWord(sentence, " ");
     }
+
     private String quoteEachWord(final String sentence, final String sep) {
 
         return Stream.of(sentence.split(sep))
@@ -268,33 +274,9 @@ public class BashTabCompletionDoclet extends HelpDoclet {
                 .collect(Collectors.joining(sep));
     }
 
-    // Must add options that are applicable to this doclet so that they will be accepted.
-    public static int optionLength(final String option) {
-
-        if (option.equals(CALLER_SCRIPT_NAME) ||
-            option.equals(CALLER_SCRIPT_PREFIX_LEGAL_ARGS) ||
-            option.equals(CALLER_SCRIPT_PREFIX_ARG_VALUE_TYPES) ||
-            option.equals(CALLER_SCRIPT_PREFIX_MUTEX_ARGS) ||
-            option.equals(CALLER_SCRIPT_PREFIX_ALIAS_ARGS) ||
-            option.equals(CALLER_SCRIPT_PREFIX_ARG_MIN_OCCURRENCES) ||
-            option.equals(CALLER_SCRIPT_PREFIX_ARG_MAX_OCCURRENCES) ||
-            option.equals(CALLER_SCRIPT_POSTFIX_LEGAL_ARGS) ||
-            option.equals(CALLER_SCRIPT_POSTFIX_ARG_VALUE_TYPES) ||
-            option.equals(CALLER_SCRIPT_POSTFIX_MUTEX_ARGS) ||
-            option.equals(CALLER_SCRIPT_POSTFIX_ALIAS_ARGS) ||
-            option.equals(CALLER_SCRIPT_POSTFIX_ARG_MIN_OCCURRENCES) ||
-            option.equals(CALLER_SCRIPT_POSTFIX_ARG_MAX_OCCURRENCES) )
-        {
-            return 2;
-        }
-        else {
-            return HelpDoclet.optionLength(option);
-        }
-    }
-
     @Override
     protected void validateDocletStartingState() {
-        if ( callerScriptName == null ) {
+        if (callerScriptName == null) {
             // The user did not specify the caller script name.
             // We cannot function under these conditions:
             throw new RuntimeException("ERROR: You must specify a caller script name using the option: " + CALLER_SCRIPT_NAME);
@@ -302,101 +284,205 @@ public class BashTabCompletionDoclet extends HelpDoclet {
     }
 
     @Override
-    protected boolean parseOption(final String[] option) {
-
-        // Do the stuff that HelpDoclet needs:
-        boolean hasParsedOption = super.parseOption(option);
-
-        if ( !hasParsedOption ) {
-
-            // Do the stuff that BashTabCompletionDoclet needs:
-            // (Yes this is inefficient because the parent class cycles through input args too.)
-            if (option[0].equals(CALLER_SCRIPT_NAME)) {
-
-                // Remove the last period and anything after it:
-                final int lastDotIndex = option[1].lastIndexOf('.');
-                if ( lastDotIndex != -1 ) {
-                    callerScriptName = option[1].substring(0, lastDotIndex);
+    public Set<Option> getSupportedOptions() {
+        final Set<Option> tabCompletionOptions = new HashSet<>() {{
+            add(new BarclayDocletOption(
+                    Arrays.asList(CALLER_SCRIPT_NAME),
+                    CALLER_SCRIPT_NAME,
+                    1,
+                    Option.Kind.STANDARD,
+                    "<string>") {
+                @Override
+                public boolean process(String option, List<String> arguments) {
+                    // Remove the last period and anything after it:
+                    final int lastDotIndex = arguments.get(0).lastIndexOf('.');
+                    if ( lastDotIndex != -1 ) {
+                        callerScriptName = arguments.get(0).substring(0, lastDotIndex);
+                    }
+                    else {
+                        callerScriptName = arguments.get(0);
+                    }
+                    return true;
                 }
-                else {
-                    callerScriptName = option[1];
+            });
+
+            add(new BarclayDocletOption(
+                    Arrays.asList(CALLER_SCRIPT_PREFIX_LEGAL_ARGS),
+                    CALLER_SCRIPT_PREFIX_LEGAL_ARGS,
+                    1,
+                    Option.Kind.STANDARD,
+                    "<string>") {
+                @Override
+                public boolean process(String option, List<String> arguments) {
+                    callerScriptPrefixLegalArgs = arguments.get(0);
+                    return true;
                 }
+            });
 
-                hasParsedOption = true;
-            }
+            add(new BarclayDocletOption(
+                    Arrays.asList(CALLER_SCRIPT_PREFIX_ARG_VALUE_TYPES),
+                    CALLER_SCRIPT_PREFIX_ARG_VALUE_TYPES,
+                    1,
+                    Option.Kind.STANDARD,
+                    "<string>") {
+                @Override
+                public boolean process(String option, List<String> arguments) {
+                    callerScriptPrefixArgValueTypes = quoteEachWord(arguments.get(0));
+                    return true;
+                }
+            });
 
-            else if (option[0].equals(CALLER_SCRIPT_PREFIX_LEGAL_ARGS)) {
-                callerScriptPrefixLegalArgs = option[1];
-                hasParsedOption = true;
-            }
-            else if (option[0].equals(CALLER_SCRIPT_PREFIX_ARG_VALUE_TYPES)) {
-                // We have to format this option to contain quotes around each word:
-                callerScriptPrefixArgValueTypes = quoteEachWord(option[1]);
-                hasParsedOption = true;
-            }
-            else if (option[0].equals(CALLER_SCRIPT_PREFIX_MUTEX_ARGS)) {
-                // We have to format this option to contain quotes around each group of options:
-                callerScriptPrefixMutexArgs = quoteEachWord(option[1]);
-                hasParsedOption = true;
-            }
-            else if (option[0].equals(CALLER_SCRIPT_PREFIX_ALIAS_ARGS)) {
-                // We have to format this option to contain quotes around each group of options:
-                callerScriptPrefixAliasArgs = quoteEachWord(option[1]);
-                hasParsedOption = true;
-            }
-            else if (option[0].equals(CALLER_SCRIPT_PREFIX_ARG_MIN_OCCURRENCES)) {
-                callerScriptPrefixMinOccurrences = option[1];
-                hasParsedOption = true;
-            }
-            else if (option[0].equals(CALLER_SCRIPT_PREFIX_ARG_MAX_OCCURRENCES)) {
-                callerScriptPrefixMaxOccurrences = option[1];
-                hasParsedOption = true;
-            }
+            add(new BarclayDocletOption(
+                    Arrays.asList(CALLER_SCRIPT_PREFIX_MUTEX_ARGS),
+                    CALLER_SCRIPT_PREFIX_MUTEX_ARGS,
+                    1,
+                    Option.Kind.STANDARD,
+                    "<string>") {
+                @Override
+                public boolean process(String option, List<String> arguments) {
+                    callerScriptPrefixMutexArgs = quoteEachWord(arguments.get(0));
+                    return true;
+                }
+            });
 
-            else if (option[0].equals(CALLER_SCRIPT_POSTFIX_LEGAL_ARGS)) {
-                callerScriptPostfixLegalArgs = option[1];
-                hasCallerScriptPostfixArgs = !callerScriptPostfixLegalArgs.isEmpty();
-                hasParsedOption = true;
-            }
-            else if (option[0].equals(CALLER_SCRIPT_POSTFIX_ARG_VALUE_TYPES)) {
-                // We have to format this option to contain quotes around each word:
-                callerScriptPostfixArgValueTypes = quoteEachWord(option[1]);
-                hasParsedOption = true;
-            }
-            else if (option[0].equals(CALLER_SCRIPT_POSTFIX_MUTEX_ARGS)) {
-                // We have to format this option to contain quotes around each word:
-                callerScriptPostfixMutexArgs = quoteEachWord(option[1]);
-                hasParsedOption = true;
-            }
-            else if (option[0].equals(CALLER_SCRIPT_POSTFIX_ALIAS_ARGS)) {
-                // We have to format this option to contain quotes around each word:
-                callerScriptPostfixAliasArgs = quoteEachWord(option[1]);
-                hasParsedOption = true;
-            }
-            else if (option[0].equals(CALLER_SCRIPT_POSTFIX_ARG_MIN_OCCURRENCES)) {
-                callerScriptPostfixMinOccurrences = option[1];
-                hasParsedOption = true;
-            }
-            else if (option[0].equals(CALLER_SCRIPT_POSTFIX_ARG_MAX_OCCURRENCES)) {
-                callerScriptPostfixMaxOccurrences = option[1];
-                hasParsedOption = true;
-            }
-        }
+            add(new BarclayDocletOption(
+                    Arrays.asList(CALLER_SCRIPT_PREFIX_ALIAS_ARGS),
+                    CALLER_SCRIPT_PREFIX_ALIAS_ARGS,
+                    1,
+                    Option.Kind.STANDARD,
+                    "<string>") {
+                @Override
+                public boolean process(String option, List<String> arguments) {
+                    // We have to format this option to contain quotes around each word:
+                    callerScriptPrefixAliasArgs = quoteEachWord(arguments.get(0));
+                    return true;
+                }
+            });
 
-        return hasParsedOption;
+            add(new BarclayDocletOption(
+                    Arrays.asList(CALLER_SCRIPT_PREFIX_ARG_MIN_OCCURRENCES),
+                    CALLER_SCRIPT_PREFIX_ARG_MIN_OCCURRENCES,
+                    1,
+                    Option.Kind.STANDARD,
+                    "<string>") {
+                    @Override
+                public boolean process(String option, List<String> arguments) {
+                    callerScriptPrefixMinOccurrences = arguments.get(0);
+                    return true;
+                }
+            });
+
+            add(new BarclayDocletOption(
+                    Arrays.asList(CALLER_SCRIPT_PREFIX_ARG_MAX_OCCURRENCES),
+                    CALLER_SCRIPT_PREFIX_ARG_MAX_OCCURRENCES,
+                    1,
+                    Option.Kind.STANDARD,
+                    "<string>") {
+                @Override
+                public boolean process(String option, List<String> arguments) {
+                    callerScriptPrefixMaxOccurrences = arguments.get(0);
+                    return true;
+                }
+            });
+
+            add(new BarclayDocletOption(
+                    Arrays.asList(CALLER_SCRIPT_POSTFIX_LEGAL_ARGS),
+                    CALLER_SCRIPT_POSTFIX_LEGAL_ARGS,
+                    1,
+                    Option.Kind.STANDARD,
+                    "<string>") {
+                @Override
+                public boolean process(String option, List<String> arguments) {
+                    callerScriptPostfixLegalArgs = arguments.get(0);
+                    hasCallerScriptPostfixArgs = !callerScriptPostfixLegalArgs.isEmpty();
+                    return true;
+                }
+            });
+
+             add(new BarclayDocletOption(
+                    Arrays.asList(CALLER_SCRIPT_POSTFIX_ARG_VALUE_TYPES),
+                    CALLER_SCRIPT_POSTFIX_ARG_VALUE_TYPES,
+                    1,
+                    Option.Kind.STANDARD,
+                    "<string>") {
+                @Override
+                public boolean process(String option, List<String> arguments) {
+                    // We have to format this option to contain quotes around each word:
+                    callerScriptPostfixArgValueTypes = quoteEachWord(arguments.get(0));
+                    return true;
+                }
+            });
+
+            add(new BarclayDocletOption(
+                    Arrays.asList(CALLER_SCRIPT_POSTFIX_MUTEX_ARGS),
+                    CALLER_SCRIPT_POSTFIX_MUTEX_ARGS,
+                    1,
+                    Option.Kind.STANDARD,
+                    "<string>") {
+                @Override
+                public boolean process(String option, List<String> arguments) {
+                    // We have to format this option to contain quotes around each word:
+                    callerScriptPostfixMutexArgs = quoteEachWord(arguments.get(0));
+                    return true;
+                }
+            });
+
+             add(new BarclayDocletOption(
+                    Arrays.asList(CALLER_SCRIPT_POSTFIX_ALIAS_ARGS),
+                    CALLER_SCRIPT_POSTFIX_ALIAS_ARGS,
+                    1,
+                    Option.Kind.STANDARD,
+                    "<string>") {
+                @Override
+                public boolean process(String option, List<String> arguments) {
+                    // We have to format this option to contain quotes around each word:
+                    callerScriptPostfixAliasArgs = quoteEachWord(arguments.get(0));
+                    return true;
+                }
+            });
+
+            add(new BarclayDocletOption(
+                    Arrays.asList(CALLER_SCRIPT_POSTFIX_ARG_MIN_OCCURRENCES),
+                    CALLER_SCRIPT_POSTFIX_ARG_MIN_OCCURRENCES,
+                    1,
+                    Option.Kind.STANDARD,
+                    "<string>") {
+                @Override
+                public boolean process(String option, List<String> arguments) {
+                    callerScriptPostfixMinOccurrences = arguments.get(0);
+                    return true;
+                }
+            });
+
+            add(new BarclayDocletOption(
+                    Arrays.asList(CALLER_SCRIPT_POSTFIX_ARG_MAX_OCCURRENCES),
+                    CALLER_SCRIPT_POSTFIX_ARG_MAX_OCCURRENCES,
+                    1,
+                    Option.Kind.STANDARD,
+                    "<string>") {
+                @Override
+                public boolean process(String option, List<String> arguments) {
+                    callerScriptPostfixMaxOccurrences = arguments.get(0);
+                    return true;
+                }
+            });
+
+        }};
+
+        tabCompletionOptions.addAll(super.getSupportedOptions());
+        return tabCompletionOptions;
     }
 
     /**
      * Filter out features that are not command line programs by selecting only classes with
      * {@link CommandLineProgramProperties}.
      * @param documentedFeature feature that is being considered for inclusion in the docs
-     * @param classDoc for the class that is being considered for inclusion in the docs
      * @param clazz class that is being considered for inclusion in the docs
      * @return
      */
     @Override
-    public boolean includeInDocs(final DocumentedFeature documentedFeature, final ClassDoc classDoc, final Class<?> clazz) {
-        return super.includeInDocs(documentedFeature, classDoc, clazz) &&
+    public boolean includeInDocs(final DocumentedFeature documentedFeature, final Class<?> clazz) {
+        return super.includeInDocs(documentedFeature, clazz) &&
                 clazz.getAnnotation(CommandLineProgramProperties.class) != null;
     }
 
@@ -405,16 +491,16 @@ public class BashTabCompletionDoclet extends HelpDoclet {
      * Returns null if no appropriate handler is found or doc shouldn't be documented at all.
      */
     @Override
-    protected DocWorkUnit createWorkUnit(
-            final DocumentedFeature documentedFeature,
-            final ClassDoc classDoc,
-            final Class<?> clazz)
+    public DocWorkUnit createWorkUnit(
+            final Element targetElement,
+            final Class<?> clazz,
+            final DocumentedFeature documentedFeature)
     {
         return new DocWorkUnit(
                 new BashTabCompletionDocWorkUnitHandler(this),
-                documentedFeature,
-                classDoc,
-                clazz);
+                targetElement,
+                clazz,
+                documentedFeature);
     }
 
     @Override

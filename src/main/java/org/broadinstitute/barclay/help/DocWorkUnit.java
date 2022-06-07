@@ -1,14 +1,17 @@
 package org.broadinstitute.barclay.help;
 
-import com.sun.javadoc.ClassDoc;
+import jdk.javadoc.doclet.DocletEnvironment;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.broadinstitute.barclay.argparser.CommandLineException;
 import org.broadinstitute.barclay.argparser.CommandLineProgramGroup;
 import org.broadinstitute.barclay.argparser.CommandLineProgramProperties;
 import org.broadinstitute.barclay.argparser.BetaFeature;
 import org.broadinstitute.barclay.argparser.ExperimentalFeature;
 import org.broadinstitute.barclay.utils.Utils;
 
+import javax.lang.model.element.Element;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,10 +22,10 @@ import java.util.Map;
 public class DocWorkUnit implements Comparable<DocWorkUnit> {
     final protected static Logger logger = LogManager.getLogger(DocWorkUnit.class);
 
-    private final String name;                          // name of the this work unit/feature
+    private final String name;                          // name of this work unit/feature
 
     private final Class<?> clazz;                       // class that's being documented
-    private final ClassDoc classDoc;                    // javadoc documentation for clazz
+    private final Element docElement;                  // javadoc documentation for clazz
     private final DocWorkUnitHandler workUnitHandler;   // handler for this work unit
 
     // Annotations attached to the feature class being documented by this work unit
@@ -40,19 +43,19 @@ public class DocWorkUnit implements Comparable<DocWorkUnit> {
 
     /**
      * @param workUnitHandler
-     * @param documentedFeatureAnnotation
-     * @param classDoc
+     * @param docElement
      * @param clazz
+     * @param documentedFeatureAnnotation
      */
     public DocWorkUnit(
             final DocWorkUnitHandler workUnitHandler,
-            final DocumentedFeature documentedFeatureAnnotation,
-            final ClassDoc classDoc,
-            final Class<?> clazz)
+            final Element docElement,
+            final Class<?> clazz,
+            final DocumentedFeature documentedFeatureAnnotation)
     {
         Utils.nonNull(workUnitHandler, "workUnitHandler cannot be null");
         Utils.nonNull(documentedFeatureAnnotation, "DocumentedFeature annotation cannot be null");
-        Utils.nonNull(classDoc, "classDoc cannot be null");
+        Utils.nonNull(docElement, "classDoc cannot be null");
         Utils.nonNull(clazz, "class cannot be null");
 
         this.name = clazz.getSimpleName();
@@ -62,7 +65,7 @@ public class DocWorkUnit implements Comparable<DocWorkUnit> {
         this.experimentalFeature = clazz.getAnnotation(ExperimentalFeature.class);
         this.betaFeature = clazz.getAnnotation(BetaFeature.class);
         this.workUnitHandler = workUnitHandler;
-        this.classDoc = classDoc;
+        this.docElement = docElement;
         this.clazz = clazz;
 
         // summary, groupName and groupSummary can each be determined via fallback policies dictated
@@ -71,6 +74,7 @@ public class DocWorkUnit implements Comparable<DocWorkUnit> {
         summary = workUnitHandler.getSummaryForWorkUnit(this);
         groupName = workUnitHandler.getGroupNameForWorkUnit(this);
         groupSummary = workUnitHandler.getGroupSummaryForWorkUnit(this);
+
     }
 
     /**
@@ -106,10 +110,10 @@ public class DocWorkUnit implements Comparable<DocWorkUnit> {
     public DocumentedFeature getDocumentedFeature() { return documentedFeature; }
 
     /**
-     * Get the JavDoc ClassDoc for this work unit.
-     * @return ClassDoc for this work unit. Will not be null.
+     * Get the Java language Element for this work unit.
+     * @return Element for this work unit. Will not be null.
      */
-    public ClassDoc getClassDoc() { return classDoc; }
+    public Element getDocElement() { return docElement; }
 
     /**
      * The name of this documentation unit
@@ -184,8 +188,12 @@ public class DocWorkUnit implements Comparable<DocWorkUnit> {
     public CommandLineProgramGroup getCommandLineProgramGroup() {
         if (commandLineProperties != null) {
             try {
-                return commandLineProperties.programGroup().newInstance();
-            } catch (IllegalAccessException | InstantiationException e) {
+                return commandLineProperties.programGroup().getDeclaredConstructor().newInstance();
+            } catch (final NoSuchMethodException e) {
+                throw new CommandLineException.CommandLineParserInternalException(
+                        String.format ("Command line program class %s does not have the required no argument constructor",
+                                getClazz()), e);
+            } catch (final InvocationTargetException |IllegalAccessException | InstantiationException e) {
                 logger.warn(
                         String.format("Can't instantiate program group class to retrieve summary for group %s for class %s",
                                 commandLineProperties.programGroup().getName(),
