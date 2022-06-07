@@ -880,7 +880,7 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
     private void createCollection(final Field field, final Object callerOptions, final String annotationType)
             throws IllegalAccessException {
         try {
-            field.set(callerOptions, field.getType().newInstance());
+            field.set(callerOptions, field.getType().getDeclaredConstructor().newInstance());
         } catch (final Exception ex) {
             try {
                 field.set(callerOptions, new ArrayList<>());

@@ -31,11 +31,11 @@ public class NamedArgumentDefinitionUnitTest {
                 { new Object() { @Argument(optional=false) Integer arg; }, "arg", false, NamedArgumentDefinition.NULL_ARGUMENT_STRING},
 
                 // reference, initialized, optional
-                { new Object() { @Argument(optional=true) Integer arg = new Integer(27); }, "arg", true, "27" },
+                { new Object() { @Argument(optional=true) Integer arg = Integer.valueOf(27); }, "arg", true, "27" },
 
                 // reference, initialized, required
                 // NOTE: non-intuitive case: it looks like its required but isn't since it has a value
-                { new Object() { @Argument(optional=false) Integer arg = new Integer(27); }, "arg", true, "27" },
+                { new Object() { @Argument(optional=false) Integer arg = Integer.valueOf(27); }, "arg", true, "27" },
 
                 // collection, null, optional
                 { new Object() { @Argument(optional=true) List<String> arg; }, "arg", true, NamedArgumentDefinition.NULL_ARGUMENT_STRING},

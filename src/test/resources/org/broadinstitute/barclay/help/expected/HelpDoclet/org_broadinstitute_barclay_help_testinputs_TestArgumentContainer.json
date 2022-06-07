@@ -424,7 +424,7 @@
       "options": []
     }
   ],
-  "description": "Argument container class for testing documentation generation. Contains an argument\n for each @Argument, @ArgumentCollection, and @DocumentedFeature property that should\n be tested.\n\n Test custom tag:\n testType\n\n \u003cp\u003e\n The purpose of this paragraph is to test embedded html formatting.\n \u003col\u003e\n     \u003cli\u003eThis is point number 1\u003c/li\u003e\n     \u003cli\u003eThis is point number 2\u003c/li\u003e\n \u003c/ol\u003e\n \u003c/p\u003e",
+  "description": "Argument container class for testing documentation generation. Contains an argument\n for each @Argument, @ArgumentCollection, and @DocumentedFeature property that should\n be tested.\n\n Test custom tag:\n {@MyTag.Type testType}\n\n \u003cp\u003e\n The purpose of this paragraph is to test embedded html formatting.\n \u003col\u003e\n     \u003cli\u003eThis is point number 1\u003c/li\u003e\n     \u003cli\u003eThis is point number 2\u003c/li\u003e\n \u003c/ol\u003e\n \u003c/p\u003e",
   "name": "TestArgumentContainer",
   "group": "Test feature group name",
   "beta": true,

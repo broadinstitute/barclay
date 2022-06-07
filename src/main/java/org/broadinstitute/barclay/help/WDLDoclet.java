@@ -1,12 +1,13 @@
 package org.broadinstitute.barclay.help;
 
-import com.sun.javadoc.ClassDoc;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+import jdk.javadoc.doclet.DocletEnvironment;
 import org.broadinstitute.barclay.argparser.CommandLineProgramProperties;
 import org.broadinstitute.barclay.argparser.WorkflowProperties;
 
+import javax.lang.model.element.Element;
 import java.io.*;
 import java.util.List;
 import java.util.Map;
@@ -16,18 +17,17 @@ import java.util.Map;
  */
 public class WDLDoclet extends HelpDoclet {
 
-    /**
-     * Create a WDL doclet and generate the FreeMarker templates properties.
-     * @param rootDoc
-     * @throws IOException
-     */
-    public static boolean start(final com.sun.javadoc.RootDoc rootDoc) throws IOException {
-        return new WDLDoclet().startProcessDocs(rootDoc);
-    }
+//    /**
+//     * Create a WDL doclet and generate the FreeMarker templates properties.
+//     * @param docEnv DocletEnvironment
+//     */
+//    public static boolean run(final DocletEnvironment docEnv) throws IOException {
+//        return super.start;
+//    }
 
     @Override
-    public boolean includeInDocs(final DocumentedFeature documentedFeature, final ClassDoc classDoc, final Class<?> clazz) {
-        if (super.includeInDocs(documentedFeature, classDoc, clazz)) {
+    public boolean includeInDocs(final DocumentedFeature documentedFeature, final Class<?> clazz) {
+        if (super.includeInDocs(documentedFeature, clazz)) {
             boolean hasWorkflowProperties = clazz.getAnnotation(WorkflowProperties.class) != null;
             boolean isCommandLineProgram = clazz.getAnnotation(CommandLineProgramProperties.class) != null;
             if (hasWorkflowProperties) {
@@ -46,26 +46,26 @@ public class WDLDoclet extends HelpDoclet {
      * @return Create and return a DocWorkUnit-derived object to handle WDLGen
      * for the target feature(s) represented by clazz.
      *
-     * @param documentedFeature DocumentedFeature annotation for the target feature
-     * @param classDoc javadoc classDoc for the target feature
+     * @param classElement Element for the target feature
      * @param clazz class of the target feature
+     * @param documentedFeature DocumentedFeature annotation for the target feature
      * @return DocWorkUnit to be used for this feature
      */
     @Override
-    protected DocWorkUnit createWorkUnit(
-            final DocumentedFeature documentedFeature,
-            final com.sun.javadoc.ClassDoc classDoc,
-            final Class<?> clazz)
+    public DocWorkUnit createWorkUnit(
+            final Element classElement,
+            final Class<?> clazz,
+            final DocumentedFeature documentedFeature)
     {
-        return includeInDocs(documentedFeature, classDoc, clazz) ?
+        return includeInDocs(documentedFeature, clazz) ?
                 // for WDL we don't need a custom DocWorkUnit, only a custom handler, so just use the
                 // Barclay default DocWorkUnit class
                 new DocWorkUnit(
                     new WDLWorkUnitHandler(this),
-                    documentedFeature,
-                    classDoc,
-                    clazz) :
-                null;
+                        classElement,
+                        clazz,
+                        documentedFeature)
+                : null;
     }
 
     @Override

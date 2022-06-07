@@ -1,12 +1,14 @@
 package org.broadinstitute.barclay.help.testdoclets;
 
-import com.sun.javadoc.ClassDoc;
-import com.sun.javadoc.RootDoc;
+import jdk.javadoc.doclet.DocletEnvironment;
+import org.broadinstitute.barclay.help.DefaultDocWorkUnitHandler;
 import org.broadinstitute.barclay.help.DocException;
 import org.broadinstitute.barclay.help.DocWorkUnit;
+import org.broadinstitute.barclay.help.DocWorkUnitHandler;
 import org.broadinstitute.barclay.help.DocumentedFeature;
 import org.broadinstitute.barclay.help.HelpDoclet;
 
+import javax.lang.model.element.Element;
 import java.io.IOException;
 import java.util.Map;
 
@@ -15,25 +17,17 @@ import java.util.Map;
  */
 public class TestDoclet extends HelpDoclet {
 
-    public static boolean start(RootDoc rootDoc) {
-        try {
-            return new TestDoclet().startProcessDocs(rootDoc);
-        } catch (IOException e) {
-            throw new DocException("Exception processing javadoc", e);
-        }
-    }
-
     @Override
-    protected DocWorkUnit createWorkUnit(
-        final DocumentedFeature documentedFeature,
-        final ClassDoc classDoc,
-        final Class<?> clazz)
+    public DocWorkUnit createWorkUnit(
+            final Element classElement,
+            final Class<?> clazz,
+            final DocumentedFeature documentedFeature)
     {
         return new DocWorkUnit(
                 new TestDocWorkUnitHandler(this),
-                documentedFeature,
-                classDoc,
-                clazz);
+                classElement,
+                clazz,
+                documentedFeature);
     }
 
     /**

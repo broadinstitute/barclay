@@ -1,15 +1,14 @@
 package org.broadinstitute.barclay.help;
 
-import com.sun.javadoc.ClassDoc;
-import com.sun.javadoc.FieldDoc;
-
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.broadinstitute.barclay.argparser.*;
+import org.broadinstitute.barclay.help.scanners.JavaLanguageModelScanners;
 import org.broadinstitute.barclay.utils.Utils;
 
+import javax.lang.model.element.Element;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -65,9 +64,7 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
             }
             if (summary == null || summary.isEmpty()) {
                 // If no summary was found from annotations, use the javadoc if there is any
-                summary = Arrays.stream(workUnit.getClassDoc().firstSentenceTags())
-                        .map(tag -> tag.text())
-                        .collect(Collectors.joining());
+                summary = JavaLanguageModelScanners.getDocComment(getDoclet().getDocletEnv(), workUnit.getDocElement());
             }
         }
 
@@ -130,10 +127,7 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
      * @return Description to be used or the work unit.
      */
     protected String getDescription(final DocWorkUnit currentWorkUnit) {
-        return Arrays.stream(currentWorkUnit.getClassDoc().inlineTags())
-                .filter(t -> getTagPrefix() == null || !t.name().startsWith(getTagPrefix()))
-                .map(t -> t.text())
-                .collect(Collectors.joining());
+        return JavaLanguageModelScanners.getDocComment(getDoclet().getDocletEnv(), currentWorkUnit.getDocElement());
     }
 
     /**
@@ -194,7 +188,7 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
         // to the format's reader/writer class (i.e. TableReader), and then reference that feature
         // in the extraDocs attribute in a CommandLineProgram that reads/writes that format.
         try {
-            final Object argumentContainer = workUnit.getClazz().newInstance();
+            final Object argumentContainer = workUnit.getClazz().getDeclaredConstructor().newInstance();
             if (argumentContainer instanceof CommandLinePluginProvider) {
                 pluginDescriptors = ((CommandLinePluginProvider) argumentContainer).getPluginDescriptors();
                 clp = new CommandLineArgumentParser(
@@ -203,21 +197,23 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
             } else {
                 clp = new CommandLineArgumentParser(argumentContainer);
             }
-        } catch (IllegalAccessException | InstantiationException e) {
-            // DocumentedFeature does not assume a no-arg constructor unless it is also annotated with CommandLineProgramProperties
-            if (workUnit.getCommandLineProperties() != null) {
-                throw new RuntimeException(workUnit.getClazz() + " requires a non-arg constructor, because it is annotated with CommandLineProgramProperties ", e);
-            }
+            workUnit.setProperty("groups", groupMaps);
+            workUnit.setProperty("data", featureMaps);
+
+            addHighLevelBindings(workUnit);
+            addCommandLineArgumentBindings(workUnit, clp);
+            addDefaultPlugins(workUnit, pluginDescriptors);
+            addExtraDocsBindings(workUnit);
+            addCustomBindings(workUnit);
+        } catch (final NoSuchMethodException e) {
+            throw new CommandLineException.CommandLineParserInternalException(
+                    String.format ("DocumentedFeature class %s does not have the required no argument constructor",
+                            workUnit.getClazz()), e);
+        } catch (final InvocationTargetException | IllegalAccessException | InstantiationException e) {
+            throw new CommandLineException.CommandLineParserInternalException(
+                    String.format ("DocumentedFeature class %s cannot be instantiated",
+                            workUnit.getClazz()), e);
         }
-
-        workUnit.setProperty("groups", groupMaps);
-        workUnit.setProperty("data", featureMaps);
-
-        addHighLevelBindings(workUnit);
-        addCommandLineArgumentBindings(workUnit, clp);
-        addDefaultPlugins(workUnit, pluginDescriptors);
-        addExtraDocsBindings(workUnit);
-        addCustomBindings(workUnit);
     }
 
     /**
@@ -253,14 +249,25 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
      */
     protected void addCustomBindings(final DocWorkUnit currentWorkUnit) {
         final String tagFilterPrefix = getTagPrefix();
-        Arrays.stream(currentWorkUnit.getClassDoc().inlineTags())
-                .filter(t -> t.name().startsWith(tagFilterPrefix))
-                .forEach(t -> currentWorkUnit.setProperty(t.name().substring(tagFilterPrefix.length()), t.text()));
+        if (tagFilterPrefix != null) {
+            final Map<String, List<String>> parts = JavaLanguageModelScanners.getInlineTags(
+                    getDoclet().getDocletEnv(),
+                    currentWorkUnit.getDocElement());
+            // create properties for any custom tags
+            parts.entrySet()
+                    .stream()
+                    // we only want the tags that start with a (doclet specific) custom tag prefix; skip the
+                    // leading '@' since the scanner strips that out
+                    .filter(e -> e.getKey().startsWith(tagFilterPrefix.substring(1)))
+                    .forEach(e -> currentWorkUnit.setProperty(
+                            e.getKey().substring(tagFilterPrefix.substring(1).length()),
+                            e.getValue().stream().map(Object::toString).collect(Collectors.joining(" "))));
+        }
     }
 
     /**
      * Subclasses override this to have javadoc tags with this prefix placed in the freemarker map.
-     * @return string refix used for custom javadoc tags
+     * @return string prefix used for custom javadoc tags
      */
     protected String getTagFilterPrefix(){ return ""; }
 
@@ -324,9 +331,10 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
     }
 
     private String getTagPrefix() {
-        String customPrefix = getTagFilterPrefix();
-        return customPrefix == null ?
-                customPrefix : "@" + customPrefix + ".";
+        final String customPrefix = getTagFilterPrefix();
+        return customPrefix == null || customPrefix.length() == 0 ?
+                null :
+                "@" + customPrefix + ".";
 
     }
 
@@ -373,8 +381,8 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
         // processNamedArgument and provide an alternative policy.
         if (!argDef.isControlledByPlugin() && (!argDef.isHidden() || getDoclet().showHiddenFeatures())) {
             final Map<String, Object> argMap = new HashMap<>();
-            final FieldDoc fieldDoc = getFieldDocForCommandLineArgument(currentWorkUnit, argDef);
-            final String argKind = processNamedArgument(argMap, argDef, fieldDoc.commentText());
+            final String commentText = getDocCommentForField(currentWorkUnit, argDef);
+            final String argKind = processNamedArgument(argMap, argDef, commentText);
 
             // Finalize argument bindings
             args.get(argKind).add(argMap);
@@ -385,55 +393,13 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
         }
     }
 
-    private FieldDoc getFieldDocForCommandLineArgument(
-            final DocWorkUnit currentWorkUnit,
-            final NamedArgumentDefinition argDef)
-    {
-        // Retrieve the ClassDoc corresponding to this argument directly
-        final String declaringClassTypeName = argDef.getUnderlyingField().getDeclaringClass().getTypeName();
-        final ClassDoc declaringClassDoc = getDoclet().getRootDoc().classNamed(declaringClassTypeName);
-
-        if (declaringClassDoc == null) {
-            throw new DocException(
-                    String.format("Can't resolve ClassDoc for declaring class for argument \"%s\" in \"%s\" with qualified name \"%s\"",
-                            argDef.getUnderlyingField().getName(),
-                            currentWorkUnit.getClassDoc().qualifiedTypeName(),
-                            declaringClassTypeName));
+    private String getDocCommentForField(final DocWorkUnit workUnit, final NamedArgumentDefinition argDef) {
+        final Element fieldElement = JavaLanguageModelScanners.getElementForField(getDoclet().getDocletEnv(), workUnit.getDocElement(), argDef.getUnderlyingField());
+        if (fieldElement == null) {
+            return "";
         }
-
-        final FieldDoc fieldDoc = getFieldDoc(declaringClassDoc, argDef.getUnderlyingField().getName());
-
-        if (fieldDoc == null) {
-            throw new DocException(
-                    String.format(
-                        "The class \"%s\" is referenced by \"%s\", and must be included in the list of documentation sources.",
-                        argDef.getUnderlyingField().getDeclaringClass().getCanonicalName(),
-                        currentWorkUnit.getClassDoc().qualifiedTypeName())
-            );
-        }
-
-        // Try to validate that the FieldDoc we found is the correct one. The qualified name of the argument's
-        // FieldDoc should start with the the normalized name of the argument's declaring class.
-        final String normalizedTypeName = declaringClassTypeName.replace('$', '.');
-        if (!fieldDoc.qualifiedName().startsWith(normalizedTypeName)) {
-            // The qualified name for a FieldDoc doesn't include the full path of the class if it corresponds to
-            // an argument who's declaring class is local/anonymous
-            if (argDef.getUnderlyingField().getDeclaringClass().isLocalClass() || argDef.getUnderlyingField().getDeclaringClass().isAnonymousClass()) {
-                logger.warn(String.format(
-                        "Field level Javadoc is ignored for local/anonymous class for member field \"%s\" in \"%s\" of type \"%s\".",
-                        argDef.getUnderlyingField().getName(),
-                        currentWorkUnit.getClazz().getCanonicalName(),
-                        declaringClassTypeName));
-            } else {
-                logger.warn(String.format(
-                        "Can't validate FieldDoc \"%s\" for member field \"%s\" in \"%s\" of type \"%s\".",
-                        fieldDoc.qualifiedName(),
-                        argDef.getUnderlyingField().getName(),
-                        currentWorkUnit.getClazz().getCanonicalName(),
-                        declaringClassTypeName));
-            }
-        }
-        return fieldDoc;
+        final String comment = JavaLanguageModelScanners.getDocComment(getDoclet().getDocletEnv(), fieldElement);
+        return comment == null ? "" : comment;
     }
 
     /**
@@ -583,48 +549,6 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
     }
 
     /**
-     * Recursive helper routine to getFieldDoc()
-     */
-    private FieldDoc getFieldDoc(final ClassDoc classDoc, final String argumentFieldName) {
-        for (final FieldDoc fieldDoc : classDoc.fields(false)) {
-            if (fieldDoc.name().equals(argumentFieldName)) {
-                return fieldDoc;
-            }
-
-            // This can return null, specifically, we can encounter https://bugs.openjdk.java.net/browse/JDK-8033735,
-            // which is fixed in JDK9 http://hg.openjdk.java.net/jdk9/jdk9/hotspot/rev/ba8c351b7096.
-            final Field field = DocletUtils.getFieldForFieldDoc(fieldDoc);
-            if (field == null) {
-                logger.warn(
-                    String.format(
-                        "Could not access the field definition for %s while searching for %s, presumably because the field is inaccessible",
-                        fieldDoc.name(),
-                            argumentFieldName)
-                );
-            } else if (field.isAnnotationPresent(ArgumentCollection.class)) {
-                final ClassDoc typeDoc = getDoclet().getRootDoc().classNamed(fieldDoc.type().qualifiedTypeName());
-                if (typeDoc == null) {
-                    throw new DocException("Tried to get javadocs for ArgumentCollection field " +
-                            fieldDoc + " but couldn't find the class in the RootDoc");
-                } else {
-                    FieldDoc result = getFieldDoc(typeDoc, argumentFieldName);
-                    if (result != null) {
-                        return result;
-                    }
-                    // else keep searching
-                }
-            }
-        }
-
-        // if we didn't find it here, wander up to the superclass to find the field
-        if (classDoc.superclass() != null) {
-            return getFieldDoc(classDoc.superclass(), argumentFieldName);
-        }
-
-        return null;
-    }
-
-    /**
      * Returns a Pair of (main, synonym) names for argument with fullName s1 and
      * shortName s2.
      *
@@ -684,7 +608,7 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
      *
      * @param argBindings the argument property bindings map to be populated for this argument
      * @param argDef the {@link NamedArgumentDefinition} for this argument
-     * @param fieldCommentText the comment text for the underlying Field for the arugment, if any
+     * @param fieldCommentText the comment text for the underlying Field for the argument, if any
      * @return the "kind" category for this argument as used by the freemarker template ("deprecated", "required"
      * (common or otherwise), "common" (optional), "advanced", or "hidden")
      */
@@ -811,11 +735,6 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
      */
     @SuppressWarnings("unchecked")
     private <T extends Enum<T>> List<Map<String, String>> docForEnumArgument(final Class<?> enumClass) {
-        final ClassDoc doc = this.getDoclet().getClassDocForClass(enumClass);
-        if ( doc == null ) {
-            throw new RuntimeException(String.format("Unable to get ClassDoc for enum %s", enumClass));
-        }
-
         final List<Map<String, String>> bindings = new ArrayList<>();
         if (CommandLineArgumentParser.ClpEnum.class.isAssignableFrom(enumClass)) {
             final T[] enumConstants = (T[]) enumClass.getEnumConstants();
@@ -823,13 +742,6 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
                 bindings.add(createPossibleValuesMap(
                         enumConst.name(),
                         ((CommandLineArgumentParser.ClpEnum) enumConst).getHelpDoc()));
-            }
-        } else {
-            final Set<String> enumConstantFieldNames = enumConstantsNames(enumClass);
-            for (final FieldDoc fieldDoc : doc.fields(false)) {
-                if (enumConstantFieldNames.contains(fieldDoc.name())) {
-                    bindings.add(createPossibleValuesMap(fieldDoc.name(), fieldDoc.commentText()));
-                }
             }
         }
 
