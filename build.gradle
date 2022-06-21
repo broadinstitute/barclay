@@ -30,12 +30,10 @@ repositories {
 }
 
 jacocoTestReport {
-    doFirst {
-        additionalSourceDirs = files(sourceSets.main.allJava.srcDirs)
-    }
     dependsOn test
     group = "Reporting"
     description = "Generate Jacoco coverage reports after running tests."
+    additionalSourceDirs.from = ssourceSets.main.allJava.srcDirs
 
     reports {
         xml.enabled = true // codecov plugin depends on xml format report
