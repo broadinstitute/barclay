@@ -33,7 +33,7 @@ jacocoTestReport {
     dependsOn test
     group = "Reporting"
     description = "Generate Jacoco coverage reports after running tests."
-    additionalSourceDirs.from = ssourceSets.main.allJava.srcDirs
+    additionalSourceDirs.from = sourceSets.main.allJava.srcDirs
 
     reports {
         xml.enabled = true // codecov plugin depends on xml format report
