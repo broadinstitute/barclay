@@ -17,7 +17,8 @@ import java.lang.annotation.Target;
 public @interface DeprecatedFeature {
 
     /**
-     * @return the doc string associated with this command-line argument.
+     * @return the doc string associated with this command-line argument. Mutually exclusive with
+     * {@link BetaFeature} and {@link ExperimentalFeature}.
      */
     String detail() default "This feature is deprecated and will be removed in a future release.";
 }

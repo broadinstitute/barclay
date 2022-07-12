@@ -3,6 +3,7 @@ package org.broadinstitute.barclay.help;
 import com.sun.javadoc.ClassDoc;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.broadinstitute.barclay.argparser.CommandLineException;
 import org.broadinstitute.barclay.argparser.CommandLineProgramGroup;
 import org.broadinstitute.barclay.argparser.CommandLineProgramProperties;
 import org.broadinstitute.barclay.argparser.BetaFeature;
@@ -64,6 +65,8 @@ public class DocWorkUnit implements Comparable<DocWorkUnit> {
         this.experimentalFeature = clazz.getAnnotation(ExperimentalFeature.class);
         this.betaFeature = clazz.getAnnotation(BetaFeature.class);
         this.deprecatedFeature = clazz.getAnnotation(DeprecatedFeature.class);
+        checkForMultipleMutexAnnotations();
+
         this.workUnitHandler = workUnitHandler;
         this.classDoc = classDoc;
         this.clazz = clazz;
@@ -74,6 +77,18 @@ public class DocWorkUnit implements Comparable<DocWorkUnit> {
         summary = workUnitHandler.getSummaryForWorkUnit(this);
         groupName = workUnitHandler.getGroupNameForWorkUnit(this);
         groupSummary = workUnitHandler.getGroupSummaryForWorkUnit(this);
+    }
+
+    private void checkForMultipleMutexAnnotations() {
+        int count =
+                (this.experimentalFeature != null ? 1 : 0) +
+                (this.betaFeature != null ? 1 : 0) +
+                (this.deprecatedFeature != null ? 1 : 0);
+        if (count > 1) {
+            throw new CommandLineException.CommandLineParserInternalException(String.format(
+                    "Multiple annotations detected on class %s. The Deprecated, Beta, and Experimental annotations are mutually exclusive.",
+                    clazz.getSimpleName()));
+        }
     }
 
     /**

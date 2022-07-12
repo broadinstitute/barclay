@@ -131,9 +131,7 @@
 		<h1>${name} **EXPERIMENTAL**</h1>
 	<#elseif deprecated?? && deprecated == true>
 		<h1>${name} **DEPRECATED**</h1>
-		<#if deprecationDetail??>
-		<h1>${deprecationDetail}</h1>
-		</#if>
+		<h2>${deprecationDetail}</h2>
 	<#else>
         <h1>${name}</h1>
 	</#if>
