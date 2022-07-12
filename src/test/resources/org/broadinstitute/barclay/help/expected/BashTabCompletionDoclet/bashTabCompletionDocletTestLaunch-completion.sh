@@ -11,13 +11,13 @@
 CALLER_SCRIPT_NAME="bashTabCompletionDocletTestLaunch"
 
 # A description of these variables is below in the main completion function (_masterCompletionFunction)
-CS_PREFIX_OPTIONS_ALL_LEGAL_ARGUMENTS=(--pre-help --pre-info --pre-inputFile TestArgumentContainer )
-CS_PREFIX_OPTIONS_NORMAL_COMPLETION_ARGUMENTS=(--pre-help --pre-info --pre-inputFile TestArgumentContainer )
-CS_PREFIX_OPTIONS_ALL_ARGUMENT_VALUE_TYPES=("null" "null" "File" "null" )
+CS_PREFIX_OPTIONS_ALL_LEGAL_ARGUMENTS=(--pre-help --pre-info --pre-inputFile TestDeprecatedCLP TestArgumentContainer )
+CS_PREFIX_OPTIONS_NORMAL_COMPLETION_ARGUMENTS=(--pre-help --pre-info --pre-inputFile TestDeprecatedCLP TestArgumentContainer )
+CS_PREFIX_OPTIONS_ALL_ARGUMENT_VALUE_TYPES=("null" "null" "File" "null" "null" )
 CS_PREFIX_OPTIONS_MUTUALLY_EXCLUSIVE_ARGS=("--pre-help;pre-info,pre-inputFile" "--pre-info;pre-help,pre-inputFile")
 CS_PREFIX_OPTIONS_SYNONYMOUS_ARGS=("--pre-help;-prh" "--pre-inputFile;-prif")
-CS_PREFIX_OPTIONS_MIN_OCCURRENCES=(0 0 1 0 )
-CS_PREFIX_OPTIONS_MAX_OCCURRENCES=(1 1 1 1 )
+CS_PREFIX_OPTIONS_MIN_OCCURRENCES=(0 0 1 0 0 )
+CS_PREFIX_OPTIONS_MAX_OCCURRENCES=(1 1 1 1 1 )
 
 CS_POSTFIX_OPTIONS_ALL_LEGAL_ARGUMENTS=(--post-help --post-info --post-inputFile)
 CS_POSTFIX_OPTIONS_NORMAL_COMPLETION_ARGUMENTS=(--post-help --post-info --post-inputFile)
@@ -31,7 +31,7 @@ CS_POSTFIX_OPTIONS_MAX_OCCURRENCES=(1 1 1)
 HAS_POSTFIX_OPTIONS="true"
 
 # All the tool names we are able to complete:
-ALL_TOOLS=(TestArgumentContainer )
+ALL_TOOLS=(TestDeprecatedCLP TestArgumentContainer )
 
 ####################################################################################################
 
@@ -422,6 +422,20 @@ _bashTabCompletionDocletTestLaunch_masterCompletionFunction()
         # Set our reply as a list of the possible tool matches:
         COMPREPLY=( $(compgen -W '${possibleToolMatches[@]}' -- $cur) )
 
+    elif [[ ${toolName} == "TestDeprecatedCLP" ]] ; then
+
+        # Set up the completion information for this tool:
+        DEPENDENT_ARGUMENTS=()
+        NORMAL_COMPLETION_ARGUMENTS=(--optionalInt )
+        MUTUALLY_EXCLUSIVE_ARGS=()
+        SYNONYMOUS_ARGS=("--optionalInt;-optInt" )
+        MIN_OCCURRENCES=(0 )
+        MAX_OCCURRENCES=(2147483647 )
+        ALL_LEGAL_ARGUMENTS=(--optionalInt )
+        ALL_ARGUMENT_VALUE_TYPES=("int" )
+
+        # Complete the arguments for this tool:
+        _bashTabCompletionDocletTestLaunch_handleArgs
     elif [[ ${toolName} == "TestArgumentContainer" ]] ; then
 
         # Set up the completion information for this tool:

@@ -45,7 +45,8 @@ public class DocumentationGenerationIntegrationTest {
 
     private static final List<String> EXPECTED_OUTPUT_FILE_NAME_PREFIXES = Arrays.asList(
             "org_broadinstitute_barclay_help_testinputs_TestArgumentContainer",
-            "org_broadinstitute_barclay_help_testinputs_TestExtraDocs"
+            "org_broadinstitute_barclay_help_testinputs_TestExtraDocs",
+            "org_broadinstitute_barclay_help_testinputs_TestDeprecatedCLP"
     );
 
     // Class wrapper to hold test args. This is required because to when running tests, NGTest/gradle spew

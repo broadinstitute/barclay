@@ -6,7 +6,7 @@
 
 	
 
-	<?php $group = 'Test extra docs group name'; ?>
+	<?php $group = 'Test feature group name'; ?>
 
 	<section class="span4">
 		<aside class="well">
@@ -49,28 +49,33 @@
 				</li>
         </ul>
 		</aside>
-		<?php getForumPosts( 'TestExtraDocs' ) ?>
+		<?php getForumPosts( 'TestDeprecatedCLP' ) ?>
 
 	</section>
 
 	<div class="span8">
 
-			<h1>TestExtraDocs **EXPERIMENTAL**</h1>
+			<h1>TestDeprecatedCLP **DEPRECATED** This feature is deprecated and will be removed in a future release.</h1>
 
-		<p class="lead">Class for testing extraDocs property in docgen.</p>
+		<p class="lead">Argument container class for testing deprecated CLPs.</p>
 
 			<h3>Category
-				<small> Test extra docs group name</small>
+				<small> Test feature group name</small>
 			</h3>
 		<hr>
 		<h2>Overview</h2>
-		Class for testing extraDocs property in docgen.
+		A test tool for testing a deprecated (@DeprecatedFeature) CLP.
 
 				<hr>
 				<h2>Command-line Arguments</h2>
 				<p></p>
+				<h3>Additional References</h3>
+				<p>See these additional references for more information.</p>
+				<ul>
+						<li><a href="org_broadinstitute_barclay_help_testinputs_TestExtraDocs.html">TestExtraDocs</a></li>
+				</ul>
 
-				<h3>TestExtraDocs specific arguments</h3>
+				<h3>TestDeprecatedCLP specific arguments</h3>
 				<p>This table summarizes the command-line arguments that are specific to this tool. For more details on each argument, see the list further down below the table or click on an argument name to jump directly to that entry in the list.</p>
 				<table class="table table-striped table-bordered table-condensed">
 					<thead>
@@ -82,16 +87,16 @@
 					</thead>
 					<tbody>
 			<tr>
-				<th colspan="4" id="row-divider">Optional Tool Arguments</th>
+				<th colspan="4" id="row-divider">Advanced Arguments</th>
 			</tr>
 				<tr>
-					<td><a href="#--extraDocsArgument">--extraDocsArgument</a><br />
-								&nbsp;<em>-extDocArg</em>
+					<td><a href="#--optionalInt">--optionalInt</a><br />
+								&nbsp;<em>-optInt</em>
 					</td>
-					<!--<td>String</td> -->
-					<td>initial string value</td>
+					<!--<td>int</td> -->
+					<td>1</td>
 					<td>		
-Extra stuff</td>
+optionalInt with initial value 1</td>
 				</tr>
 					</tbody>
 				</table>
@@ -99,17 +104,19 @@ Extra stuff</td>
 					<h3>Argument details</h3>
 					<p>Arguments in this list are specific to this tool. Keep in mind that other arguments are available that are shared with other tools (e.g. command-line GATK arguments); see Inherited arguments above.</p>
 		<hr style="border-bottom: dotted 1px #C0C0C0;" />
-		<h3><a name="--extraDocsArgument">--extraDocsArgument </a>
-			 / <small>-extDocArg</small>
+		<h3><a name="--optionalInt">--optionalInt </a>
+			 / <small>-optInt</small>
 		</h3>
 		<p class="args">
 			<b>		
-Extra stuff</b><br />
-			
+optionalInt with initial value 1</b><br />
+			Optional int
 		</p>
 		<p>
-			<span class="label label-info ">String</span>
-				&nbsp;<span class="label">initial string value</span>
+			<span class="label label-info ">int</span>
+				&nbsp;<span class="label">1</span>
+				&nbsp;<span class="label label-warning">[ [ -∞</span>
+				&nbsp;<span class="label label-warning">∞ ] ]</span>
 		</p>
 
         <hr>
