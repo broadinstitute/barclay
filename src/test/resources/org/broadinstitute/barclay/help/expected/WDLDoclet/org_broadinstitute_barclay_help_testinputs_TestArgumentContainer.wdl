@@ -28,6 +28,7 @@ version 1.0
 #    usesFieldNameForArgName                            Use field name if no name in annotation.                    
 #
 #  Optional Tool Arguments
+#    deprecatedString                                   deprecated                                                  
 #    enumSetLong                                        Some set thing.                                             
 #    fullAnonymousArgName                               Test anonymous class arg                                    
 #    mutexSourceField                                   Undocumented option                                         
@@ -77,6 +78,7 @@ workflow TestArgumentContainer {
     String usesFieldNameForArgName
 
     # Optional Tool Arguments
+    Int? deprecatedString
     Array[String]? enumSetLong
     Array[File]? fullAnonymousArgName
     Array[File]? mutexSourceField
@@ -129,6 +131,7 @@ workflow TestArgumentContainer {
         usesFieldNameForArgName                            = usesFieldNameForArgName,
 
         # Optional Tool Arguments
+        deprecatedString                                   = deprecatedString,
         enumSetLong                                        = enumSetLong,
         fullAnonymousArgName                               = fullAnonymousArgName,
         mutexSourceField                                   = mutexSourceField,
@@ -177,6 +180,7 @@ workflow TestArgumentContainer {
     usesFieldNameForArgName: { description: "Use field name if no name in annotation." }
 
     # Optional Tool Arguments
+    deprecatedString: { description: "deprecated" }
     enumSetLong: { description: "Some set thing." }
     fullAnonymousArgName: { description: "Test anonymous class arg" }
     mutexSourceField: { description: "Undocumented option" }
@@ -214,6 +218,7 @@ task TestArgumentContainer {
     String requiredStringInputFromArgCollection
     Array[String] requiredStringList
     String usesFieldNameForArgName
+    Int? deprecatedString
     Array[String]? enumSetLong
     Array[File]? fullAnonymousArgName
     Array[File]? mutexSourceField
@@ -241,6 +246,7 @@ task TestArgumentContainer {
     --requiredStringInputFromArgCollection ~{sep=' --requiredStringInputFromArgCollection ' requiredStringInputFromArgCollection} \
     --requiredStringList ~{sep=' --requiredStringList ' requiredStringList} \
     --usesFieldNameForArgName ~{sep=' --usesFieldNameForArgName ' usesFieldNameForArgName} \
+    ~{true='--deprecatedString ' false='' defined(deprecatedString)}~{sep=' --deprecatedString ' deprecatedString} \
     ~{true='--enumSetLong ' false='' defined(enumSetLong)}~{sep=' --enumSetLong ' enumSetLong} \
     ~{true='--fullAnonymousArgName ' false='' defined(fullAnonymousArgName)}~{sep=' --fullAnonymousArgName ' fullAnonymousArgName} \
     ~{true='--mutexSourceField ' false='' defined(mutexSourceField)}~{sep=' --mutexSourceField ' mutexSourceField} \
@@ -298,6 +304,7 @@ task TestArgumentContainer {
     usesFieldNameForArgName: { description: "Use field name if no name in annotation." }
 
     # Optional Tool Arguments
+    deprecatedString: { description: "deprecated" }
     enumSetLong: { description: "Some set thing." }
     fullAnonymousArgName: { description: "Test anonymous class arg" }
     mutexSourceField: { description: "Undocumented option" }

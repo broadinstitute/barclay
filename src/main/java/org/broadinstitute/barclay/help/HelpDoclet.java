@@ -30,7 +30,7 @@ import java.util.*;
  * <p/>
  * 1 -- walk the javadoc hierarchy, looking for classes that have the DocumentedFeature annotation
  * 2 -- for each annotated class, construct a WorkUnit/Handler to determine if that feature
- * should be included in the ouput
+ * should be included in the output
  * 3 -- for each included feature, construct a DocWorkUnit consisting of all documentation
  * evidence (DocumentedFeature/CommandLineProgramProperties annotations, javadoc ClassDoc,
  * java Class, and DocWorkUnitHandler
@@ -541,9 +541,10 @@ public class HelpDoclet {
 
         // Note that these properties are inserted into the toplevel FreeMarker map for the WorkUnit typed
         // as Strings with values "true" or "false", but here the same entries are typed as Booleans in the
-        // in the index.
+        // index.
         propertyMap.put("beta", Boolean.toString(workUnit.isBetaFeature()));
         propertyMap.put("experimental", Boolean.toString(workUnit.isExperimentalFeature()));
+        propertyMap.put("deprecated", Boolean.toString(workUnit.isDeprecatedFeature()));
 
         return propertyMap;
     }
@@ -600,17 +601,7 @@ public class HelpDoclet {
 
         // Create GSON-friendly container object
         GSONWorkUnit gsonworkunit = createGSONWorkUnit(workUnit, indexByGroupMaps, featureMaps);
-
-        gsonworkunit.populate(
-                workUnit.getProperty("summary").toString(),
-                workUnit.getProperty("gson-arguments"),
-                workUnit.getProperty("description").toString(),
-                workUnit.getProperty("name").toString(),
-                workUnit.getProperty("group").toString(),
-                Boolean.valueOf(workUnit.getProperty("beta").toString()),
-                Boolean.valueOf(workUnit.getProperty("experimental").toString())
-        );
-
+        
         // Convert object to JSON and write JSON entry to file
         File outputPathForJSON = new File(getDestinationDir(), workUnit.getJSONFileName());
 
@@ -636,7 +627,7 @@ public class HelpDoclet {
             final List<Map<String, String>> indexByGroupMaps,
             final List<Map<String, String>> featureMaps)
     {
-        return new GSONWorkUnit();
+        return new GSONWorkUnit(workUnit);
     }
 
 }

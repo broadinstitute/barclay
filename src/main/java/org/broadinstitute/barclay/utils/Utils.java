@@ -119,6 +119,17 @@ public class Utils {
     }
 
     /**
+     * Emit {@code numSpaces} into {@code sb}.
+     * @param sb a {@link StringBuilder} into which the spaces should be emitted
+     * @param numSpaces the number of spaces the emit
+     */
+    public static void printSpaces(final StringBuilder sb, final int numSpaces) {
+        for (int i = 0; i < numSpaces; ++i) {
+            sb.append(" ");
+        }
+    }
+
+    /**
      * Create a new string thats a n duplicate copies of c
      * @param c the char to duplicate
      * @param nCopies how many copies?

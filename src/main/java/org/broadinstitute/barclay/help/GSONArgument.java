@@ -8,47 +8,41 @@ import java.util.Map;
  */
 public class GSONArgument {
 
-    String summary;
-    String name;
-    String synonyms;
-    String type;
-    String required;
-    String fulltext;
-    String defaultValue;
-    String minValue;
-    String maxValue;
-    String minRecValue;
-    String maxRecValue;
-    String kind;
+    final String summary;
+    final String name;
+    final String synonyms;
+    final String type;
+    final String required;
+    final String fulltext;
+    final String defaultValue;
+    final String minValue;
+    final String maxValue;
+    final String minRecValue;
+    final String maxRecValue;
+    final String kind;
+    final boolean deprecated;
+    final String deprecationDetail;
     List<Map<String, Object>> options;
 
-    public void populate(   final String summary,
-                            final String name,
-                            final String synonyms,
-                            final String type,
-                            final String required,
-                            final String fulltext,
-                            final String defaultValue,
-                            final String minValue,
-                            final String maxValue,
-                            final String minRecValue,
-                            final String maxRecValue,
-                            final String kind,
-                            final List<Map<String, Object>> options
-    ) {
-        this.summary = summary;
-        this.name = name;
-        this.synonyms = synonyms;
-        this.type = type;
-        this.required = required;
-        this.fulltext = fulltext;
-        this.defaultValue = defaultValue;
-        this.minValue = minValue;
-        this.maxValue = maxValue;
-        this.minRecValue = minRecValue;
-        this.maxRecValue = maxRecValue;
-        this.kind = kind;
-        this.options = options;
+    @SuppressWarnings("unchecked")
+    public GSONArgument(final Map<String, Object> argMap) {
+        this.summary = argMap.get("summary").toString();
+        this.name = argMap.get("name").toString();
+        this.synonyms = argMap.get("synonyms").toString();
+        this.type = argMap.get("type").toString();
+        this.required = argMap.get("required").toString();
+        this.fulltext = argMap.get("fulltext").toString();
+        this.defaultValue = argMap.get("defaultValue").toString();
+        this.minValue = argMap.get("minValue").toString();
+        this.maxValue = argMap.get("maxValue").toString();
+        this.minRecValue = argMap.get("minRecValue").toString();
+        this.maxRecValue = argMap.get("maxRecValue").toString();
+        this.kind = argMap.get("kind").toString();
+        this.deprecated = argMap.get("deprecated").equals(Boolean.TRUE);
+        this.deprecationDetail = this.deprecated ?
+                    argMap.get("deprecationDetail").toString() :
+                    null;
+        this.options = (List<Map<String, Object>>) argMap.get("options");
     }
 
 }

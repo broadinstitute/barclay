@@ -392,7 +392,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         }
     }
 
-    private final void printArgumentUsageBlock(final StringBuilder sb, final String preamble, final List<NamedArgumentDefinition> args) {
+    private void printArgumentUsageBlock(final StringBuilder sb, final String preamble, final List<NamedArgumentDefinition> args) {
         if (args != null && !args.isEmpty()) {
             sb.append(preamble);
             args.stream().sorted(NamedArgumentDefinition.sortByLongName)
@@ -418,6 +418,13 @@ public final class CommandLineArgumentParser implements CommandLineParser {
         final String preamble = getStandardUsagePreamble(callerArguments.getClass()) + getUsagePreamble();
         sb.append(Utils.wrapParagraph(preamble,DESCRIPTION_COLUMN_WIDTH + ARGUMENT_COLUMN_WIDTH));
         sb.append("\n" + getVersion() + "\n");
+
+        // first, positional arg(s)
+        final PositionalArgumentDefinition positionalArgDef = getPositionalArgumentDefinition();
+        if (positionalArgDef != null) {
+            sb.append("\n\nPositional Arguments:\n\n");
+            sb.append(positionalArgDef.getArgumentUsage(ARGUMENT_COLUMN_WIDTH, DESCRIPTION_COLUMN_WIDTH));
+        }
 
         // filter on common and partition on plugin-controlled
         final Map<Boolean, List<NamedArgumentDefinition>> allArgsMap = namedArgumentDefinitions.stream()

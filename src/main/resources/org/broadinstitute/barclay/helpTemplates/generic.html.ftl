@@ -6,6 +6,20 @@
 
 	<#include "common.html.ftl"/>
 
+	<#macro flagDeprecated arg>
+		<#if arg.deprecated == true> (Deprecated)</#if>
+	</#macro>
+
+	<#macro flagDeprecatedWithReason arg>
+		<#if arg.deprecated == true>
+			<#if arg.deprecationDetail??>
+				This argument is deprecated. ${arg.deprecationDetail}</br>
+			<#else>
+				This argument is deprecated.</br>
+			</#if>
+		</#if>
+	</#macro>
+
 	<#macro argumentlist name myargs>
 		<#if myargs?size != 0>
 			<tr>
@@ -22,7 +36,7 @@
 					</td>
 					<!--<td>${arg.type}</td> -->
 					<td>${arg.defaultValue!"NA"}</td>
-					<td>${arg.summary}</td>
+					<td><@flagDeprecated arg=arg/>${arg.summary}</td>
 				</tr>
 			</#list>
 		</#if>
@@ -34,7 +48,7 @@
 			<#if arg.synonyms != "NA"> / <small>${arg.synonyms}</small></#if>
 		</h3>
 		<p class="args">
-			<b>${arg.summary}</b><br />
+			<b><@flagDeprecated arg=arg/>${arg.summary}</b><br />
 			${arg.fulltext}
 		</p>
 		<#if arg.otherArgumentRequired != "NA">

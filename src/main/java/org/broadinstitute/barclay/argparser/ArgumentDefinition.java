@@ -19,6 +19,7 @@ public abstract class ArgumentDefinition {
     private final Object containingObject;
     private final Class<?> underlyingFieldClass;
     private final boolean isCollection;
+    final DeprecatedFeature deprecatedAnnotation;
 
     // Original values provided by the user for this argument, to be used when displaying this argument as a
     // command line string representation. This is used instead of post-expansion values, which may be a large list.
@@ -38,6 +39,7 @@ public abstract class ArgumentDefinition {
         this.underlyingField.setAccessible(true);
         this.underlyingFieldClass = getClassForUnderlyingField();
         this.isCollection = isCollectionField(underlyingField);
+        this.deprecatedAnnotation = underlyingField.getAnnotation(DeprecatedFeature.class);
 
         if (!canBeMadeFromString()) {
             throw new CommandLineException.CommandLineParserInternalException(
@@ -105,6 +107,25 @@ public abstract class ArgumentDefinition {
      *                          used for any cross-argument validation such as mutex validation
      */
     public abstract void validateValues(CommandLineArgumentParser commandLineArgumentParser);
+
+    /**
+     * the doc string for this argument, if any.
+     * @return doc string. can be empty.
+     */
+    public abstract String getDocString();
+
+    /**
+     * return true if this argument definition has the {@code @DeprecatedFeature} annotation.
+     * @return true if this argument is deprecated, otherwise false.
+     */
+    public boolean isDeprecated() { return deprecatedAnnotation != null; }
+
+    /**
+     * Get the deprecation detail string.
+     * @return a String containing the detail (may be null if the argument is not annotated with the {@code
+     * @DeprecatedFeature} annotation or if no deprecation detail was provided).
+     */
+    public String getDeprecationDetail() { return isDeprecated() ? deprecatedAnnotation.detail() : null; }
 
     /**
      * A {@code String} representation of this argument and it's value(s) which would be valid if copied and pasted

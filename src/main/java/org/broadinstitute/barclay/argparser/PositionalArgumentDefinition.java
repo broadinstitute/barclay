@@ -111,6 +111,60 @@ public class PositionalArgumentDefinition extends ArgumentDefinition {
     }
 
     @Override
+    public String getDocString() { return positionalArgumentsAnnotation.doc(); }
+
+    /**
+     * Return a string with the usage statement for this positional argument.
+     * @param argumentColumnWidth width reserved for argument name column display
+     * @param descriptionColumnWidth width reserved for argument description column display
+     * @return the usage string for this argument
+     */
+    public String getArgumentUsage(final int argumentColumnWidth, final int descriptionColumnWidth) {
+
+        final StringBuilder sb = new StringBuilder();
+        sb.append("--").append("POSITIONAL");
+        sb.append(String.format(" <%s>", getUnderlyingFieldClass().getSimpleName()));
+
+        int labelLength = sb.toString().length();
+        int numSpaces = argumentColumnWidth - labelLength;
+        if (labelLength > argumentColumnWidth) {
+            sb.append("\n");
+            numSpaces = argumentColumnWidth;
+        }
+        Utils.printSpaces(sb, numSpaces);
+
+        String description = getArgumentDescription();
+        if (isDeprecated()) {
+            description = "This argument is DEPRECATED (" + getDeprecationDetail() + "). " + description;
+        }
+        final String wrappedDescription = Utils.wrapParagraph(description, descriptionColumnWidth);
+        final String[] descriptionLines = wrappedDescription.split("\n");
+        for (int i = 0; i < descriptionLines.length; ++i) {
+            if (i > 0) {
+                Utils.printSpaces(sb, argumentColumnWidth);
+            }
+            sb.append(descriptionLines[i]);
+            sb.append("\n");
+        }
+        sb.append("\n");
+
+        return sb.toString();
+    }
+
+    // Return a usage string representing this argument.
+    private String getArgumentDescription() {
+        final StringBuilder sb = new StringBuilder();
+        if (!getDocString().isEmpty()) {
+            sb.append(getDocString());
+            sb.append("  ");
+        }
+        if (isCollection()) {
+            sb.append("This argument must be specified at least once. ");
+        }
+        return sb.toString();
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

@@ -95,10 +95,7 @@ public class NamedArgumentDefinition extends ArgumentDefinition {
      */
     public String getLongName() { return !getFullName().isEmpty() ? getFullName() : getUnderlyingField().getName(); }
 
-    /**
-     * the doc string for this argument, if any.
-     * @return doc string. can be empty.
-     */
+    @Override
     public String getDocString() { return argumentAnnotation.doc(); }
 
     /**
@@ -130,12 +127,6 @@ public class NamedArgumentDefinition extends ArgumentDefinition {
      * @return true if this argument is advanced, otherwise false.
      */
     public boolean isAdvanced() { return getUnderlyingField().getAnnotation(Advanced.class) != null; }
-
-    /**
-     * return true if this argument has the {@code @Deprecated} annotation.
-     * @return true if this argument is advanced, otherwise false.
-     */
-    public boolean isDeprecated() { return getUnderlyingField().isAnnotationPresent(Deprecated.class); }
 
     /**
      * return true if this argument is a flag (boolean valued) argument
@@ -451,14 +442,17 @@ public class NamedArgumentDefinition extends ArgumentDefinition {
             sb.append("\n");
             numSpaces = argumentColumnWidth;
         }
-        printSpaces(sb, numSpaces);
+        Utils.printSpaces(sb, numSpaces);
 
-        final String description = getArgumentDescription(allActualArguments, pluginDescriptors);
+        String description = getArgumentDescription(allActualArguments, pluginDescriptors);
+        if (isDeprecated()) {
+            description = "This argument is DEPRECATED (" + getDeprecationDetail() + "). " + description;
+        }
         final String wrappedDescription = Utils.wrapParagraph(description, descriptionColumnWidth);
         final String[] descriptionLines = wrappedDescription.split("\n");
         for (int i = 0; i < descriptionLines.length; ++i) {
             if (i > 0) {
-                printSpaces(sb, argumentColumnWidth);
+                Utils.printSpaces(sb, argumentColumnWidth);
             }
             sb.append(descriptionLines[i]);
             sb.append("\n");
@@ -691,12 +685,6 @@ public class NamedArgumentDefinition extends ArgumentDefinition {
     private boolean isValueOutOfRange(final Double value) {
         return value == null || getMinValue() != Double.NEGATIVE_INFINITY && value < getMinValue()
                 || getMaxValue() != Double.POSITIVE_INFINITY && value > getMaxValue();
-    }
-
-    private static void printSpaces(final StringBuilder sb, final int numSpaces) {
-        for (int i = 0; i < numSpaces; ++i) {
-            sb.append(" ");
-        }
     }
 
     @Override
