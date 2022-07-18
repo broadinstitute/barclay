@@ -38,9 +38,9 @@ public class GSONArgument {
         this.minRecValue = argMap.get("minRecValue").toString();
         this.maxRecValue = argMap.get("maxRecValue").toString();
         this.kind = argMap.get("kind").toString();
-        this.deprecated = argMap.get("deprecated").equals(Boolean.TRUE);
+        this.deprecated = argMap.get(TemplateMapConstants.GSON_ARG_DEPRECATED).equals(Boolean.TRUE);
         this.deprecationDetail = this.deprecated ?
-                    argMap.get("deprecationDetail").toString() :
+                    argMap.get(TemplateMapConstants.GSON_ARG__DEPRECATION_DETAIL).toString() :
                     null;
         this.options = (List<Map<String, Object>>) argMap.get("options");
     }

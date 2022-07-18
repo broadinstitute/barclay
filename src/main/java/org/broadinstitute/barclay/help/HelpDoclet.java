@@ -544,7 +544,7 @@ public class HelpDoclet {
         // index.
         propertyMap.put("beta", Boolean.toString(workUnit.isBetaFeature()));
         propertyMap.put("experimental", Boolean.toString(workUnit.isExperimentalFeature()));
-        propertyMap.put("deprecated", Boolean.toString(workUnit.isDeprecatedFeature()));
+        propertyMap.put(TemplateProperties.FEATURE_DEPRECATED, Boolean.toString(workUnit.isDeprecatedFeature()));
 
         return propertyMap;
     }

@@ -22,7 +22,7 @@ public class GSONWorkUnit {
         this.group = workUnit.getProperty("group").toString();
         this.beta = Boolean.valueOf(workUnit.getProperty("beta").toString());
         this.experimental = Boolean.valueOf(workUnit.getProperty("experimental").toString());
-        this.deprecated = Boolean.valueOf(workUnit.getProperty("deprecated").toString());
+        this.deprecated = Boolean.valueOf(workUnit.getProperty(TemplateMapConstants.GSON_FEATURE_DEPRECATED).toString());
     }
 
 }

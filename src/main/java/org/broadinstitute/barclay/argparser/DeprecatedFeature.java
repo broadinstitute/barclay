@@ -8,7 +8,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Used to mark a feature ({@link Argument} or {@link CommandLineProgramProperties}) as deprecated.
+ * Used to mark a feature ({@link Argument} or {@link CommandLineProgramProperties}) as deprecated. Mutually
+ * exclusive with {@link BetaFeature} and {@link ExperimentalFeature}.
  */
 @Target({ElementType.TYPE,ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
@@ -17,8 +18,7 @@ import java.lang.annotation.Target;
 public @interface DeprecatedFeature {
 
     /**
-     * @return the doc string associated with this command-line argument. Mutually exclusive with
-     * {@link BetaFeature} and {@link ExperimentalFeature}.
+     * @return the deprecation detail string associated with this command-line argument.
      */
     String detail() default "This feature is deprecated and will be removed in a future release.";
 }

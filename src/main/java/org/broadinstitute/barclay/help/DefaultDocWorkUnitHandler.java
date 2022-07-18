@@ -14,6 +14,7 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+
 /**
  * Default implementation of DocWorkUnitHandler. The DocWorkUnitHandler determines the template that will be
  * used for a given work unit, and populates the Freemarker property map used for a single feature/work-unit.
@@ -235,8 +236,8 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
         // FreeMarker map for the index.
         workUnit.setProperty("beta", workUnit.isBetaFeature());
         workUnit.setProperty("experimental", workUnit.isExperimentalFeature());
-        workUnit.setProperty("deprecated", workUnit.isDeprecatedFeature());
-        workUnit.setProperty("deprecationDetail", workUnit.getDeprecationDetail());
+        workUnit.setProperty(TemplateProperties.FEATURE_DEPRECATED, workUnit.isDeprecatedFeature());
+        workUnit.setProperty(TemplateMapConstants.FEATURE_DEPRECATION_DETAIL, workUnit.getDeprecationDetail());
 
         workUnit.setProperty("description", getDescription(workUnit));
 
@@ -379,7 +380,7 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
             args.get(argKind).add(argMap);
             args.get("all").add(argMap);
             if (argDef.isDeprecated()) {
-                args.get("deprecated").add(argMap);
+                args.get(TemplateProperties.ARGUMENT_DEPRECATED).add(argMap);
             }
         }
     }
@@ -472,10 +473,10 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
             argBindings.put("minElements", positionalArgDef.getPositionalArgumentsAnnotation().minElements());
             argBindings.put("maxElements", positionalArgDef.getPositionalArgumentsAnnotation().maxElements());
             argBindings.put("collection", positionalArgDef.isCollection());
-            argBindings.put("deprecated", positionalArgDef.isDeprecated());
+            argBindings.put(TemplateProperties.ARGUMENT_DEPRECATED, positionalArgDef.isDeprecated());
             if (positionalArgDef.isDeprecated()) {
-                argBindings.put("deprecationDetail", positionalArgDef.getDeprecationDetail());
-                args.get("deprecated").add(argBindings);
+                argBindings.put(TemplateProperties.ARGUMENT_DEPRECATION_DETAIL, positionalArgDef.getDeprecationDetail());
+                args.get(TemplateProperties.ARGLIST_TYPE_DEPRECATED).add(argBindings);
             }
             args.get("positional").add(argBindings);
             args.get("all").add(argBindings);
@@ -529,7 +530,7 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
         args.put("advanced", new ArrayList<>());
         args.put("dependent", new ArrayList<>());
         args.put("hidden", new ArrayList<>());
-        args.put("deprecated", new ArrayList<>());
+        args.put(TemplateProperties.ARGLIST_TYPE_DEPRECATED, new ArrayList<>());
         return args;
     }
 
@@ -756,10 +757,10 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
         if (!argDef.isOptional()) {
             attributes.add("required");
         }
-        argBindings.put("deprecated", argDef.isDeprecated());
+        argBindings.put(TemplateProperties.ARGUMENT_DEPRECATED, argDef.isDeprecated());
         if (argDef.isDeprecated()) {
-            argBindings.put("deprecationDetail", argDef.getDeprecationDetail());
-            attributes.add("deprecated");
+            argBindings.put(TemplateProperties.ARGUMENT_DEPRECATION_DETAIL, argDef.getDeprecationDetail());
+            attributes.add(TemplateMapConstants.ARG_DEPRECATED_ATTRIBUTE);
         }
         argBindings.put("attributes", attributes.size() > 0 ? String.join(", ", attributes) : "NA");
         argBindings.put("collection", argDef.isCollection());

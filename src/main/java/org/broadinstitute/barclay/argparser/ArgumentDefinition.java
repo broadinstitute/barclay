@@ -19,7 +19,7 @@ public abstract class ArgumentDefinition {
     private final Object containingObject;
     private final Class<?> underlyingFieldClass;
     private final boolean isCollection;
-    final DeprecatedFeature deprecatedAnnotation;
+    private final DeprecatedFeature deprecatedAnnotation;
 
     // Original values provided by the user for this argument, to be used when displaying this argument as a
     // command line string representation. This is used instead of post-expansion values, which may be a large list.
