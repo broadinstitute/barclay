@@ -63,21 +63,6 @@ public class JavaLanguageModelScanners {
     }
 
     /**
-     * @param docEnv the {@link DocletEnvironment} for the Barclay doc task being executed
-     * @param targetElement the {@link Element} for which the javadoc comment should be retrieved
-     * @return the javadoc comment, if any, with all embedded tags removed, otherwise an empty String
-     */
-    public static String getDocCommentWithoutTags(final DocletEnvironment docEnv, final Element targetElement) {
-        Utils.nonNull(docEnv, "doclet env");
-        Utils.nonNull(targetElement, "targetElement");
-
-        final DocCommentTree docTree = docEnv.getDocTrees().getDocCommentTree(targetElement);
-        final CommentScannerWithTagFilter docScanner = new CommentScannerWithTagFilter(docEnv, docTree);
-        docScanner.scan(docTree, null);
-        return docScanner.getComment();
-    }
-
-    /**
      * It's possible in some cases for a field to not have a corresponding element within a given enclosing
      * element, even if the field is declared within the class represented by the (enclosing) element, i.e.,
      * this can happen if the field is initialized by instantiating an anonymous class.
@@ -107,7 +92,7 @@ public class JavaLanguageModelScanners {
      * @return map of tag name to tag parts list, or an empty map if no tags present, for all unknown inline tags;
      * it is the caller's responsibility to extract and recognize doclet-specific tags from the list returned
      */
-    public static Map<String, List<String>> getInlineTags(final DocletEnvironment docEnv, final Element targetElement) {
+    public static Map<String, List<String>> getUnknownInlineTags(final DocletEnvironment docEnv, final Element targetElement) {
         Utils.nonNull(docEnv, "doclet env");
         Utils.nonNull(targetElement, "targetElement");
 

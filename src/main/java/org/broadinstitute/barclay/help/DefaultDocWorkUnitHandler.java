@@ -247,7 +247,7 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
     protected void addCustomBindings(final DocWorkUnit currentWorkUnit) {
         final String tagFilterPrefix = getTagPrefix();
         if (tagFilterPrefix != null) {
-            final Map<String, List<String>> parts = JavaLanguageModelScanners.getInlineTags(
+            final Map<String, List<String>> parts = JavaLanguageModelScanners.getUnknownInlineTags(
                     getDoclet().getDocletEnv(),
                     currentWorkUnit.getDocElement());
             // create properties for any custom tags
