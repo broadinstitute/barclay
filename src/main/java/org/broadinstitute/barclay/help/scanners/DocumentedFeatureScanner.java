@@ -13,6 +13,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementScanner14;
 import javax.tools.Diagnostic;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -23,7 +24,7 @@ public class DocumentedFeatureScanner extends ElementScanner14<Void, Void> {
     private final HelpDoclet helpDoclet;
     private final DocletEnvironment docEnv;
     private final Reporter reporter;
-    private Set<DocWorkUnit> workUnits = new HashSet<>();     // Set of all things we are going to document
+    private Set<DocWorkUnit> workUnits = new LinkedHashSet<>();     // Set of all things we are going to document
 
     /**
      * For internal use only. External callers should use

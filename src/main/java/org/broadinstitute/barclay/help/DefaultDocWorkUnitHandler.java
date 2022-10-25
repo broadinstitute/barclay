@@ -258,7 +258,7 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
                     .filter(e -> e.getKey().startsWith(tagFilterPrefix.substring(1)))
                     .forEach(e -> currentWorkUnit.setProperty(
                             e.getKey().substring(tagFilterPrefix.substring(1).length()),
-                            e.getValue().stream().map(Object::toString).collect(Collectors.joining(" "))));
+                            String.join(" ", (e.getValue()))));
         }
     }
 

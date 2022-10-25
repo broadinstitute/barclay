@@ -3,7 +3,12 @@ package org.broadinstitute.barclay.help;
 import jdk.javadoc.doclet.DocletEnvironment;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,7 +18,6 @@ import org.apache.logging.log4j.Logger;
  * are not available on all systems, and we don't want the GATK proper to depend on them.
  */
 public class DocletUtils {
-    final static Logger logger = LogManager.getLogger();
 
     public static Class<?> getClassForDeclaredElement(final Element docElement, final DocletEnvironment docEnv) {
          return getClassForClassName(getClassName(docElement, docEnv));
@@ -22,10 +26,8 @@ public class DocletUtils {
     public static Class<?> getClassForClassName(final String className) {
         try {
             return Class.forName(className);
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | NoClassDefFoundError e) {
             // we got an Element for a class we can't find.  Maybe in a library or something
-            return null;
-        } catch (NoClassDefFoundError e) {
             return null;
         }
     }
@@ -39,7 +41,6 @@ public class DocletUtils {
     protected static String getClassName(final Element element, final DocletEnvironment docEnv) {
         final PackageElement pe = docEnv.getElementUtils().getPackageOf(element);
         if (pe == null || !element.toString().contains(".")) {
-            //logger.warn(String.format("No package found for element %s: ", element));
             return element.toString();
         }
         final String qualifiedName = pe.getQualifiedName().toString();

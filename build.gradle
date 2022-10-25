@@ -117,7 +117,7 @@ artifacts {
  */
 signing {
     required { isRelease && gradle.taskGraph.hasTask("publish") }
-    sign configurations.archives
+    sign publishing.publications
 }
 
 def basePomConfiguration = {

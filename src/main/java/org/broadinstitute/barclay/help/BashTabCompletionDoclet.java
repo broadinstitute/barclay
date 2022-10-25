@@ -285,13 +285,8 @@ public class BashTabCompletionDoclet extends HelpDoclet {
 
     @Override
     public Set<Option> getSupportedOptions() {
-        final Set<Option> tabCompletionOptions = new HashSet<>() {{
-            add(new BarclayDocletOption(
-                    Arrays.asList(CALLER_SCRIPT_NAME),
-                    CALLER_SCRIPT_NAME,
-                    1,
-                    Option.Kind.STANDARD,
-                    "<string>") {
+        final Set<Option> tabCompletionOptions = new LinkedHashSet<>() {{
+            add(new BarclayDocletOption.SimpleStandardOption(CALLER_SCRIPT_NAME) {
                 @Override
                 public boolean process(String option, List<String> arguments) {
                     // Remove the last period and anything after it:
@@ -306,12 +301,7 @@ public class BashTabCompletionDoclet extends HelpDoclet {
                 }
             });
 
-            add(new BarclayDocletOption(
-                    Arrays.asList(CALLER_SCRIPT_PREFIX_LEGAL_ARGS),
-                    CALLER_SCRIPT_PREFIX_LEGAL_ARGS,
-                    1,
-                    Option.Kind.STANDARD,
-                    "<string>") {
+            add(new BarclayDocletOption.SimpleStandardOption(CALLER_SCRIPT_PREFIX_LEGAL_ARGS) {
                 @Override
                 public boolean process(String option, List<String> arguments) {
                     callerScriptPrefixLegalArgs = arguments.get(0);
@@ -319,12 +309,7 @@ public class BashTabCompletionDoclet extends HelpDoclet {
                 }
             });
 
-            add(new BarclayDocletOption(
-                    Arrays.asList(CALLER_SCRIPT_PREFIX_ARG_VALUE_TYPES),
-                    CALLER_SCRIPT_PREFIX_ARG_VALUE_TYPES,
-                    1,
-                    Option.Kind.STANDARD,
-                    "<string>") {
+            add(new BarclayDocletOption.SimpleStandardOption(CALLER_SCRIPT_PREFIX_ARG_VALUE_TYPES) {
                 @Override
                 public boolean process(String option, List<String> arguments) {
                     callerScriptPrefixArgValueTypes = quoteEachWord(arguments.get(0));
@@ -332,12 +317,7 @@ public class BashTabCompletionDoclet extends HelpDoclet {
                 }
             });
 
-            add(new BarclayDocletOption(
-                    Arrays.asList(CALLER_SCRIPT_PREFIX_MUTEX_ARGS),
-                    CALLER_SCRIPT_PREFIX_MUTEX_ARGS,
-                    1,
-                    Option.Kind.STANDARD,
-                    "<string>") {
+            add(new BarclayDocletOption.SimpleStandardOption(CALLER_SCRIPT_PREFIX_MUTEX_ARGS) {
                 @Override
                 public boolean process(String option, List<String> arguments) {
                     callerScriptPrefixMutexArgs = quoteEachWord(arguments.get(0));
@@ -345,12 +325,7 @@ public class BashTabCompletionDoclet extends HelpDoclet {
                 }
             });
 
-            add(new BarclayDocletOption(
-                    Arrays.asList(CALLER_SCRIPT_PREFIX_ALIAS_ARGS),
-                    CALLER_SCRIPT_PREFIX_ALIAS_ARGS,
-                    1,
-                    Option.Kind.STANDARD,
-                    "<string>") {
+            add(new BarclayDocletOption.SimpleStandardOption(CALLER_SCRIPT_PREFIX_ALIAS_ARGS) {
                 @Override
                 public boolean process(String option, List<String> arguments) {
                     // We have to format this option to contain quotes around each word:
@@ -359,12 +334,7 @@ public class BashTabCompletionDoclet extends HelpDoclet {
                 }
             });
 
-            add(new BarclayDocletOption(
-                    Arrays.asList(CALLER_SCRIPT_PREFIX_ARG_MIN_OCCURRENCES),
-                    CALLER_SCRIPT_PREFIX_ARG_MIN_OCCURRENCES,
-                    1,
-                    Option.Kind.STANDARD,
-                    "<string>") {
+            add(new BarclayDocletOption.SimpleStandardOption(CALLER_SCRIPT_PREFIX_ARG_MIN_OCCURRENCES) {
                     @Override
                 public boolean process(String option, List<String> arguments) {
                     callerScriptPrefixMinOccurrences = arguments.get(0);
@@ -372,12 +342,7 @@ public class BashTabCompletionDoclet extends HelpDoclet {
                 }
             });
 
-            add(new BarclayDocletOption(
-                    Arrays.asList(CALLER_SCRIPT_PREFIX_ARG_MAX_OCCURRENCES),
-                    CALLER_SCRIPT_PREFIX_ARG_MAX_OCCURRENCES,
-                    1,
-                    Option.Kind.STANDARD,
-                    "<string>") {
+            add(new BarclayDocletOption.SimpleStandardOption(CALLER_SCRIPT_PREFIX_ARG_MAX_OCCURRENCES) {
                 @Override
                 public boolean process(String option, List<String> arguments) {
                     callerScriptPrefixMaxOccurrences = arguments.get(0);
@@ -385,12 +350,7 @@ public class BashTabCompletionDoclet extends HelpDoclet {
                 }
             });
 
-            add(new BarclayDocletOption(
-                    Arrays.asList(CALLER_SCRIPT_POSTFIX_LEGAL_ARGS),
-                    CALLER_SCRIPT_POSTFIX_LEGAL_ARGS,
-                    1,
-                    Option.Kind.STANDARD,
-                    "<string>") {
+            add(new BarclayDocletOption.SimpleStandardOption(CALLER_SCRIPT_POSTFIX_LEGAL_ARGS) {
                 @Override
                 public boolean process(String option, List<String> arguments) {
                     callerScriptPostfixLegalArgs = arguments.get(0);
@@ -399,12 +359,7 @@ public class BashTabCompletionDoclet extends HelpDoclet {
                 }
             });
 
-             add(new BarclayDocletOption(
-                    Arrays.asList(CALLER_SCRIPT_POSTFIX_ARG_VALUE_TYPES),
-                    CALLER_SCRIPT_POSTFIX_ARG_VALUE_TYPES,
-                    1,
-                    Option.Kind.STANDARD,
-                    "<string>") {
+            add(new BarclayDocletOption.SimpleStandardOption(CALLER_SCRIPT_POSTFIX_ARG_VALUE_TYPES) {
                 @Override
                 public boolean process(String option, List<String> arguments) {
                     // We have to format this option to contain quotes around each word:
@@ -413,12 +368,7 @@ public class BashTabCompletionDoclet extends HelpDoclet {
                 }
             });
 
-            add(new BarclayDocletOption(
-                    Arrays.asList(CALLER_SCRIPT_POSTFIX_MUTEX_ARGS),
-                    CALLER_SCRIPT_POSTFIX_MUTEX_ARGS,
-                    1,
-                    Option.Kind.STANDARD,
-                    "<string>") {
+            add(new BarclayDocletOption.SimpleStandardOption(CALLER_SCRIPT_POSTFIX_MUTEX_ARGS) {
                 @Override
                 public boolean process(String option, List<String> arguments) {
                     // We have to format this option to contain quotes around each word:
@@ -427,12 +377,7 @@ public class BashTabCompletionDoclet extends HelpDoclet {
                 }
             });
 
-             add(new BarclayDocletOption(
-                    Arrays.asList(CALLER_SCRIPT_POSTFIX_ALIAS_ARGS),
-                    CALLER_SCRIPT_POSTFIX_ALIAS_ARGS,
-                    1,
-                    Option.Kind.STANDARD,
-                    "<string>") {
+            add(new BarclayDocletOption.SimpleStandardOption(CALLER_SCRIPT_POSTFIX_ALIAS_ARGS) {
                 @Override
                 public boolean process(String option, List<String> arguments) {
                     // We have to format this option to contain quotes around each word:
@@ -441,12 +386,7 @@ public class BashTabCompletionDoclet extends HelpDoclet {
                 }
             });
 
-            add(new BarclayDocletOption(
-                    Arrays.asList(CALLER_SCRIPT_POSTFIX_ARG_MIN_OCCURRENCES),
-                    CALLER_SCRIPT_POSTFIX_ARG_MIN_OCCURRENCES,
-                    1,
-                    Option.Kind.STANDARD,
-                    "<string>") {
+            add(new BarclayDocletOption.SimpleStandardOption(CALLER_SCRIPT_POSTFIX_ARG_MIN_OCCURRENCES) {
                 @Override
                 public boolean process(String option, List<String> arguments) {
                     callerScriptPostfixMinOccurrences = arguments.get(0);
@@ -454,12 +394,7 @@ public class BashTabCompletionDoclet extends HelpDoclet {
                 }
             });
 
-            add(new BarclayDocletOption(
-                    Arrays.asList(CALLER_SCRIPT_POSTFIX_ARG_MAX_OCCURRENCES),
-                    CALLER_SCRIPT_POSTFIX_ARG_MAX_OCCURRENCES,
-                    1,
-                    Option.Kind.STANDARD,
-                    "<string>") {
+            add(new BarclayDocletOption.SimpleStandardOption(CALLER_SCRIPT_POSTFIX_ARG_MAX_OCCURRENCES) {
                 @Override
                 public boolean process(String option, List<String> arguments) {
                     callerScriptPostfixMaxOccurrences = arguments.get(0);

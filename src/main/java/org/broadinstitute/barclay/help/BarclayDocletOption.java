@@ -32,6 +32,16 @@ abstract public class BarclayDocletOption implements Doclet.Option {
         optionRecord = new DocletOptionRecord(aliases, description, argCount, kind, parameters);
     }
 
+    /**
+     * A subclass to handle the common case of a STANDARD option of type string, with one argument
+     * and a single name with no aliases.
+     */
+    public static abstract class SimpleStandardOption extends BarclayDocletOption {
+        public SimpleStandardOption(String name){
+            super(List.of(name), name, 1, Kind.STANDARD, "<string>");
+        }
+    }
+
     @Override
     public int getArgumentCount() { return optionRecord.argCount();}
 
