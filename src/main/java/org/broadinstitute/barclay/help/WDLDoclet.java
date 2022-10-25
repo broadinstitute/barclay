@@ -17,14 +17,6 @@ import java.util.Map;
  */
 public class WDLDoclet extends HelpDoclet {
 
-//    /**
-//     * Create a WDL doclet and generate the FreeMarker templates properties.
-//     * @param docEnv DocletEnvironment
-//     */
-//    public static boolean run(final DocletEnvironment docEnv) throws IOException {
-//        return super.start;
-//    }
-
     @Override
     public boolean includeInDocs(final DocumentedFeature documentedFeature, final Class<?> clazz) {
         if (super.includeInDocs(documentedFeature, clazz)) {

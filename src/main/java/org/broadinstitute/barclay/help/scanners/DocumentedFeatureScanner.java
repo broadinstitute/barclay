@@ -12,8 +12,8 @@ import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementScanner14;
 import javax.tools.Diagnostic;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * An {@link ElementScanner14} for finding {@link DocumentedFeature}s to be included in a Barclay doc
@@ -23,7 +23,7 @@ public class DocumentedFeatureScanner extends ElementScanner14<Void, Void> {
     private final HelpDoclet helpDoclet;
     private final DocletEnvironment docEnv;
     private final Reporter reporter;
-    private Set<DocWorkUnit> workUnits = new HashSet<>();     // Set of all things we are going to document
+    private Set<DocWorkUnit> workUnits = new TreeSet<>();     // Set of all things we are going to document
 
     /**
      * For internal use only. External callers should use

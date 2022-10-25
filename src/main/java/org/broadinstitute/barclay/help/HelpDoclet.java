@@ -77,7 +77,7 @@ public class HelpDoclet implements Doclet {
 
     // Variables to store data for Freemarker:
     private DocletEnvironment docletEnv;      // The javadoc doclet env
-    protected Set<DocWorkUnit> workUnits = new HashSet<>();     // Set of all things we are going to document
+    protected Set<DocWorkUnit> workUnits = new LinkedHashSet<>();     // Set of all things we are going to document
     private  Reporter reporter;
 
     @Override
@@ -116,16 +116,11 @@ public class HelpDoclet implements Doclet {
 
     @Override
     public Set<? extends Option> getSupportedOptions() {
-        return new HashSet<>() {{
+        return new LinkedHashSet<>() {{
 
             // standard javadoc options
 
-            add(new BarclayDocletOption(
-                    Arrays.asList(BarclayDocletOptions.DESTINATION_DIR_OPTION),
-                    "destination directory",
-                    1,
-                    Option.Kind.STANDARD,
-                    "<string>") {
+            add(new BarclayDocletOption.SimpleStandardOption(BarclayDocletOptions.DESTINATION_DIR_OPTION) {
                 @Override
                 public boolean process(String option, List<String> arguments) {
                     destinationDir = new File(arguments.get(0));
@@ -133,24 +128,14 @@ public class HelpDoclet implements Doclet {
                 }
             });
 
-            add(new BarclayDocletOption(
-                    Arrays.asList(BarclayDocletOptions.WINDOW_TITLE_OPTION),
-                    "window title",
-                    1,
-                    Option.Kind.STANDARD,
-                    "<string>") {
+            add(new BarclayDocletOption.SimpleStandardOption(BarclayDocletOptions.WINDOW_TITLE_OPTION) {
                 @Override
                 public boolean process(String option, List<String> arguments) {
                     return false;
                 }
             });
 
-            add(new BarclayDocletOption(
-                    Arrays.asList(BarclayDocletOptions.DOC_TITLE_OPTION),
-                    "document title",
-                    1,
-                    Option.Kind.STANDARD,
-                    "<string>") {
+            add(new BarclayDocletOption.SimpleStandardOption(BarclayDocletOptions.DOC_TITLE_OPTION) {
                 @Override
                 public boolean process(String option, List<String> arguments) {
                     return false;
@@ -298,7 +283,7 @@ public class HelpDoclet implements Doclet {
         // scan all included elements for DocumentedFeatures
         workUnits = JavaLanguageModelScanners.getWorkUnits(this, docletEnv, reporter, docletEnv.getIncludedElements());
 
-        final Set<String> uniqueGroups = new HashSet<>();
+        final Set<String> uniqueGroups = new LinkedHashSet<>();
         final List<Map<String, String>> featureMaps = new ArrayList<>();
         final List<Map<String, String>> groupMaps = new ArrayList<>();
 
