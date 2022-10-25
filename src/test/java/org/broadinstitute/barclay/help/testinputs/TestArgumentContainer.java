@@ -9,6 +9,11 @@ import org.broadinstitute.barclay.help.DocumentedFeature;
 import java.io.File;
 import java.util.*;
 
+// * Test embedded value:
+// *
+// * {@value #SUMMARY}
+// *
+
 /**
  * Argument container class for testing documentation generation. Contains an argument
  * for each @Argument, @ArgumentCollection, and @DocumentedFeature property that should
