@@ -1,7 +1,6 @@
 package org.broadinstitute.barclay.help.scanners;
 
 import com.sun.source.doctree.DocCommentTree;
-import com.sun.source.doctree.DocTree;
 import jdk.javadoc.doclet.DocletEnvironment;
 import jdk.javadoc.doclet.Reporter;
 import org.broadinstitute.barclay.help.DocWorkUnit;
@@ -11,6 +10,7 @@ import org.broadinstitute.barclay.utils.Utils;
 import javax.lang.model.element.Element;
 import javax.lang.model.util.ElementFilter;
 import java.lang.reflect.Field;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -97,8 +97,11 @@ public class JavaLanguageModelScanners {
         Utils.nonNull(targetElement, "targetElement");
 
         final DocCommentTree docTree = docEnv.getDocTrees().getDocCommentTree(targetElement);
-        final UnknownInlineTagScanner unknownInlineTagScanner = new UnknownInlineTagScanner(docEnv, docTree);
-        unknownInlineTagScanner.scan(docTree, null);
-        return unknownInlineTagScanner.getInlineTags();
+        if (docTree != null) {
+            final UnknownInlineTagScanner unknownInlineTagScanner = new UnknownInlineTagScanner(docEnv, docTree);
+            unknownInlineTagScanner.scan(docTree, null);
+            return unknownInlineTagScanner.getInlineTags();
+        }
+        return new LinkedHashMap<>();
     }
 }
