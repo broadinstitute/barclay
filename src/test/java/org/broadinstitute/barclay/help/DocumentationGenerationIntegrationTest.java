@@ -40,9 +40,11 @@ public class DocumentationGenerationIntegrationTest {
     private static final List<String> COMMON_ARG_LIST = Arrays.asList(
             "-build-timestamp", "2016/01/01 01:01:01",      // dummy, constant timestamp
             "-absolute-version", "11.1",                    // dummy version
+            "-windowtitle", "gradle includes a window title so test it",
+            "-doctitle", "gradle includes a doctitle so test it",
+            "-quiet",  // gradle includes this so test it
             "-docletpath",
-            //"build/libs",
-            "/Users/cnorman/projects/barclay/out/production/classes",
+            "out/production/classes",
             "-verbose",
             "-cp", System.getProperty("java.class.path")
     );

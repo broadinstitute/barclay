@@ -131,14 +131,14 @@ public class HelpDoclet implements Doclet {
             add(new BarclayDocletOption.SimpleStandardOption(BarclayDocletOptions.WINDOW_TITLE_OPTION) {
                 @Override
                 public boolean process(String option, List<String> arguments) {
-                    return false;
+                    return true;
                 }
             });
 
             add(new BarclayDocletOption.SimpleStandardOption(BarclayDocletOptions.DOC_TITLE_OPTION) {
                 @Override
                 public boolean process(String option, List<String> arguments) {
-                    return false;
+                    return true;
                 }
             });
 
@@ -150,17 +150,17 @@ public class HelpDoclet implements Doclet {
                     null) {
                 @Override
                 public boolean process(String option, List<String> arguments) {
-                    return false;
+                    // the gradle javadoc task includes this since its a standard doclet arg
+                    // so we need to tolerate it, but ignore it
+                    return true;
                 }
             });
-
-            // custom Barclay options
 
             add(new BarclayDocletOption(
                     Arrays.asList(BarclayDocletOptions.SETTINGS_DIR_OPTION),
                     "settings dir",
                     1,
-                    Option.Kind.OTHER,
+                    Option.Kind.STANDARD,
                     "<string>") {
                 @Override
                 public boolean process(String option, List<String> arguments) {
@@ -169,6 +169,9 @@ public class HelpDoclet implements Doclet {
                     return true;
                 }
             });
+
+            // custom Barclay options
+
             add(new BarclayDocletOption(
                     Arrays.asList(BarclayDocletOptions.BUILD_TIMESTAMP_OPTION),
                     "build timestamp",
