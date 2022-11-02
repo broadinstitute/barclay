@@ -50,7 +50,7 @@ public class DocumentedFeatureScanner extends ElementScanner14<Void, Void> {
     @Override
     public Void scan(final Element e, final Void unused) {
         if (e.asType().getKind().equals(TypeKind.DECLARED)) {
-            final Class<?> clazz = DocletUtils.getClassForDeclaredElement(e, docEnv);
+            final Class<?> clazz = DocletUtils.getClassForDeclaredElement(e, docEnv, reporter);
             final DocumentedFeature documentedFeature = DocletUtils.getDocumentedFeatureForClass(clazz);
             if (documentedFeature != null) {
                 if (documentedFeature.enable() && helpDoclet.includeInDocs(documentedFeature, clazz)) {

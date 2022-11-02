@@ -10,6 +10,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
+import jdk.javadoc.doclet.Reporter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -18,16 +19,22 @@ import org.apache.logging.log4j.Logger;
  * are not available on all systems, and we don't want the GATK proper to depend on them.
  */
 public class DocletUtils {
-
-    public static Class<?> getClassForDeclaredElement(final Element docElement, final DocletEnvironment docEnv) {
-         return getClassForClassName(getClassName(docElement, docEnv));
+    public static Class<?> getClassForDeclaredElement(
+            final Element docElement,
+            final DocletEnvironment docEnv,
+            final Reporter reporter) {
+         return getClassForClassName(getClassName(docElement, docEnv), reporter);
     }
 
-    public static Class<?> getClassForClassName(final String className) {
+    public static Class<?> getClassForClassName(final String className, final Reporter reporter) {
         try {
             return Class.forName(className);
         } catch (ClassNotFoundException | NoClassDefFoundError e) {
             // we got an Element for a class we can't find.  Maybe in a library or something
+            return null;
+        } catch (IncompatibleClassChangeError e) {
+            reporter.getDiagnosticWriter().format(
+                    "Unexpected class change error for class %s ignored: %s", e.getMessage(), className);
             return null;
         }
     }
