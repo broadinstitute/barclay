@@ -51,7 +51,6 @@ public class DocWorkUnit implements Comparable<DocWorkUnit> {
         if (!name.equals(that.name)) return false;
         if (!clazz.equals(that.clazz)) return false;
         if (!docElement.equals(that.docElement)) return false;
-        if (!workUnitHandler.equals(that.workUnitHandler)) return false;
         if (documentedFeature != null ? !documentedFeature.equals(that.documentedFeature) :
                 that.documentedFeature != null)
             return false;
@@ -73,7 +72,6 @@ public class DocWorkUnit implements Comparable<DocWorkUnit> {
         int result = name.hashCode();
         result = 31 * result + clazz.hashCode();
         result = 31 * result + docElement.hashCode();
-        result = 31 * result + workUnitHandler.hashCode();
         result = 31 * result + (documentedFeature != null ? documentedFeature.hashCode() : 0);
         result = 31 * result + (commandLineProperties != null ? commandLineProperties.hashCode() : 0);
         result = 31 * result + (experimentalFeature != null ? experimentalFeature.hashCode() : 0);
