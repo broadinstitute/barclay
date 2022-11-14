@@ -122,7 +122,7 @@ public class PositionalArgumentDefinition extends ArgumentDefinition {
     public String getArgumentUsage(final int argumentColumnWidth, final int descriptionColumnWidth) {
 
         final StringBuilder sb = new StringBuilder();
-        sb.append("--").append("POSITIONAL");
+        sb.append("--").append("POSITIONAL (must be first)");
         sb.append(String.format(" <%s>", getUnderlyingFieldClass().getSimpleName()));
 
         int labelLength = sb.toString().length();
