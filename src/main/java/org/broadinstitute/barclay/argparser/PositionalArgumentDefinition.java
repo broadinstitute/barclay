@@ -133,19 +133,7 @@ public class PositionalArgumentDefinition extends ArgumentDefinition {
         }
         Utils.printSpaces(sb, numSpaces);
 
-        String description = getArgumentDescription();
-        if (isDeprecated()) {
-            description = "This argument is DEPRECATED (" + getDeprecationDetail() + "). " + description;
-        }
-        final String wrappedDescription = Utils.wrapParagraph(description, descriptionColumnWidth);
-        final String[] descriptionLines = wrappedDescription.split("\n");
-        for (int i = 0; i < descriptionLines.length; ++i) {
-            if (i > 0) {
-                Utils.printSpaces(sb, argumentColumnWidth);
-            }
-            sb.append(descriptionLines[i]);
-            sb.append("\n");
-        }
+        sb.append(getFormattedDescription(getArgumentDescription(), descriptionColumnWidth));
         sb.append("\n");
 
         return sb.toString();

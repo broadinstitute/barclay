@@ -305,6 +305,39 @@ public abstract class ArgumentDefinition {
         }
     }
 
+    /**
+     * Decorated the provided description with a deprecation notice if this arg is deprecated.
+     * @param description
+     * @return the provided description annotated with a deprecation notice if this arg is deprecated
+     */
+    protected String getDeprecatedArgumentNotice(final String description) {
+        return isDeprecated() ?
+                "This argument is DEPRECATED (" + getDeprecationDetail() + "). " + description :
+                description;
+    }
+
+    /**
+     * The formatted description for this arg, including a deprecation notice if the arg is marked
+     * as deprecated.
+     * @param rawDescription the raw description for this arg
+     * @param argumentColumnWidth the display column width to use for formatting
+     * @return the description for this arg, formatted for display
+     */
+    protected String getFormattedDescription(final String rawDescription, final int argumentColumnWidth ) {
+        final StringBuilder sb = new StringBuilder();
+        final String description = getDeprecatedArgumentNotice(rawDescription);
+        final String wrappedDescription = Utils.wrapParagraph(description, argumentColumnWidth);
+        final String[] descriptionLines = wrappedDescription.split("\n");
+        for (int i = 0; i < descriptionLines.length; ++i) {
+            if (i > 0) {
+                Utils.printSpaces(sb, argumentColumnWidth);
+            }
+            sb.append(descriptionLines[i]);
+            sb.append("\n");
+        }
+        return sb.toString();
+    }
+
     // True if clazz is an enum, or if it has a ctor that takes a single String argument.
     private boolean canBeMadeFromString() {
         final Class<?> clazz = getClassForUnderlyingField();
