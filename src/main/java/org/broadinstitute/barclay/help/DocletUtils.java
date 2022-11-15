@@ -40,7 +40,7 @@ public class DocletUtils {
     }
 
     /**
-     * Reconstitute the class name from the given class JavaDoc object.
+     * Reconstitute the class name from the given class Element.
      *
      * @param element the Element for a class.
      * @return The (string) class name of the given class. Maybe null if no class can be found.

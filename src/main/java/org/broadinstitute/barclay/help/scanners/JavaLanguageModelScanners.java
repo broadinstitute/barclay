@@ -53,13 +53,25 @@ public class JavaLanguageModelScanners {
         Utils.nonNull(docEnv, "doclet env");
         Utils.nonNull(targetElement, "target element");
 
-        final CommentScanner docScanner = new CommentScanner(docEnv, targetElement);
         final DocCommentTree docTree = docEnv.getDocTrees().getDocCommentTree(targetElement);
         if (docTree == null) {
             return EMPTY_COMMENT;
         }
-        docScanner.scan(docTree, null);
-        return docScanner.getComment();
+        final StringBuilder sb = new StringBuilder();
+        if (docTree != null) {
+            docTree.getFullBody().forEach(t -> sb.append(t.toString()));
+        }
+        return sb.toString();
+    }
+
+    //TODO: move this out of scanners
+    public static String getFirstSentenceDoc(final DocletEnvironment docEnv, final Element targetElement) {
+        final DocCommentTree docTree = docEnv.getDocTrees().getDocCommentTree(targetElement);
+        final StringBuilder sb = new StringBuilder();
+        if (docTree != null) {
+            docTree.getFirstSentence().forEach(t -> sb.append(t.toString()));
+        }
+        return sb.toString();
     }
 
     /**

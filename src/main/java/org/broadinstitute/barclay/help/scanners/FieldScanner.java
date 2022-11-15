@@ -4,6 +4,7 @@ import jdk.javadoc.doclet.DocletEnvironment;
 import org.broadinstitute.barclay.utils.Utils;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.util.ElementScanner14;
 import java.lang.reflect.Field;
 
@@ -38,8 +39,13 @@ public class FieldScanner extends ElementScanner14<Void, Void> {
     @Override
     public Void scan(final Element e, final Void unused) {
         if (e.getSimpleName().toString().equals(queryFieldName)) {
-            resultElement = e;
-            return null;
+            final ElementKind k = e.getKind();
+            if (k == ElementKind.FIELD) {
+                // we need to make sure we only select FIELD elements since the same
+                // queryname can show up as paramaters, etc.
+                resultElement = e;
+                return null;
+            }
         }
         return super.scan(e, unused);
     }

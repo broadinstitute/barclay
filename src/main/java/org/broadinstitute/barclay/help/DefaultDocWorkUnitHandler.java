@@ -11,7 +11,6 @@ import org.broadinstitute.barclay.utils.Utils;
 import javax.lang.model.element.Element;
 import java.lang.reflect.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Default implementation of DocWorkUnitHandler. The DocWorkUnitHandler determines the template that will be
@@ -63,7 +62,8 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
             }
             if (summary == null || summary.isEmpty()) {
                 // If no summary was found from annotations, use the javadoc if there is any
-                summary = JavaLanguageModelScanners.getDocComment(getDoclet().getDocletEnv(), workUnit.getDocElement());
+                //TODO: need to get only the first sentence here...
+                summary = JavaLanguageModelScanners.getFirstSentenceDoc(getDoclet().getDocletEnv(), workUnit.getDocElement());
             }
         }
 
@@ -232,6 +232,7 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
         workUnit.setProperty("beta", workUnit.isBetaFeature());
         workUnit.setProperty("experimental", workUnit.isExperimentalFeature());
 
+        //TODO: unify this property name (its called "description" for work units, but "fulltext" for arguments)
         workUnit.setProperty("description", getDescription(workUnit));
 
         workUnit.setProperty("version", getDoclet().getBuildVersion());
@@ -404,12 +405,37 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
     }
 
     private String getDocCommentForField(final DocWorkUnit workUnit, final NamedArgumentDefinition argDef) {
-        final Element fieldElement = JavaLanguageModelScanners.getElementForField(getDoclet().getDocletEnv(), workUnit.getDocElement(), argDef.getUnderlyingField());
+        // first, see if the field (@Argument) we're looking for is declared directly in the work unit's class
+        Element fieldElement = JavaLanguageModelScanners.getElementForField(
+                getDoclet().getDocletEnv(),
+                workUnit.getDocElement(),
+                argDef.getUnderlyingField());
         if (fieldElement == null) {
+            // the field isn't defined directly in the workunit's enclosing class/element, so it must be
+            // defined in a class that is referenced by the workunit's enclosing class. find that class and get
+            // it's type element
+            Class<?> containingClass = argDef.getUnderlyingField().getDeclaringClass();
+            if (containingClass != null) {
+                String className = containingClass.getCanonicalName();
+                // className can be null if the containing class is an anonymous class, in which case we don't
+                // want to traverse the containment hierarchy because we'll just wind up back at the work unit
+                // class, which we don't want, so in order to be compatible with the way the old javadoc used
+                // to work, just bail...
+                if (className != null) {
+                    final Element classElement = getDoclet().getDocletEnv().getElementUtils().getTypeElement(className);
+                    fieldElement = JavaLanguageModelScanners.getElementForField(
+                            getDoclet().getDocletEnv(),
+                            classElement,
+                            argDef.getUnderlyingField());
+                }
+            }
+        }
+        if (fieldElement != null) {
+            final String comment = JavaLanguageModelScanners.getDocComment(getDoclet().getDocletEnv(), fieldElement);
+            return comment == null ? "" : comment;
+        } else {
             return "";
         }
-        final String comment = JavaLanguageModelScanners.getDocComment(getDoclet().getDocletEnv(), fieldElement);
-        return comment == null ? "" : comment;
     }
 
     /**
