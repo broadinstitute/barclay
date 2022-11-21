@@ -320,13 +320,17 @@ public abstract class ArgumentDefinition {
      * The formatted description for this arg, including a deprecation notice if the arg is marked
      * as deprecated.
      * @param rawDescription the raw description for this arg
-     * @param argumentColumnWidth the display column width to use for formatting
+     * @param argumentColumnWidth the width reserved for the argument descriptions
+     * @param descriptionColumnWidth the display column width to use for formatting
      * @return the description for this arg, formatted for display
      */
-    protected String getFormattedDescription(final String rawDescription, final int argumentColumnWidth ) {
+    protected String getFormattedDescription(
+            final String rawDescription,
+            final int argumentColumnWidth,
+            final int descriptionColumnWidth) {
         final StringBuilder sb = new StringBuilder();
         final String description = getDeprecatedArgumentNotice(rawDescription);
-        final String wrappedDescription = Utils.wrapParagraph(description, argumentColumnWidth);
+        final String wrappedDescription = Utils.wrapParagraph(description, descriptionColumnWidth);
         final String[] descriptionLines = wrappedDescription.split("\n");
         for (int i = 0; i < descriptionLines.length; ++i) {
             if (i > 0) {

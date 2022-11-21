@@ -133,7 +133,7 @@ public class PositionalArgumentDefinition extends ArgumentDefinition {
         }
         Utils.printSpaces(sb, numSpaces);
 
-        sb.append(getFormattedDescription(getArgumentDescription(), descriptionColumnWidth));
+        sb.append(getFormattedDescription(getArgumentDescription(), argumentColumnWidth, descriptionColumnWidth));
         sb.append("\n");
 
         return sb.toString();

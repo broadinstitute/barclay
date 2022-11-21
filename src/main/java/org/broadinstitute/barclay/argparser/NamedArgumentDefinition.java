@@ -444,7 +444,10 @@ public class NamedArgumentDefinition extends ArgumentDefinition {
         }
         Utils.printSpaces(sb, numSpaces);
 
-        sb.append(getFormattedDescription(getArgumentDescription(allActualArguments, pluginDescriptors), descriptionColumnWidth));
+        sb.append(getFormattedDescription(
+                getArgumentDescription(allActualArguments, pluginDescriptors),
+                argumentColumnWidth,
+                descriptionColumnWidth));
         sb.append("\n");
 
         return sb.toString();
