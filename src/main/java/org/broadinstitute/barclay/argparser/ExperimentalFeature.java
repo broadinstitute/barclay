@@ -4,7 +4,8 @@ import java.lang.annotation.*;
 
 /**
  * Marker interface for features that are experimental and not for production use. These tools may never become stable
- * and may be changed dramatically or completely removed.
+ * and may be changed dramatically or completely removed. Mutually exclusive with {@link BetaFeature} and
+ * {@link DeprecatedFeature}.
  */
 @Documented
 @Inherited

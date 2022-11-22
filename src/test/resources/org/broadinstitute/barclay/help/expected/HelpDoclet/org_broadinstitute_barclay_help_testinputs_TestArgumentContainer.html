@@ -41,6 +41,9 @@
 								<li>
 									<a href="org_broadinstitute_barclay_help_testinputs_TestArgumentContainer.html">TestArgumentContainer</a>
 								</li>
+								<li>
+									<a href="org_broadinstitute_barclay_help_testinputs_TestDeprecatedCLP.html">TestDeprecatedCLP</a>
+								</li>
 					</ul>
 					</div>
 				</li>
@@ -104,7 +107,8 @@
 					</td>
 					<!--<td>List[File]</td> -->
 					<td>NA</td>
-					<td>Positional arguments, min = 2, max = 2</td>
+					<td>		 (Deprecated)
+Positional arguments, min = 2, max = 2</td>
 				</tr>
 			<tr>
 				<th colspan="4" id="row-divider">Required Arguments</th>
@@ -114,14 +118,16 @@
 					</td>
 					<!--<td>List[TestEnum]</td> -->
 					<td>[]</td>
-					<td>Undocumented option</td>
+					<td>		
+Undocumented option</td>
 				</tr>
 				<tr>
 					<td><a href="#--requiredClpEnum">--requiredClpEnum</a><br />
 					</td>
 					<!--<td>TestEnum</td> -->
 					<td>null</td>
-					<td>Required Clp enum</td>
+					<td>		
+Required Clp enum</td>
 				</tr>
 				<tr>
 					<td><a href="#--requiredFileList">--requiredFileList</a><br />
@@ -129,7 +135,8 @@
 					</td>
 					<!--<td>List[File]</td> -->
 					<td>[]</td>
-					<td>Required file list</td>
+					<td>		
+Required file list</td>
 				</tr>
 				<tr>
 					<td><a href="#--requiredInputFilesFromArgCollection">--requiredInputFilesFromArgCollection</a><br />
@@ -137,14 +144,16 @@
 					</td>
 					<!--<td>List[File]</td> -->
 					<td>[]</td>
-					<td>Required input files from argument collection</td>
+					<td>		
+Required input files from argument collection</td>
 				</tr>
 				<tr>
 					<td><a href="#--requiredStringInputFromArgCollection">--requiredStringInputFromArgCollection</a><br />
 					</td>
 					<!--<td>String</td> -->
 					<td>null</td>
-					<td>Required string input from argument collection</td>
+					<td>		
+Required string input from argument collection</td>
 				</tr>
 				<tr>
 					<td><a href="#--requiredStringList">--requiredStringList</a><br />
@@ -152,25 +161,37 @@
 					</td>
 					<!--<td>List[String]</td> -->
 					<td>[]</td>
-					<td>A required list of strings</td>
+					<td>		
+A required list of strings</td>
 				</tr>
 				<tr>
 					<td><a href="#--usesFieldNameForArgName">--usesFieldNameForArgName</a><br />
 					</td>
 					<!--<td>String</td> -->
 					<td>null</td>
-					<td>Use field name if no name in annotation.</td>
+					<td>		
+Use field name if no name in annotation.</td>
 				</tr>
 			<tr>
 				<th colspan="4" id="row-divider">Optional Tool Arguments</th>
 			</tr>
+				<tr>
+					<td><a href="#--deprecatedString">--deprecatedString</a><br />
+								&nbsp;<em>-depStr</em>
+					</td>
+					<!--<td>int</td> -->
+					<td>0</td>
+					<td>		 (Deprecated)
+deprecated</td>
+				</tr>
 				<tr>
 					<td><a href="#--enumSetLong">--enumSetLong</a><br />
 								&nbsp;<em>-ES</em>
 					</td>
 					<!--<td>EnumSet[TestEnum]</td> -->
 					<td>[ENUM_VALUE_1]</td>
-					<td>Some set thing.</td>
+					<td>		
+Some set thing.</td>
 				</tr>
 				<tr>
 					<td><a href="#--fullAnonymousArgName">--fullAnonymousArgName</a><br />
@@ -178,35 +199,40 @@
 					</td>
 					<!--<td>List[File]</td> -->
 					<td>[]</td>
-					<td>Test anonymous class arg</td>
+					<td>		
+Test anonymous class arg</td>
 				</tr>
 				<tr>
 					<td><a href="#--mutexSourceField">--mutexSourceField</a><br />
 					</td>
 					<!--<td>List[File]</td> -->
 					<td>[]</td>
-					<td>Undocumented option</td>
+					<td>		
+Undocumented option</td>
 				</tr>
 				<tr>
 					<td><a href="#--mutexTargetField1">--mutexTargetField1</a><br />
 					</td>
 					<!--<td>List[File]</td> -->
 					<td>[]</td>
-					<td>SAM/BAM/CRAM file(s) with alignment data from the first read of a pair.</td>
+					<td>		
+SAM/BAM/CRAM file(s) with alignment data from the first read of a pair.</td>
 				</tr>
 				<tr>
 					<td><a href="#--mutexTargetField2">--mutexTargetField2</a><br />
 					</td>
 					<!--<td>List[File]</td> -->
 					<td>[]</td>
-					<td>SAM/BAM file(s) with alignment data from the second read of a pair.</td>
+					<td>		
+SAM/BAM file(s) with alignment data from the second read of a pair.</td>
 				</tr>
 				<tr>
 					<td><a href="#--optionalClpEnum">--optionalClpEnum</a><br />
 					</td>
 					<!--<td>TestEnum</td> -->
 					<td>ENUM_VALUE_1</td>
-					<td>Optional Clp enum</td>
+					<td>		
+Optional Clp enum</td>
 				</tr>
 				<tr>
 					<td><a href="#--optionalDouble">--optionalDouble</a><br />
@@ -214,7 +240,8 @@
 					</td>
 					<!--<td>double</td> -->
 					<td>2.15</td>
-					<td>Optionals double with initial value 2.15</td>
+					<td>		
+Optionals double with initial value 2.15</td>
 				</tr>
 				<tr>
 					<td><a href="#--optionalDoubleList">--optionalDoubleList</a><br />
@@ -222,7 +249,8 @@
 					</td>
 					<!--<td>List[Double]</td> -->
 					<td>[100.0, 99.9, 99.0, 90.0]</td>
-					<td>optionalDoubleList with initial values: 100.0, 99.9, 99.0, 90.0</td>
+					<td>		
+optionalDoubleList with initial values: 100.0, 99.9, 99.0, 90.0</td>
 				</tr>
 				<tr>
 					<td><a href="#--optionalFileList">--optionalFileList</a><br />
@@ -230,7 +258,8 @@
 					</td>
 					<!--<td>List[File]</td> -->
 					<td>[]</td>
-					<td>Optional file list</td>
+					<td>		
+Optional file list</td>
 				</tr>
 				<tr>
 					<td><a href="#--optionalFlag">--optionalFlag</a><br />
@@ -238,21 +267,24 @@
 					</td>
 					<!--<td>boolean</td> -->
 					<td>false</td>
-					<td>Optional flag, defaults to false.</td>
+					<td>		
+Optional flag, defaults to false.</td>
 				</tr>
 				<tr>
 					<td><a href="#--optionalInputFilesFromArgCollection">--optionalInputFilesFromArgCollection</a><br />
 					</td>
 					<!--<td>List[File]</td> -->
 					<td>[]</td>
-					<td>Optional input files from argument collection</td>
+					<td>		
+Optional input files from argument collection</td>
 				</tr>
 				<tr>
 					<td><a href="#--optionalStringInputFromArgCollection">--optionalStringInputFromArgCollection</a><br />
 					</td>
 					<!--<td>String</td> -->
 					<td>null</td>
-					<td>Optional string input from argument collection</td>
+					<td>		
+Optional string input from argument collection</td>
 				</tr>
 				<tr>
 					<td><a href="#--optionalStringList">--optionalStringList</a><br />
@@ -260,14 +292,16 @@
 					</td>
 					<!--<td>List[String]</td> -->
 					<td>[]</td>
-					<td>An optional list of strings</td>
+					<td>		
+An optional list of strings</td>
 				</tr>
 				<tr>
 					<td><a href="#--testPlugin">--testPlugin</a><br />
 					</td>
 					<!--<td>List[String]</td> -->
 					<td>[]</td>
-					<td>Undocumented option</td>
+					<td>		
+Undocumented option</td>
 				</tr>
 			<tr>
 				<th colspan="4" id="row-divider">Advanced Arguments</th>
@@ -278,18 +312,28 @@
 					</td>
 					<!--<td>int</td> -->
 					<td>1</td>
-					<td>advancedOptionalInt with initial value 1</td>
+					<td>		
+advancedOptionalInt with initial value 1</td>
 				</tr>
 			<tr>
 				<th colspan="4" id="row-divider">Deprecated Arguments</th>
 			</tr>
+				<tr>
+					<td><a href="#[NA - Positional]">[NA - Positional]</a><br />
+					</td>
+					<!--<td>List[File]</td> -->
+					<td>NA</td>
+					<td>		 (Deprecated)
+Positional arguments, min = 2, max = 2</td>
+				</tr>
 				<tr>
 					<td><a href="#--deprecatedString">--deprecatedString</a><br />
 								&nbsp;<em>-depStr</em>
 					</td>
 					<!--<td>int</td> -->
 					<td>0</td>
-					<td>deprecated</td>
+					<td>		 (Deprecated)
+deprecated</td>
 				</tr>
 					</tbody>
 				</table>
@@ -301,7 +345,8 @@
 			
 		</h3>
 		<p class="args">
-			<b>Positional arguments, min = 2, max = 2</b><br />
+			<b>		 (Deprecated)
+Positional arguments, min = 2, max = 2</b><br />
 			Positional arguments, min = 2, max = 2
 		</p>
 		<p>
@@ -314,7 +359,8 @@
 			 / <small>-advancedOptInt</small>
 		</h3>
 		<p class="args">
-			<b>advancedOptionalInt with initial value 1</b><br />
+			<b>		
+advancedOptionalInt with initial value 1</b><br />
 			Advanced, Optional int
 		</p>
 		<p>
@@ -328,7 +374,8 @@
 			 / <small>-depStr</small>
 		</h3>
 		<p class="args">
-			<b>deprecated</b><br />
+			<b>		 (Deprecated)
+deprecated</b><br />
 			Deprecated string
 		</p>
 		<p>
@@ -342,7 +389,8 @@
 			
 		</h3>
 		<p class="args">
-			<b>Undocumented option</b><br />
+			<b>		
+Undocumented option</b><br />
 			
 		</p>
 			<p>
@@ -364,7 +412,8 @@
 			 / <small>-ES</small>
 		</h3>
 		<p class="args">
-			<b>Some set thing.</b><br />
+			<b>		
+Some set thing.</b><br />
 			
 		</p>
 			<p>
@@ -385,7 +434,8 @@
 			 / <small>-anonymousClassArg</small>
 		</h3>
 		<p class="args">
-			<b>Test anonymous class arg</b><br />
+			<b>		
+Test anonymous class arg</b><br />
 			
 		</p>
 		<p>
@@ -397,7 +447,8 @@
 			 / <small>-mutexSourceField</small>
 		</h3>
 		<p class="args">
-			<b>Undocumented option</b><br />
+			<b>		
+Undocumented option</b><br />
 			Mutually exclusive args
 		</p>
 			<p><b>Exclusion:</b> This argument cannot be used at the same time as <code>mutexTargetField1, mutexTargetField2</code>.</p>
@@ -410,7 +461,8 @@
 			 / <small>-mutexTargetField1</small>
 		</h3>
 		<p class="args">
-			<b>SAM/BAM/CRAM file(s) with alignment data from the first read of a pair.</b><br />
+			<b>		
+SAM/BAM/CRAM file(s) with alignment data from the first read of a pair.</b><br />
 			
 		</p>
 			<p><b>Exclusion:</b> This argument cannot be used at the same time as <code>mutexSourceField</code>.</p>
@@ -423,7 +475,8 @@
 			 / <small>-mutexTargetField2</small>
 		</h3>
 		<p class="args">
-			<b>SAM/BAM file(s) with alignment data from the second read of a pair.</b><br />
+			<b>		
+SAM/BAM file(s) with alignment data from the second read of a pair.</b><br />
 			
 		</p>
 			<p><b>Exclusion:</b> This argument cannot be used at the same time as <code>mutexSourceField</code>.</p>
@@ -436,7 +489,8 @@
 			 / <small>-optionalClpEnum</small>
 		</h3>
 		<p class="args">
-			<b>Optional Clp enum</b><br />
+			<b>		
+Optional Clp enum</b><br />
 			
 		</p>
 			<p>
@@ -457,7 +511,8 @@
 			 / <small>-optDouble</small>
 		</h3>
 		<p class="args">
-			<b>Optionals double with initial value 2.15</b><br />
+			<b>		
+Optionals double with initial value 2.15</b><br />
 			Required double
 		</p>
 		<p>
@@ -471,7 +526,8 @@
 			 / <small>-optDoubleList</small>
 		</h3>
 		<p class="args">
-			<b>optionalDoubleList with initial values: 100.0, 99.9, 99.0, 90.0</b><br />
+			<b>		
+optionalDoubleList with initial values: 100.0, 99.9, 99.0, 90.0</b><br />
 			Optional double list.
 		</p>
 		<p>
@@ -483,7 +539,8 @@
 			 / <small>-optFilList</small>
 		</h3>
 		<p class="args">
-			<b>Optional file list</b><br />
+			<b>		
+Optional file list</b><br />
 			Optional file list.
 		</p>
 		<p>
@@ -495,7 +552,8 @@
 			 / <small>-optFlag</small>
 		</h3>
 		<p class="args">
-			<b>Optional flag, defaults to false.</b><br />
+			<b>		
+Optional flag, defaults to false.</b><br />
 			Optional flag.
 		</p>
 		<p>
@@ -507,7 +565,8 @@
 			 / <small>-optionalInputFilesFromArgCollection</small>
 		</h3>
 		<p class="args">
-			<b>Optional input files from argument collection</b><br />
+			<b>		
+Optional input files from argument collection</b><br />
 			
 		</p>
 		<p>
@@ -519,7 +578,8 @@
 			 / <small>-optionalStringInputFromArgCollection</small>
 		</h3>
 		<p class="args">
-			<b>Optional string input from argument collection</b><br />
+			<b>		
+Optional string input from argument collection</b><br />
 			
 		</p>
 		<p>
@@ -531,7 +591,8 @@
 			 / <small>-optStrList</small>
 		</h3>
 		<p class="args">
-			<b>An optional list of strings</b><br />
+			<b>		
+An optional list of strings</b><br />
 			Optional string list.
 		</p>
 		<p>
@@ -543,7 +604,8 @@
 			 / <small>-requiredClpEnum</small>
 		</h3>
 		<p class="args">
-			<b>Required Clp enum</b><br />
+			<b>		
+Required Clp enum</b><br />
 			
 		</p>
 			<p>
@@ -565,7 +627,8 @@
 			 / <small>-reqFilList</small>
 		</h3>
 		<p class="args">
-			<b>Required file list</b><br />
+			<b>		
+Required file list</b><br />
 			Required file list.
 		</p>
 		<p>
@@ -578,7 +641,8 @@
 			 / <small>-rRequiredInputFilesFromArgCollection</small>
 		</h3>
 		<p class="args">
-			<b>Required input files from argument collection</b><br />
+			<b>		
+Required input files from argument collection</b><br />
 			
 		</p>
 		<p>
@@ -591,7 +655,8 @@
 			 / <small>-requiredStringInputFromArgCollection</small>
 		</h3>
 		<p class="args">
-			<b>Required string input from argument collection</b><br />
+			<b>		
+Required string input from argument collection</b><br />
 			
 		</p>
 		<p>
@@ -604,7 +669,8 @@
 			 / <small>-reqStrList</small>
 		</h3>
 		<p class="args">
-			<b>A required list of strings</b><br />
+			<b>		
+A required list of strings</b><br />
 			Required string list.
 		</p>
 		<p>
@@ -617,7 +683,8 @@
 			
 		</h3>
 		<p class="args">
-			<b>Undocumented option</b><br />
+			<b>		
+Undocumented option</b><br />
 			
 		</p>
 		<p>
@@ -629,7 +696,8 @@
 			
 		</h3>
 		<p class="args">
-			<b>Use field name if no name in annotation.</b><br />
+			<b>		
+Use field name if no name in annotation.</b><br />
 			
 		</p>
 		<p>

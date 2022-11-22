@@ -14,6 +14,14 @@ public class TemplateProperties {
     public final static String ARGUMENT_SUMMARY = "summary";
     public final static String ARGUMENT_REQUIRED = "required";
     public final static String ARGUMENT_DEFAULT_VALUE = "defaultValue";
+    public final static String ARGUMENT_DEPRECATED = "deprecated";
+    public final static String ARGUMENT_DEPRECATION_DETAIL = "deprecationDetail";
+
+    // Aggregate arg lists keys, by type
+    public final static String ARGLIST_TYPE_DEPRECATED = "deprecated";
+
+    // Documented feature work unit properties
+    public final static String FEATURE_DEPRECATED = "deprecated";
 
     // Properties specific to WDL generation
 
@@ -74,5 +82,4 @@ public class TemplateProperties {
      * localization optional inputs
      */
     public static final String WDL_LOCALIZATION_OPTIONAL = "localizationOptional";
-
 }

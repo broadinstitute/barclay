@@ -14,6 +14,7 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+
 /**
  * Default implementation of DocWorkUnitHandler. The DocWorkUnitHandler determines the template that will be
  * used for a given work unit, and populates the Freemarker property map used for a single feature/work-unit.
@@ -235,6 +236,8 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
         // FreeMarker map for the index.
         workUnit.setProperty("beta", workUnit.isBetaFeature());
         workUnit.setProperty("experimental", workUnit.isExperimentalFeature());
+        workUnit.setProperty(TemplateProperties.FEATURE_DEPRECATED, workUnit.isDeprecatedFeature());
+        workUnit.setProperty(TemplateMapConstants.FEATURE_DEPRECATION_DETAIL, workUnit.getDeprecationDetail());
 
         workUnit.setProperty("description", getDescription(workUnit));
 
@@ -311,26 +314,10 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
             argMap.entrySet().stream().forEach( entry -> entry.setValue(sortArguments(entry.getValue())));
 
             // Write out the GSON version
-            // make a GSON-friendly map of arguments -- uses some hacky casting
+            // make a GSON-friendly map of arguments
             final List<GSONArgument> allGSONArgs = new ArrayList<>();
-            for (final Map<String, Object> item : argMap.get("all")) {
-                GSONArgument itemGSONArg = new GSONArgument();
-
-                itemGSONArg.populate(item.get("summary").toString(),
-                        item.get("name").toString(),
-                        item.get("synonyms").toString(),
-                        item.get("type").toString(),
-                        item.get("required").toString(),
-                        item.get("fulltext").toString(),
-                        item.get("defaultValue").toString(),
-                        item.get("minValue").toString(),
-                        item.get("maxValue").toString(),
-                        item.get("minRecValue").toString(),
-                        item.get("maxRecValue").toString(),
-                        item.get("kind").toString(),
-                        (List<Map<String, Object>>)item.get("options")
-                );
-                allGSONArgs.add(itemGSONArg);
+            for (final Map<String, Object> detailMap : argMap.get("all")) {
+                allGSONArgs.add(new GSONArgument(detailMap));
             }
             currentWorkUnit.setProperty("gson-arguments", allGSONArgs);
         }
@@ -392,6 +379,9 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
             // Finalize argument bindings
             args.get(argKind).add(argMap);
             args.get("all").add(argMap);
+            if (argDef.isDeprecated()) {
+                args.get(TemplateProperties.ARGUMENT_DEPRECATED).add(argMap);
+            }
         }
     }
 
@@ -483,6 +473,11 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
             argBindings.put("minElements", positionalArgDef.getPositionalArgumentsAnnotation().minElements());
             argBindings.put("maxElements", positionalArgDef.getPositionalArgumentsAnnotation().maxElements());
             argBindings.put("collection", positionalArgDef.isCollection());
+            argBindings.put(TemplateProperties.ARGUMENT_DEPRECATED, positionalArgDef.isDeprecated());
+            if (positionalArgDef.isDeprecated()) {
+                argBindings.put(TemplateProperties.ARGUMENT_DEPRECATION_DETAIL, positionalArgDef.getDeprecationDetail());
+                args.get(TemplateProperties.ARGLIST_TYPE_DEPRECATED).add(argBindings);
+            }
             args.get("positional").add(argBindings);
             args.get("all").add(argBindings);
         }
@@ -496,16 +491,12 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
      */
     private String docKindOfArg(final NamedArgumentDefinition argumentDefinition) {
 
-        // deprecated
         // required (common or otherwise)
         // common optional
         // advanced
         // hidden
 
         // Required first (after positional, which are separate), regardless of what else it might be
-        if (argumentDefinition.isDeprecated()) {
-            return "deprecated";
-        }
         if (argumentDefinition.isControlledByPlugin()) {
             return "dependent";
         }
@@ -539,7 +530,7 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
         args.put("advanced", new ArrayList<>());
         args.put("dependent", new ArrayList<>());
         args.put("hidden", new ArrayList<>());
-        args.put("deprecated", new ArrayList<>());
+        args.put(TemplateProperties.ARGLIST_TYPE_DEPRECATED, new ArrayList<>());
         return args;
     }
 
@@ -766,8 +757,10 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
         if (!argDef.isOptional()) {
             attributes.add("required");
         }
+        argBindings.put(TemplateProperties.ARGUMENT_DEPRECATED, argDef.isDeprecated());
         if (argDef.isDeprecated()) {
-            attributes.add("deprecated");
+            argBindings.put(TemplateProperties.ARGUMENT_DEPRECATION_DETAIL, argDef.getDeprecationDetail());
+            attributes.add(TemplateMapConstants.ARG_DEPRECATED_ATTRIBUTE);
         }
         argBindings.put("attributes", attributes.size() > 0 ? String.join(", ", attributes) : "NA");
         argBindings.put("collection", argDef.isCollection());

@@ -29,6 +29,7 @@ public final class CommandLineArgumentParserTest {
         @ArgumentCollection
         SpecialArgumentsCollection specialArgs = new SpecialArgumentsCollection();
 
+        @DeprecatedFeature
         @PositionalArguments(minElements=2, maxElements=2)
         public List<File> positionalArguments = new ArrayList<>();
 
@@ -43,6 +44,10 @@ public final class CommandLineArgumentParserTest {
 
         @Argument
         public Boolean TRUTHINESS = false;
+
+        @Argument(doc="A deprecated argument", optional = true)
+        @DeprecatedFeature
+        public String deprecatedString;
     }
 
     @CommandLineProgramProperties(
@@ -108,6 +113,12 @@ public final class CommandLineArgumentParserTest {
                         "--arguments_file <File>",
                         "--FROBNICATION_THRESHOLD,-T <Integer>",
                         "--TRUTHINESS <Boolean>")
+                },
+                {
+                        new FrobnicateArguments(), Arrays.asList(
+                            "--deprecatedString",
+                            "This argument is DEPRECATED",
+                            "and will be removed in a future")
                 },
                 {
                     new MixedCardinalityMutexArguments(), Arrays.asList(
@@ -530,6 +541,19 @@ public final class CommandLineArgumentParserTest {
         final ArgumentsWithoutPositional fo = new ArgumentsWithoutPositional();
         final CommandLineArgumentParser clp = new CommandLineArgumentParser(fo);
         clp.parseArguments(System.err, args);
+    }
+
+    @Test
+    public void testPositionalDeprecated() {
+        final String[] args = {
+                "mypositionalFile1.txt", "mypositionalFile1.txt",
+                "--FROBNICATION_FLAVOR", "BAR",
+                "--SHMIGGLE_TYPE", "shmiggle1",
+        };
+        final FrobnicateArguments fo = new FrobnicateArguments();
+        final CommandLineArgumentParser clp = new CommandLineArgumentParser(fo);
+        final String usage = clp.usage(true, true);
+        Assert.assertTrue(usage.contains("DEPRECATED"));
     }
 
     @Test(expectedExceptions = CommandLineException.class)

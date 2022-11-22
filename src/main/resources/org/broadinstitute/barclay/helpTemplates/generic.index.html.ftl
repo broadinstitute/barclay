@@ -33,6 +33,8 @@
                                     <td><a href="${datum.filename}">${datum.name} **BETA**</a></td>
                                 <#elseif datum.experimental?? && datum.experimental == "true">
                                     <td><a href="${datum.filename}">${datum.name} **EXPERIMENTAL**</a></td>
+                                <#elseif datum.deprecated?? && datum.deprecated == "true">
+                                    <td><a href="${datum.filename}">${datum.name} **DEPRECATED**</a></td>
                                 <#else>
                                     <td><a href="${datum.filename}">${datum.name}</a></td>
                                 </#if>

@@ -56,6 +56,7 @@ public class TestArgumentContainer implements CommandLinePluginProvider {
     /**
      * Positional arguments
      */
+    @DeprecatedFeature
     @PositionalArguments(
             minElements = 2,
             maxElements = 2,
@@ -148,7 +149,7 @@ public class TestArgumentContainer implements CommandLinePluginProvider {
     /**
      * Deprecated string
      */
-    @Deprecated
+    @DeprecatedFeature(detail = "Too hard to support.")
     @Argument(fullName = "deprecatedString",
             shortName = "depStr",
             doc = "deprecated", optional = true)

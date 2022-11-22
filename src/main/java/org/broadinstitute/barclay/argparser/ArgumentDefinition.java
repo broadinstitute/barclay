@@ -19,6 +19,7 @@ public abstract class ArgumentDefinition {
     private final Object containingObject;
     private final Class<?> underlyingFieldClass;
     private final boolean isCollection;
+    private final DeprecatedFeature deprecatedAnnotation;
 
     // Original values provided by the user for this argument, to be used when displaying this argument as a
     // command line string representation. This is used instead of post-expansion values, which may be a large list.
@@ -38,6 +39,7 @@ public abstract class ArgumentDefinition {
         this.underlyingField.setAccessible(true);
         this.underlyingFieldClass = getClassForUnderlyingField();
         this.isCollection = isCollectionField(underlyingField);
+        this.deprecatedAnnotation = underlyingField.getAnnotation(DeprecatedFeature.class);
 
         if (!canBeMadeFromString()) {
             throw new CommandLineException.CommandLineParserInternalException(
@@ -105,6 +107,25 @@ public abstract class ArgumentDefinition {
      *                          used for any cross-argument validation such as mutex validation
      */
     public abstract void validateValues(CommandLineArgumentParser commandLineArgumentParser);
+
+    /**
+     * the doc string for this argument, if any.
+     * @return doc string. can be empty.
+     */
+    public abstract String getDocString();
+
+    /**
+     * return true if this argument definition has the {@code @DeprecatedFeature} annotation.
+     * @return true if this argument is deprecated, otherwise false.
+     */
+    public boolean isDeprecated() { return deprecatedAnnotation != null; }
+
+    /**
+     * Get the deprecation detail string.
+     * @return a String containing the detail (may be null if the argument is not annotated with the {@code
+     * @DeprecatedFeature} annotation or if no deprecation detail was provided).
+     */
+    public String getDeprecationDetail() { return isDeprecated() ? deprecatedAnnotation.detail() : null; }
 
     /**
      * A {@code String} representation of this argument and it's value(s) which would be valid if copied and pasted
@@ -282,6 +303,43 @@ public abstract class ArgumentDefinition {
         } else {
             return "";
         }
+    }
+
+    /**
+     * Decorated the provided description with a deprecation notice if this arg is deprecated.
+     * @param description
+     * @return the provided description annotated with a deprecation notice if this arg is deprecated
+     */
+    protected String getDeprecatedArgumentNotice(final String description) {
+        return isDeprecated() ?
+                "This argument is DEPRECATED (" + getDeprecationDetail() + "). " + description :
+                description;
+    }
+
+    /**
+     * The formatted description for this arg, including a deprecation notice if the arg is marked
+     * as deprecated.
+     * @param rawDescription the raw description for this arg
+     * @param argumentColumnWidth the width reserved for the argument descriptions
+     * @param descriptionColumnWidth the display column width to use for formatting
+     * @return the description for this arg, formatted for display
+     */
+    protected String getFormattedDescription(
+            final String rawDescription,
+            final int argumentColumnWidth,
+            final int descriptionColumnWidth) {
+        final StringBuilder sb = new StringBuilder();
+        final String description = getDeprecatedArgumentNotice(rawDescription);
+        final String wrappedDescription = Utils.wrapParagraph(description, descriptionColumnWidth);
+        final String[] descriptionLines = wrappedDescription.split("\n");
+        for (int i = 0; i < descriptionLines.length; ++i) {
+            if (i > 0) {
+                Utils.printSpaces(sb, argumentColumnWidth);
+            }
+            sb.append(descriptionLines[i]);
+            sb.append("\n");
+        }
+        return sb.toString();
     }
 
     // True if clazz is an enum, or if it has a ctor that takes a single String argument.

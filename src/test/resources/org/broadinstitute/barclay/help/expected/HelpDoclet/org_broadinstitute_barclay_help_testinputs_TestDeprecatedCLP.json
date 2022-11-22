@@ -1,0 +1,27 @@
+{
+  "summary": "Argument container class for testing deprecated CLPs.",
+  "arguments": [
+    {
+      "summary": "optionalInt with initial value 1",
+      "name": "--optionalInt",
+      "synonyms": "-optInt",
+      "type": "int",
+      "required": "no",
+      "fulltext": "Optional int",
+      "defaultValue": "1",
+      "minValue": "-Infinity",
+      "maxValue": "Infinity",
+      "minRecValue": "NA",
+      "maxRecValue": "NA",
+      "kind": "advanced",
+      "deprecated": false,
+      "options": []
+    }
+  ],
+  "description": "A test tool for testing a deprecated (@DeprecatedFeature) CLP.",
+  "name": "TestDeprecatedCLP",
+  "group": "Test feature group name",
+  "beta": false,
+  "experimental": false,
+  "deprecated": true
+}

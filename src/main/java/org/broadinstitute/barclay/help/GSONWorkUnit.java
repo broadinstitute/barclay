@@ -12,22 +12,17 @@ public class GSONWorkUnit {
     String group;
     boolean beta;
     boolean experimental;
+    boolean deprecated;
 
-    public void populate(String summary,
-                         Object arguments,
-                         String description,
-                         String name,
-                         String group,
-                         boolean beta,
-                         boolean experimental
-    ) {
-        this.summary = summary;
-        this.arguments = arguments;
-        this.description = description;
-        this.name = name;
-        this.group = group;
-        this.beta = beta;
-        this.experimental = experimental;
+    public GSONWorkUnit(final DocWorkUnit workUnit) {
+        this.summary = workUnit.getProperty("summary").toString();
+        this.arguments = workUnit.getProperty("gson-arguments");
+        this.description = workUnit.getProperty("description").toString();
+        this.name = workUnit.getProperty("name").toString();
+        this.group = workUnit.getProperty("group").toString();
+        this.beta = Boolean.valueOf(workUnit.getProperty("beta").toString());
+        this.experimental = Boolean.valueOf(workUnit.getProperty("experimental").toString());
+        this.deprecated = Boolean.valueOf(workUnit.getProperty(TemplateMapConstants.GSON_FEATURE_DEPRECATED).toString());
     }
 
 }

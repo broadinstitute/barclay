@@ -11,13 +11,13 @@
 CALLER_SCRIPT_NAME="bashTabCompletionDocletTestLaunch"
 
 # A description of these variables is below in the main completion function (_masterCompletionFunction)
-CS_PREFIX_OPTIONS_ALL_LEGAL_ARGUMENTS=(--pre-help --pre-info --pre-inputFile TestArgumentContainer )
-CS_PREFIX_OPTIONS_NORMAL_COMPLETION_ARGUMENTS=(--pre-help --pre-info --pre-inputFile TestArgumentContainer )
-CS_PREFIX_OPTIONS_ALL_ARGUMENT_VALUE_TYPES=("null" "null" "File" "null" )
+CS_PREFIX_OPTIONS_ALL_LEGAL_ARGUMENTS=(--pre-help --pre-info --pre-inputFile TestDeprecatedCLP TestArgumentContainer )
+CS_PREFIX_OPTIONS_NORMAL_COMPLETION_ARGUMENTS=(--pre-help --pre-info --pre-inputFile TestDeprecatedCLP TestArgumentContainer )
+CS_PREFIX_OPTIONS_ALL_ARGUMENT_VALUE_TYPES=("null" "null" "File" "null" "null" )
 CS_PREFIX_OPTIONS_MUTUALLY_EXCLUSIVE_ARGS=("--pre-help;pre-info,pre-inputFile" "--pre-info;pre-help,pre-inputFile")
 CS_PREFIX_OPTIONS_SYNONYMOUS_ARGS=("--pre-help;-prh" "--pre-inputFile;-prif")
-CS_PREFIX_OPTIONS_MIN_OCCURRENCES=(0 0 1 0 )
-CS_PREFIX_OPTIONS_MAX_OCCURRENCES=(1 1 1 1 )
+CS_PREFIX_OPTIONS_MIN_OCCURRENCES=(0 0 1 0 0 )
+CS_PREFIX_OPTIONS_MAX_OCCURRENCES=(1 1 1 1 1 )
 
 CS_POSTFIX_OPTIONS_ALL_LEGAL_ARGUMENTS=(--post-help --post-info --post-inputFile)
 CS_POSTFIX_OPTIONS_NORMAL_COMPLETION_ARGUMENTS=(--post-help --post-info --post-inputFile)
@@ -31,7 +31,7 @@ CS_POSTFIX_OPTIONS_MAX_OCCURRENCES=(1 1 1)
 HAS_POSTFIX_OPTIONS="true"
 
 # All the tool names we are able to complete:
-ALL_TOOLS=(TestArgumentContainer )
+ALL_TOOLS=(TestDeprecatedCLP TestArgumentContainer )
 
 ####################################################################################################
 
@@ -422,19 +422,33 @@ _bashTabCompletionDocletTestLaunch_masterCompletionFunction()
         # Set our reply as a list of the possible tool matches:
         COMPREPLY=( $(compgen -W '${possibleToolMatches[@]}' -- $cur) )
 
+    elif [[ ${toolName} == "TestDeprecatedCLP" ]] ; then
+
+        # Set up the completion information for this tool:
+        DEPENDENT_ARGUMENTS=()
+        NORMAL_COMPLETION_ARGUMENTS=(--optionalInt )
+        MUTUALLY_EXCLUSIVE_ARGS=()
+        SYNONYMOUS_ARGS=("--optionalInt;-optInt" )
+        MIN_OCCURRENCES=(0 )
+        MAX_OCCURRENCES=(2147483647 )
+        ALL_LEGAL_ARGUMENTS=(--optionalInt )
+        ALL_ARGUMENT_VALUE_TYPES=("int" )
+
+        # Complete the arguments for this tool:
+        _bashTabCompletionDocletTestLaunch_handleArgs
     elif [[ ${toolName} == "TestArgumentContainer" ]] ; then
 
         # Set up the completion information for this tool:
         NUM_POSITIONAL_ARGUMENTS=2
         POSITIONAL_ARGUMENT_TYPE=("List[File]")
         DEPENDENT_ARGUMENTS=()
-        NORMAL_COMPLETION_ARGUMENTS=(--enumCollection --requiredClpEnum --requiredFileList --requiredInputFilesFromArgCollection --requiredStringInputFromArgCollection --requiredStringList --usesFieldNameForArgName --enumSetLong --fullAnonymousArgName --mutexSourceField --mutexTargetField1 --mutexTargetField2 --optionalClpEnum --optionalDouble --optionalDoubleList --optionalFileList --optionalFlag --optionalInputFilesFromArgCollection --optionalStringInputFromArgCollection --optionalStringList --testPlugin --advancedOptionalInt --deprecatedString )
+        NORMAL_COMPLETION_ARGUMENTS=(--enumCollection --requiredClpEnum --requiredFileList --requiredInputFilesFromArgCollection --requiredStringInputFromArgCollection --requiredStringList --usesFieldNameForArgName --deprecatedString --enumSetLong --fullAnonymousArgName --mutexSourceField --mutexTargetField1 --mutexTargetField2 --optionalClpEnum --optionalDouble --optionalDoubleList --optionalFileList --optionalFlag --optionalInputFilesFromArgCollection --optionalStringInputFromArgCollection --optionalStringList --testPlugin --advancedOptionalInt [NA - Positional] --deprecatedString )
         MUTUALLY_EXCLUSIVE_ARGS=("--mutexSourceField;mutexTargetField1,mutexTargetField2" "--mutexTargetField1;mutexSourceField" "--mutexTargetField2;mutexSourceField" )
-        SYNONYMOUS_ARGS=("--requiredClpEnum;-requiredClpEnum" "--requiredFileList;-reqFilList" "--requiredInputFilesFromArgCollection;-rRequiredInputFilesFromArgCollection" "--requiredStringInputFromArgCollection;-requiredStringInputFromArgCollection" "--requiredStringList;-reqStrList" "--enumSetLong;-ES" "--fullAnonymousArgName;-anonymousClassArg" "--mutexSourceField;-mutexSourceField" "--mutexTargetField1;-mutexTargetField1" "--mutexTargetField2;-mutexTargetField2" "--optionalClpEnum;-optionalClpEnum" "--optionalDouble;-optDouble" "--optionalDoubleList;-optDoubleList" "--optionalFileList;-optFilList" "--optionalFlag;-optFlag" "--optionalInputFilesFromArgCollection;-optionalInputFilesFromArgCollection" "--optionalStringInputFromArgCollection;-optionalStringInputFromArgCollection" "--optionalStringList;-optStrList" "--advancedOptionalInt;-advancedOptInt" "--deprecatedString;-depStr" )
-        MIN_OCCURRENCES=(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 )
-        MAX_OCCURRENCES=(2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 )
-        ALL_LEGAL_ARGUMENTS=(--enumCollection --requiredClpEnum --requiredFileList --requiredInputFilesFromArgCollection --requiredStringInputFromArgCollection --requiredStringList --usesFieldNameForArgName --enumSetLong --fullAnonymousArgName --mutexSourceField --mutexTargetField1 --mutexTargetField2 --optionalClpEnum --optionalDouble --optionalDoubleList --optionalFileList --optionalFlag --optionalInputFilesFromArgCollection --optionalStringInputFromArgCollection --optionalStringList --testPlugin --advancedOptionalInt --deprecatedString )
-        ALL_ARGUMENT_VALUE_TYPES=("List[TestEnum]" "TestEnum" "List[File]" "List[File]" "String" "List[String]" "String" "EnumSet[TestEnum]" "List[File]" "List[File]" "List[File]" "List[File]" "TestEnum" "double" "List[Double]" "List[File]" "boolean" "List[File]" "String" "List[String]" "List[String]" "int" "int" )
+        SYNONYMOUS_ARGS=("--requiredClpEnum;-requiredClpEnum" "--requiredFileList;-reqFilList" "--requiredInputFilesFromArgCollection;-rRequiredInputFilesFromArgCollection" "--requiredStringInputFromArgCollection;-requiredStringInputFromArgCollection" "--requiredStringList;-reqStrList" "--deprecatedString;-depStr" "--enumSetLong;-ES" "--fullAnonymousArgName;-anonymousClassArg" "--mutexSourceField;-mutexSourceField" "--mutexTargetField1;-mutexTargetField1" "--mutexTargetField2;-mutexTargetField2" "--optionalClpEnum;-optionalClpEnum" "--optionalDouble;-optDouble" "--optionalDoubleList;-optDoubleList" "--optionalFileList;-optFilList" "--optionalFlag;-optFlag" "--optionalInputFilesFromArgCollection;-optionalInputFilesFromArgCollection" "--optionalStringInputFromArgCollection;-optionalStringInputFromArgCollection" "--optionalStringList;-optStrList" "--advancedOptionalInt;-advancedOptInt" "--deprecatedString;-depStr" )
+        MIN_OCCURRENCES=(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 0 )
+        MAX_OCCURRENCES=(2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2147483647 2 2147483647 )
+        ALL_LEGAL_ARGUMENTS=(--enumCollection --requiredClpEnum --requiredFileList --requiredInputFilesFromArgCollection --requiredStringInputFromArgCollection --requiredStringList --usesFieldNameForArgName --deprecatedString --enumSetLong --fullAnonymousArgName --mutexSourceField --mutexTargetField1 --mutexTargetField2 --optionalClpEnum --optionalDouble --optionalDoubleList --optionalFileList --optionalFlag --optionalInputFilesFromArgCollection --optionalStringInputFromArgCollection --optionalStringList --testPlugin --advancedOptionalInt [NA - Positional] --deprecatedString )
+        ALL_ARGUMENT_VALUE_TYPES=("List[TestEnum]" "TestEnum" "List[File]" "List[File]" "String" "List[String]" "String" "int" "EnumSet[TestEnum]" "List[File]" "List[File]" "List[File]" "List[File]" "TestEnum" "double" "List[Double]" "List[File]" "boolean" "List[File]" "String" "List[String]" "List[String]" "int" "List[File]" "int" )
 
         # Complete the arguments for this tool:
         _bashTabCompletionDocletTestLaunch_handleArgs

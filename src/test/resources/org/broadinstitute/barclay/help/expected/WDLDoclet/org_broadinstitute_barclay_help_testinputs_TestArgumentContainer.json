@@ -19,6 +19,7 @@
   "TestArgumentContainer.requiredStringList":   "Array[String]",
   "TestArgumentContainer.usesFieldNameForArgName":   "String",
 
+  "TestArgumentContainer.deprecatedString": 0,
   "TestArgumentContainer.enumSetLong": ["ENUM_VALUE_1"],
   "TestArgumentContainer.fullAnonymousArgName": null,
   "TestArgumentContainer.mutexSourceField": null,
