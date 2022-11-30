@@ -6,6 +6,8 @@ import org.apache.logging.log4j.LogManager;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLDecoder;
@@ -41,7 +43,7 @@ public final class ClassFinder {
         // but the jarPath is remembered so that the iteration over the classpath skips anything other than
         // the jarPath.
         jarPath = jarFile.getCanonicalPath();
-        final URL[] urls = {new URL("file", "", jarPath)};
+        final URL[] urls = {new File(jarPath).toURI().toURL()};
         loader = new URLClassLoader(urls, Thread.currentThread().getContextClassLoader());
     }
 
@@ -73,9 +75,14 @@ public final class ClassFinder {
         while (urls.hasMoreElements()) {
             try {
                 String urlPath = urls.nextElement().getFile();
-                urlPath = URLDecoder.decode(urlPath, "UTF-8");
-                if ( urlPath.startsWith("file:") ) {
-                    urlPath = urlPath.substring(5);
+                // convert URL to URI
+                // http://bugs.java.com/bugdatabase/view_bug.do?bug_id=4466485
+                // using URLDecode does not work if urlPath has a '+' character
+                try {
+                    URI uri = new URI(urlPath);
+                    urlPath = uri.getPath();
+                } catch (URISyntaxException e) {
+                    log.warn("Cannot convert to URI the " + urlPath + " URL");
                 }
                 if (urlPath.indexOf('!') > 0) {
                     urlPath = urlPath.substring(0, urlPath.indexOf('!'));
