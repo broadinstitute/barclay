@@ -14,5 +14,5 @@ jdk:
 script: ./gradlew jacocoTestReport ;
 after_success:
 - echo "TRAVIS_BRANCH='$TRAVIS_BRANCH'"; echo "JAVA_HOME='$JAVA_HOME'";
-- bash <(curl -s https://codecov.io/bash); if [ "$TRAVIS_BRANCH" == "master" ]; then
+- bash <(curl -s https://raw.githubusercontent.com/broadinstitute/codecov-bash-uploader/main/codecov-verified.bash); if [ "$TRAVIS_BRANCH" == "master" ]; then
   ./gradlew uploadArchives; fi
