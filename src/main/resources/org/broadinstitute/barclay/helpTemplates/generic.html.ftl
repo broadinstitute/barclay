@@ -60,9 +60,9 @@
 		<#if arg.options?has_content>
 			<p>
 		<#if arg.collection>
-				The ${arg.name} argument is an enumerated type (${arg.type}), which can accept the following values:
-		<#else>
 				The ${arg.name} argument is a list of an enumerated type (${arg.type}), which can accept one or more of the following values:
+		<#else>
+				The ${arg.name} argument is an enumerated type (${arg.type}), which can accept the following values:
 		</#if>
 			<dl class="enum">
 				<#list arg.options as option>
