@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /*
- * A {@link DocTreeScanner} scanner to retrieve the javadoc comment for an Element, with any embedded tags
- * removed, given an existing DocTree.
+ * A {@link DocTreeScanner} scanner to retrieve the javadoc comment for a given {@link Element},
+ *  with any embedded tags removed, given an existing DocTree.
  */
 class CommentScannerWithTagFilter extends DocTreeScanner<Void, Void> {
     final DocTree docTree;
@@ -21,7 +21,7 @@ class CommentScannerWithTagFilter extends DocTreeScanner<Void, Void> {
 
     /**
      * For internal use only. External callers should use
-     * {@link JavaLanguageModelScanners#getDocCommentWithoutTags(DocletEnvironment, DocTree)} getDocCommentWithoutTags}
+     * {@link JavaLanguageModelScanners#getDocCommentWithoutTags(DocletEnvironment, Element)}}
      *
      * @param docEnv the {@link DocletEnvironment}
      * @param docTree the {@link DocTree} for which the javadoc comment should be retrieved
@@ -50,7 +50,7 @@ class CommentScannerWithTagFilter extends DocTreeScanner<Void, Void> {
      * @return the javadoc comment for the {@link Element}, with any embedded tags removed. If no javadoc
      * comment is present, an empty string will be returned.
      */
-     String getComment() {
+     String getCommentWithoutTags() {
         return targetDocCommentParts.stream().collect(Collectors.joining(" "));
     }
 

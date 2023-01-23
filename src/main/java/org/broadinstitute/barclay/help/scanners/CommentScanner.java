@@ -8,7 +8,7 @@ import org.broadinstitute.barclay.utils.Utils;
 import javax.lang.model.element.Element;
 
 /**
- * A {@link DocTreeScanner} to retrieve a javadoc comment, if any, for a given Element.
+ * A {@link DocTreeScanner} to retrieve a javadoc comment, if any, for a given {@link Element}.
  */
 class CommentScanner extends DocTreeScanner<Void, Void> {
     final DocletEnvironment docEnv;
@@ -33,7 +33,6 @@ class CommentScanner extends DocTreeScanner<Void, Void> {
     @Override
     public Void scan(final DocTree docTree, final Void unused) {
         Utils.nonNull(docTree, "DocTree");
-
         if (docTree.getKind().equals(DocTree.Kind.DOC_COMMENT)) {
             targetComment = docTree.toString();
             return null;

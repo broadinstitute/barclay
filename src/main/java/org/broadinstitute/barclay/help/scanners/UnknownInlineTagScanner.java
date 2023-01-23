@@ -22,7 +22,7 @@ public class UnknownInlineTagScanner extends DocTreeScanner<Void, Void> {
 
     /**
      * For internal use only. External callers should use
-     * {@link JavaLanguageModelScanners#getInlineTags(DocletEnvironment, Element)}}
+     * {@link JavaLanguageModelScanners#getUnknownInlineTags(DocletEnvironment, Element)}}
      *
      * @param docEnv the {@link DocletEnvironment}
      * @param docTree the {@link DocTree} for which the javadoc comment should be retrieved

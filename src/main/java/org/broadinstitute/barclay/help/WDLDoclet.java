@@ -3,7 +3,6 @@ package org.broadinstitute.barclay.help;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
-import jdk.javadoc.doclet.DocletEnvironment;
 import org.broadinstitute.barclay.argparser.CommandLineProgramProperties;
 import org.broadinstitute.barclay.argparser.WorkflowProperties;
 

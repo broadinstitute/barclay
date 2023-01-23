@@ -166,6 +166,31 @@
       "options": []
     },
     {
+      "summary": "Undocumented option",
+      "name": "--nonCLPEnumCollection",
+      "synonyms": "NA",
+      "type": "List[TestNonCLPEnum]",
+      "required": "yes",
+      "fulltext": "",
+      "defaultValue": "[]",
+      "minValue": "NA",
+      "maxValue": "NA",
+      "minRecValue": "NA",
+      "maxRecValue": "NA",
+      "kind": "required",
+      "deprecated": false,
+      "options": [
+        {
+          "summary": "This is the NON_CLP_ENUM_VALUE_1 comment",
+          "name": "NON_CLP_ENUM_VALUE_1"
+        },
+        {
+          "summary": "This is the NON_CLP_ENUM_VALUE_2 comment",
+          "name": "NON_CLP_ENUM_VALUE_2"
+        }
+      ]
+    },
+    {
       "summary": "Optional Clp enum",
       "name": "--optionalClpEnum",
       "synonyms": "-optionalClpEnum",

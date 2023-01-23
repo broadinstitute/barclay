@@ -1,5 +1,6 @@
 package org.broadinstitute.barclay.help;
 
+import jdk.javadoc.doclet.DocletEnvironment;
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.logging.log4j.LogManager;
@@ -9,9 +10,9 @@ import org.broadinstitute.barclay.help.scanners.JavaLanguageModelScanners;
 import org.broadinstitute.barclay.utils.Utils;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import java.lang.reflect.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 /**
@@ -64,7 +65,7 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
             }
             if (summary == null || summary.isEmpty()) {
                 // If no summary was found from annotations, use the javadoc if there is any
-                summary = JavaLanguageModelScanners.getDocComment(getDoclet().getDocletEnv(), workUnit.getDocElement());
+                summary = JavaLanguageModelScanners.getDocCommentFirstSentence(getDoclet().getDocletEnv(), workUnit.getDocElement());
             }
         }
 
@@ -235,6 +236,9 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
         workUnit.setProperty(TemplateProperties.FEATURE_DEPRECATED, workUnit.isDeprecatedFeature());
         workUnit.setProperty(TemplateMapConstants.FEATURE_DEPRECATION_DETAIL, workUnit.getDeprecationDetail());
 
+        //this property is called "description" for work units, but "fulltext" for arguments). ideally
+        // these would be unified, but it would require a lot of downstream changes to templates and test
+        // result expected files
         workUnit.setProperty("description", getDescription(workUnit));
 
         workUnit.setProperty("version", getDoclet().getBuildVersion());
@@ -250,7 +254,7 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
     protected void addCustomBindings(final DocWorkUnit currentWorkUnit) {
         final String tagFilterPrefix = getTagPrefix();
         if (tagFilterPrefix != null) {
-            final Map<String, List<String>> parts = JavaLanguageModelScanners.getInlineTags(
+            final Map<String, List<String>> parts = JavaLanguageModelScanners.getUnknownInlineTags(
                     getDoclet().getDocletEnv(),
                     currentWorkUnit.getDocElement());
             // create properties for any custom tags
@@ -394,12 +398,40 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
     }
 
     private String getDocCommentForField(final DocWorkUnit workUnit, final NamedArgumentDefinition argDef) {
-        final Element fieldElement = JavaLanguageModelScanners.getElementForField(getDoclet().getDocletEnv(), workUnit.getDocElement(), argDef.getUnderlyingField());
+        // first, see if the field (@Argument) we're looking for is declared directly in the work unit's class
+        Element fieldElement = JavaLanguageModelScanners.getElementForField(
+                getDoclet().getDocletEnv(),
+                workUnit.getDocElement(),
+                argDef.getUnderlyingField(),
+                ElementKind.FIELD);
         if (fieldElement == null) {
-            return "";
+            // the field isn't defined directly in the workunit's enclosing class/element, so it must be
+            // defined in a class that is referenced by the workunit's enclosing class. find that class and get
+            // it's type element
+            Class<?> containingClass = argDef.getUnderlyingField().getDeclaringClass();
+            if (containingClass != null) {
+                String className = containingClass.getCanonicalName();
+                // className can be null if the containing class is an anonymous class, in which case we don't
+                // want to traverse the containment hierarchy because we'll just wind up back at the work unit
+                // class, which we don't want, so in order to be compatible with the way the old javadoc used
+                // to work, just bail...
+                if (className != null) {
+                    final Element classElement = getDoclet().getDocletEnv().getElementUtils().getTypeElement(className);
+                    fieldElement = JavaLanguageModelScanners.getElementForField(
+                            getDoclet().getDocletEnv(),
+                            classElement,
+                            argDef.getUnderlyingField(),
+                            ElementKind.FIELD);
+                }
+            }
         }
-        final String comment = JavaLanguageModelScanners.getDocComment(getDoclet().getDocletEnv(), fieldElement);
-        return comment == null ? "" : comment;
+
+        String comment = "";
+        if (fieldElement != null) {
+            comment = JavaLanguageModelScanners.getDocCommentWithoutTags(getDoclet().getDocletEnv(), fieldElement);
+        }
+        return comment;
+
     }
 
     /**
@@ -722,7 +754,7 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
         }
 
         return targetClass.isEnum() ?
-                docForEnumArgument(targetClass) :
+                docForEnumArgument(argDef, targetClass) :
                 Collections.emptyList();
     }
 
@@ -730,22 +762,67 @@ public class DefaultDocWorkUnitHandler extends DocWorkUnitHandler {
      * Helper routine that provides a FreeMarker map for an enumClass, grabbing the
      * values of the enum and their associated javadoc or {@link CommandLineArgumentParser.ClpEnum} documentation.
      *
+     * @param argDef argument definition for the argument of the enum type
      * @param enumClass an enum Class that may optionally implement {@link CommandLineArgumentParser.ClpEnum}
      * @return a List of maps with keys for "name" and "summary" for each of the class's possible enum constants
+     * @param <T> type param for this enum
+     *
      */
     @SuppressWarnings("unchecked")
-    private <T extends Enum<T>> List<Map<String, String>> docForEnumArgument(final Class<?> enumClass) {
+    private <T extends Enum<T>> List<Map<String, String>> docForEnumArgument(
+            final ArgumentDefinition argDef,
+            final Class<?> enumClass) {
         final List<Map<String, String>> bindings = new ArrayList<>();
+        final T[] enumConstants = (T[]) enumClass.getEnumConstants();
         if (CommandLineArgumentParser.ClpEnum.class.isAssignableFrom(enumClass)) {
-            final T[] enumConstants = (T[]) enumClass.getEnumConstants();
             for ( final T enumConst : enumConstants ) {
                 bindings.add(createPossibleValuesMap(
                         enumConst.name(),
                         ((CommandLineArgumentParser.ClpEnum) enumConst).getHelpDoc()));
             }
+        } else {
+            final String canonicalClassName = enumClass.getCanonicalName();
+            final Element enumClassElement = getDoclet().getDocletEnv().getElementUtils().getTypeElement(canonicalClassName);
+            if (enumClassElement != null ) {
+                for ( final T enumConst : enumConstants ) {
+                    final Field enumConstField = getFieldForEnumConstant(enumClass, enumConst.name());
+                    if (enumConstField != null) {
+                        final Element fieldElement = JavaLanguageModelScanners.getElementForField(
+                                getDoclet().getDocletEnv(),
+                                enumClassElement,
+                                enumConstField,
+                                ElementKind.ENUM_CONSTANT);
+                        if (fieldElement != null) {
+                            final String comment = JavaLanguageModelScanners.getDocCommentWithoutTags(
+                                    getDoclet().getDocletEnv(),
+                                    fieldElement);
+                            bindings.add(createPossibleValuesMap(
+                                    enumConst.name(),
+                                    comment));
+                        } else {
+                            bindings.add(createPossibleValuesMap(
+                                    enumConst.name(),
+                                    "")); // empty string since there is no detail
+                        }
+                    } else {
+                        bindings.add(createPossibleValuesMap(
+                                enumConst.name(),
+                                "No documentation available"));
+                    }
+                }
+            }
         }
 
         return bindings;
+    }
+
+    private <T> Field getFieldForEnumConstant(final Class<?> enumClass, final String enumConstantName) {
+        for (final Field enumClassField : enumClass.getFields()) {
+            if (enumClassField.getName().equals(enumConstantName)) {
+                return enumClassField;
+            }
+        }
+        return null;
     }
 
     private HashMap<String, String> createPossibleValuesMap(final String name, final String summary) {
