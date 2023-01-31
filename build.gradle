@@ -1,15 +1,17 @@
-import javax.tools.ToolProvider
-
 plugins {
     id "java"
-    id 'maven'
+    id 'maven-publish'
     id 'signing'
     id 'jacoco'
     id 'com.palantir.git-version' version '0.5.1' //version helper
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+wrapper {
+    gradleVersion = '7.4.2'
+}
+
+sourceCompatibility = 1.17
+targetCompatibility = 1.17
 
 group = 'org.broadinstitute'
 
@@ -26,14 +28,15 @@ repositories {
 }
 
 jacocoTestReport {
+    getAdditionalSourceDirs().from(sourceSets.main.allJava.srcDirs)
+
     dependsOn test
     group = "Reporting"
     description = "Generate Jacoco coverage reports after running tests."
-    additionalSourceDirs = files(sourceSets.main.allJava.srcDirs)
 
     reports {
-        xml.enabled = true // codecov plugin depends on xml format report
-        html.enabled = true
+        xml.required = true // codecov plugin depends on xml format report
+        html.required = true
     }
 }
 
@@ -44,22 +47,16 @@ compileTestJava {
     options.compilerArgs = ['-proc:none', '-Xlint:all','-Werror','-Xdiags:verbose']
 }
 dependencies {
-    compile 'net.sf.jopt-simple:jopt-simple:5.0.3'
-    compile 'org.apache.commons:commons-lang3:3.4'
-    compile 'org.apache.logging.log4j:log4j-api:2.17.1'
-    compile 'org.apache.logging.log4j:log4j-core:2.15.0'
+    implementation 'net.sf.jopt-simple:jopt-simple:5.0.3'
+    implementation 'org.apache.commons:commons-lang3:3.4'
+    implementation 'org.apache.logging.log4j:log4j-api:2.17.1'
+    implementation 'org.apache.logging.log4j:log4j-core:2.15.0'
+    implementation 'org.freemarker:freemarker:2.3.30'
+    implementation 'com.google.code.gson:gson:2.2.2'
 
-    // Get the jdk files we need to run javaDoc. We need to use these during compile, testCompile,
-    // test execution, and gatkDoc generation, but we don't want them as part of the runtime
-    // classpath and we don't want to redistribute them in the uber jar.
-    final javadocJDKFiles = files(((URLClassLoader) ToolProvider.getSystemToolClassLoader()).getURLs())
-    compileOnly(javadocJDKFiles)
-    testCompile(javadocJDKFiles)
-    compile 'org.freemarker:freemarker:2.3.30'
-    compile 'com.google.code.gson:gson:2.2.2'
-
-    testCompile 'org.testng:testng:6.9.6'
-    testCompile 'org.mockito:mockito-core:2.10.0'
+    testImplementation 'commons-io:commons-io:2.11.0'
+    testImplementation 'org.testng:testng:6.9.6'
+    testImplementation 'org.mockito:mockito-core:4.6.1'
 }
 
 test {
@@ -92,16 +89,16 @@ test {
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
+    archiveClassifier = 'javadoc'
     from 'build/docs/javadoc'
 }
 
 task sourcesJar(type: Jar) {
     from sourceSets.main.allSource
-    classifier = 'sources'
+    archiveClassifier = 'sources'
 }
 
-// This is a hack to disable the java 8 default javadoc lint until we fix the html formatting
+// This is a hack to disable the default javadoc lint until we fix the html formatting
 tasks.withType(Javadoc) {
     options.addStringOption('Xdoclint:none', '-quiet')
 }
@@ -119,8 +116,36 @@ artifacts {
  * Sign non-snapshot releases with our secret key.  This should never need to be invoked directly.
  */
 signing {
-    required { isRelease && gradle.taskGraph.hasTask("uploadArchives") }
-    sign configurations.archives
+    required { isRelease && gradle.taskGraph.hasTask("publish") }
+    sign publishing.publications
+}
+
+def basePomConfiguration = {
+    packaging = 'jar'
+    description = 'Barclay command line parsing and documentation utilities'
+    url = 'http://github.com/broadinstitute/barclay'
+
+    developers {
+        developer {
+            id = 'gatkdev'
+            name = 'GATK Development Team'
+            email = 'gatk-dev-public@broadinstitute.org'
+        }
+    }
+
+    scm {
+        url 'scm:git@github.com:broadinstitute/barclay.git'
+        connection 'scm:git@github.com:broadinstitute/barclay.git'
+        developerConnection 'scm:git@github.com:broadinstitute/barclay.git'
+    }
+
+    licenses {
+        license {
+            name = 'BSD 3-Clause'
+            url = 'https://github.com/broadinstitute/barclay/blob/master/LICENSE.TXT'
+            distribution = 'repo'
+        }
+    }
 }
 
 /**
@@ -129,51 +154,29 @@ signing {
  *
  * For releasing to your local maven repo, use gradle install
  */
-uploadArchives {
-    doFirst {
-        println "Attempting to upload version:$version"
+publishing {
+    publications {
+        barclay(MavenPublication) {
+            from components.java
+            artifactId = "barclay"
+            pom { basePomConfiguration}
+            pom.name = "Barclay"
+
+            artifact javadocJar
+            artifact sourcesJar
+        }
     }
+
     repositories {
-        mavenDeployer {
-            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
-            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                authentication(userName: project.findProperty("sonatypeUsername"), password: project.findProperty("sonatypePassword"))
-            }
-
-            snapshotRepository(url: "https://broadinstitute.jfrog.io/broadinstitute/libs-snapshot-local/") {
-                authentication(userName: System.env.ARTIFACTORY_USERNAME, password: System.env.ARTIFACTORY_PASSWORD)
-            }
-
-            pom.project {
-                name 'Barclay'
-                packaging 'jar'
-                description 'Development on Barclay command line parsing and documentation utilities'
-                url 'http://github.com/broadinstitute/barclay'
-
-                scm {
-                    url 'scm:git@github.com:broadinstitute/barclay.git'
-                    connection 'scm:git@github.com:broadinstitute/barclay.git'
-                    developerConnection 'scm:git@github.com:broadinstitute/barclay.git'
-                }
-
-                developers {
-                    developer {
-                        id = "gatkdev"
-                        name = "GATK Development Team"
-                        email = "gatk-dev-public@broadinstitute.org"
-                    }
-                }
-
-                licenses {
-                    license {
-                        name 'BSD 3-Clause'
-                        url 'https://github.com/broadinstitute/barclay/blob/master/LICENSE.TXT'
-                        distribution 'repo'
-                    }
-                }
+        maven {
+            name = isRelease ? "SonaType" : "Artifactory"
+            url =  isRelease ? "https://oss.sonatype.org/service/local/staging/deploy/maven2/" : "https://broadinstitute.jfrog.io/broadinstitute/libs-snapshot-local/"
+            credentials {
+                username = isRelease ? project.findProperty("sonatypeUsername") : System.env.ARTIFACTORY_USERNAME
+                password = isRelease ? project.findProperty("sonatypePassword") : System.env.ARTIFACTORY_PASSWORD
             }
         }
     }
 }
+
 

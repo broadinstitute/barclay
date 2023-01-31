@@ -18,6 +18,7 @@ version 1.0
 #
 #  Required Tool Arguments
 #    enumCollection                                     Undocumented option                                         
+#    nonCLPEnumCollection                               Undocumented option                                         
 #    requiredClpEnum                                    Required Clp enum                                           
 #    requiredFileList                                   Required file list                                          
 #    companionDictionary                                Companion resource for requiredFileList                     
@@ -68,6 +69,7 @@ workflow TestArgumentContainer {
 
     # Required Arguments
     Array[String] enumCollection
+    Array[String] nonCLPEnumCollection
     String requiredClpEnum
     Array[String] requiredFileList
     Array[String] companionDictionary
@@ -121,6 +123,7 @@ workflow TestArgumentContainer {
 
         # Required Arguments
         enumCollection                                     = enumCollection,
+        nonCLPEnumCollection                               = nonCLPEnumCollection,
         requiredClpEnum                                    = requiredClpEnum,
         requiredFileList                                   = requiredFileList,
         companionDictionary                                = companionDictionary,
@@ -170,6 +173,7 @@ workflow TestArgumentContainer {
 
     # Required Arguments
     enumCollection: { description: "Undocumented option" }
+    nonCLPEnumCollection: { description: "Undocumented option" }
     requiredClpEnum: { description: "Required Clp enum" }
     requiredFileList: { description: "Required file list" }
     companionDictionary: { description: "Companion resource for requiredFileList" }
@@ -210,6 +214,7 @@ task TestArgumentContainer {
     String bootdisksizegbRequirements
     Array[File] positionalArgs
     Array[String] enumCollection
+    Array[String] nonCLPEnumCollection
     String requiredClpEnum
     Array[String] requiredFileList
     Array[String] companionDictionary
@@ -240,6 +245,7 @@ task TestArgumentContainer {
     ~{appLocation} TestArgumentContainer \
     ~{sep=' ' positionalArgs} \
     --enumCollection ~{sep=' --enumCollection ' enumCollection} \
+    --nonCLPEnumCollection ~{sep=' --nonCLPEnumCollection ' nonCLPEnumCollection} \
     --requiredClpEnum ~{sep=' --requiredClpEnum ' requiredClpEnum} \
     --requiredFileList ~{sep=' --requiredFileList ' requiredFileList} \
     --requiredInputFilesFromArgCollection ~{sep=' --requiredInputFilesFromArgCollection ' requiredInputFilesFromArgCollection} \
@@ -294,6 +300,7 @@ task TestArgumentContainer {
 
     # Required Arguments
     enumCollection: { description: "Undocumented option" }
+    nonCLPEnumCollection: { description: "Undocumented option" }
     requiredClpEnum: { description: "Required Clp enum" }
     requiredFileList: { description: "Required file list" }
     companionDictionary: { description: "Companion resource for requiredFileList" }

@@ -6,6 +6,7 @@ import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -116,7 +117,11 @@ public class CommandLinePluginUnitTest {
                                 testPlugins.get(simpleName).getClass().getName())
                 );
             } else {
-                testPluginBase = (TestPluginBase) pluggableClass.newInstance();
+                try {
+                    testPluginBase = (TestPluginBase) pluggableClass.getDeclaredConstructor(new Class<?>[0]).newInstance();
+                } catch (InvocationTargetException | NoSuchMethodException e) {
+                    throw new IllegalArgumentException("plugin", e);
+                }
                 testPlugins.put(simpleName, testPluginBase);
             }
             return testPluginBase;
@@ -392,9 +397,14 @@ public class CommandLinePluginUnitTest {
 
         @Override
         public TestPluginArgCollisionBase createInstanceForPlugin(Class<?> pluggableClass) throws IllegalAccessException, InstantiationException {
-            final TestPluginArgCollisionBase plugin = (TestPluginArgCollisionBase) pluggableClass.newInstance();
-            pluginInstances.put(pluggableClass.getSimpleName(), plugin);
-            return plugin;
+            final TestPluginArgCollisionBase plugin;
+            try {
+                plugin = (TestPluginArgCollisionBase) pluggableClass.getDeclaredConstructor(new Class<?>[0]).newInstance();
+                pluginInstances.put(pluggableClass.getSimpleName(), plugin);
+                return plugin;
+            } catch (InvocationTargetException | NoSuchMethodException e) {
+                throw new IllegalArgumentException("plugin", e);
+            }
         }
 
         @Override

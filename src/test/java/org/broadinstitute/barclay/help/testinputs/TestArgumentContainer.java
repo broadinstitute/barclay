@@ -197,6 +197,9 @@ public class TestArgumentContainer implements CommandLinePluginProvider {
     @Argument(fullName="enumCollection")
     List<TestEnum> enumCollection = new ArrayList<>();
 
+    @Argument(fullName="nonCLPEnumCollection")
+    List<TestNonCLPEnum> nonCLPEnumCollection = new ArrayList<>();
+
     /**
      * Mutually exclusive args
      */

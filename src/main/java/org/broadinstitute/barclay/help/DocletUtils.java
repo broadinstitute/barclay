@@ -1,46 +1,68 @@
 package org.broadinstitute.barclay.help;
 
-import com.sun.javadoc.FieldDoc;
-import com.sun.javadoc.PackageDoc;
-import com.sun.javadoc.ProgramElementDoc;
-import org.broadinstitute.barclay.utils.JVMUtils;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.PackageElement;
+import javax.tools.Diagnostic;
 
-import java.lang.reflect.Field;
+import jdk.javadoc.doclet.DocletEnvironment;
+import jdk.javadoc.doclet.Reporter;
 
 /**
  * Package protected - Methods in the class must ONLY be used by doclets, since the com.sun.javadoc.* classes
  * are not available on all systems, and we don't want the GATK proper to depend on them.
  */
-class DocletUtils {
-
-    protected static Class<?> getClassForDoc(ProgramElementDoc doc) throws ClassNotFoundException {
-        return Class.forName(getClassName(doc, true));
+public class DocletUtils {
+    public static Class<?> getClassForDeclaredElement(
+            final Element docElement,
+            final DocletEnvironment docEnv,
+            final Reporter reporter) {
+         return getClassForClassName(getClassName(docElement, docEnv), reporter);
     }
 
-    protected static Field getFieldForFieldDoc(FieldDoc fieldDoc) {
+    public static Class<?> getClassForClassName(final String className, final Reporter reporter) {
         try {
-            Class<?> clazz = getClassForDoc(fieldDoc.containingClass());
-            return JVMUtils.findField(clazz, fieldDoc.name());
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+            return Class.forName(className);
+        } catch (ClassNotFoundException | NoClassDefFoundError e) {
+            // we got an Element for a class we can't find.  Maybe in a library or something
+            return null;
+        } catch (IncompatibleClassChangeError e) {
+            reporter.print(Diagnostic.Kind.WARNING, String.format(
+                    "Unexpected class change error for class %s ignored: %s", e.getMessage(), className));
+            return null;
         }
     }
 
     /**
-     * Reconstitute the class name from the given class JavaDoc object.
+     * Reconstitute the class name from the given class Element.
      *
-     * @param doc the Javadoc model for the given class.
-     * @return The (string) class name of the given class.
+     * @param element the Element for a class.
+     * @return The (string) class name of the given class. Maybe null if no class can be found.
      */
-    protected static String getClassName(ProgramElementDoc doc, boolean binaryName) {
-        PackageDoc containingPackage = doc.containingPackage();
-        String className = doc.name();
-        if (binaryName) {
-            className = className.replaceAll("\\.", "\\$");
+    protected static String getClassName(final Element element, final DocletEnvironment docEnv) {
+        final PackageElement pe = docEnv.getElementUtils().getPackageOf(element);
+        if (pe == null || !element.toString().contains(".")) {
+            return element.toString();
         }
-        return containingPackage.name().length() > 0 ?
-                String.format("%s.%s", containingPackage.name(), className) :
-                String.format("%s", className);
+        final String qualifiedName = pe.getQualifiedName().toString();
+        final String className = element.toString().substring(qualifiedName.length() + 1);
+        final String qualifiedClassName = className.replaceAll("\\.", "\\$");
+        final String s = String.format("%s.%s", pe.getQualifiedName(), qualifiedClassName);
+        return s;
+    }
+
+    /**
+     * Returns the instantiated DocumentedFeature that describes the doc for this class.
+     *
+     * @param clazz
+     * @return DocumentedFeature, or null if this classDoc shouldn't be included/documented
+     */
+    public static DocumentedFeature getDocumentedFeatureForClass(final Class<?> clazz) {
+        if (clazz != null && clazz.isAnnotationPresent(DocumentedFeature.class)) {
+            return clazz.getAnnotation(DocumentedFeature.class);
+        }
+        else {
+            return null;
+        }
     }
 
     /**

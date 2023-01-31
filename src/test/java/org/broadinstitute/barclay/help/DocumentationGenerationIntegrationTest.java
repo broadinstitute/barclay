@@ -1,5 +1,6 @@
 package org.broadinstitute.barclay.help;
 
+import org.apache.commons.io.FileUtils;
 import org.broadinstitute.barclay.help.testdoclets.TestDoclet;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
@@ -12,12 +13,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.ServiceLoader;
+import java.util.spi.ToolProvider;
 
 /**
  * Integration test for documentation generation.
  */
 public class DocumentationGenerationIntegrationTest {
-
     private static String inputResourcesDir = "src/main/resources/org/broadinstitute/barclay/";
     private static String testResourcesDir = "src/test/resources/org/broadinstitute/barclay/";
 
@@ -38,7 +40,11 @@ public class DocumentationGenerationIntegrationTest {
     private static final List<String> COMMON_ARG_LIST = Arrays.asList(
             "-build-timestamp", "2016/01/01 01:01:01",      // dummy, constant timestamp
             "-absolute-version", "11.1",                    // dummy version
-            "-docletpath", "build/libs",
+            "-windowtitle", "gradle includes a window title so test it",
+            "-doctitle", "gradle includes a doctitle so test it",
+            "-quiet",  // gradle includes this so test it
+            "-docletpath",
+            "out/production/classes",
             "-verbose",
             "-cp", System.getProperty("java.class.path")
     );
@@ -48,6 +54,8 @@ public class DocumentationGenerationIntegrationTest {
             "org_broadinstitute_barclay_help_testinputs_TestExtraDocs",
             "org_broadinstitute_barclay_help_testinputs_TestDeprecatedCLP"
     );
+
+    private final boolean UPDATE_TEST_OUTPUTS = false;
 
     // Class wrapper to hold test args. This is required because to when running tests, NGTest/gradle spew
     // the entire serialized test params to the console for every test, which winds up exceeding the travis
@@ -287,6 +295,11 @@ public class DocumentationGenerationIntegrationTest {
         };
     }
 
+    @Test
+    public void testAssertUpdateTestsIsFalse(){
+        Assert.assertFalse(UPDATE_TEST_OUTPUTS);
+    }
+
     @Test(dataProvider = "getDocGenTestParams")
     public void testDocGenRoundTrip(
             final Class<?> docletClass,
@@ -308,15 +321,32 @@ public class DocumentationGenerationIntegrationTest {
         outputDir.deleteOnExit();
 
         // pull all our arguments together:
-        List<String> javadocArgs = docArgList(docletClass, docletArgs.getArgsList(), inputTemplatesFolder, outputDir, requestedIndexFileExtension, requestedOutputFileExtension);
+        List<String> javadocArgs = new ArrayList<>();
+        //javadocArgs.add("javadoc");
+        javadocArgs.addAll(docArgList(
+                docletClass,
+                docletArgs.getArgsList(),
+                inputTemplatesFolder,
+                outputDir,
+                requestedIndexFileExtension,
+                requestedOutputFileExtension));
         for (int i = 0 ; i < customDocletArgs.length; ++i) {
             javadocArgs.add(customDocletArgs[i]);
         }
 
-        // run javadoc with the custom doclet
-        com.sun.tools.javadoc.Main.execute(
-                javadocArgs.toArray(new String[] {})
-        );
+        ToolProvider jdProvider = null;
+        for (final ToolProvider tp : ServiceLoader.load(ToolProvider.class)) {
+            if (tp.name().equals("javadoc")) {
+                jdProvider = tp;
+                break;
+            }
+        }
+        if (jdProvider == null) {
+            throw new IllegalStateException("Can't find javadoc tool");
+        }
+
+        final int retCode = jdProvider.run(System.out, System.err, javadocArgs.toArray(new String[0]));
+        Assert.assertEquals(retCode, 0);
 
         // Compare index files
         assertFileContentsIdentical(
@@ -342,6 +372,9 @@ public class DocumentationGenerationIntegrationTest {
     private void assertFileContentsIdentical(
             final File actualFile,
             final File expectedFile) throws IOException {
+        if (UPDATE_TEST_OUTPUTS) {
+            FileUtils.copyFile(actualFile, expectedFile);
+        }
         byte[] actualBytes = Files.readAllBytes(actualFile.toPath());
         byte[] expectedBytes = Files.readAllBytes(expectedFile.toPath());
         Assert.assertEquals(actualBytes, expectedBytes);

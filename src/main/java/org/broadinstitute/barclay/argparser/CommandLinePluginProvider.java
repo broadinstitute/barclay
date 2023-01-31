@@ -1,6 +1,5 @@
 package org.broadinstitute.barclay.argparser;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
