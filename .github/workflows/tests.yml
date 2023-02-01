@@ -42,7 +42,7 @@ jobs:
       - name: Publish Snapshot
         env:
           ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-          ARIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+          ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
         if: ${{ env.ARTIFACTORY_USERNAME != '' }}
         continue-on-error: true
         run: ./gradlew publish
