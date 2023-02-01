@@ -1,4 +1,4 @@
-# This is a github actions workflow which runs htsjdk tests and spotbugs.
+# This is a github actions workflow which runs tests and publishes snapshots
 
 name: Test
 on:
