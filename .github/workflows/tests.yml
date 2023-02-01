@@ -37,4 +37,13 @@ jobs:
         with:
           name: test-results-${{ matrix.Java }}
           path: build/reports/tests
+      - name: Version Name
+        run: ./gradlew printVersion
+      - name: Publish Snapshot
+        env:
+          ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+          ARIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+        if: ${{ ARTIFACTORY_USERNAME != '' }}
+        continue-on-error: true
+        run: ./gradlew publish
 
