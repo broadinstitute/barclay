@@ -43,7 +43,7 @@ jobs:
         env:
           ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
           ARIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-        if: ${{ ARTIFACTORY_USERNAME != '' }}
+        if: ${{ env.ARTIFACTORY_USERNAME != '' }}
         continue-on-error: true
         run: ./gradlew publish
 
