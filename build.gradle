@@ -134,9 +134,9 @@ def basePomConfiguration = {
     }
 
     scm {
-        url 'scm:git@github.com:broadinstitute/barclay.git'
-        connection 'scm:git@github.com:broadinstitute/barclay.git'
-        developerConnection 'scm:git@github.com:broadinstitute/barclay.git'
+        url = 'scm:git@github.com:broadinstitute/barclay.git'
+        connection = 'scm:git@github.com:broadinstitute/barclay.git'
+        developerConnection = 'scm:git@github.com:broadinstitute/barclay.git'
     }
 
     licenses {
@@ -152,14 +152,14 @@ def basePomConfiguration = {
  * Upload a release to sonatype.  You must be an authorized uploader and have your sonatype
  * username and password information in your gradle properties file.  See the readme for more info.
  *
- * For releasing to your local maven repo, use gradle install
+ * For releasing to your local maven repo, use gradle publishToMavenLocal
  */
 publishing {
     publications {
         barclay(MavenPublication) {
             from components.java
             artifactId = "barclay"
-            pom { basePomConfiguration}
+            pom basePomConfiguration
             pom.name = "Barclay"
 
             artifact javadocJar

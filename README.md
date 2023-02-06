@@ -5,7 +5,7 @@
 Barclay is a set of classes for annotating, parsing, validating, and generating documentation for command line options.
 
 ##Requirements
-* Java 8
-* Gradle 3.1 or greater. We recommend using the `./gradlew` script which will
+* Java 17
+* Gradle 7.4.2 or greater. We recommend using the `./gradlew` script which will
     download and use an appropriate gradle version automatically.
  
