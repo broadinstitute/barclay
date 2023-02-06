@@ -1,0 +1,51 @@
+# This is a github actions workflow which runs tests and publishes snapshots
+
+name: Test
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [ 17 ]
+        experimental: [false]
+      fail-fast: false
+    continue-on-error: ${{ matrix.experimental }}
+    name: Java ${{ matrix.Java }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up java ${{ matrix.Java }}
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ matrix.Java }}
+          distribution: 'adopt'
+          cache: gradle
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Compile with Gradle
+        run: ./gradlew compileJava
+      - name: Run tests
+        run: ./gradlew test jacocoTestReport
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-${{ matrix.Java }}
+          path: build/reports/tests
+      - name: Version Name
+        run: ./gradlew printVersion
+      - name: Publish Snapshot
+        env:
+          ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+          ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+        if: ${{ env.ARTIFACTORY_USERNAME != '' }}
+        continue-on-error: true
+        run: ./gradlew publish
+
