@@ -9,6 +9,7 @@ import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -73,7 +74,7 @@ public final class ClassFinder {
         while (urls.hasMoreElements()) {
             try {
                 String urlPath = urls.nextElement().getFile();
-                urlPath = URLDecoder.decode(urlPath, "UTF-8");
+                urlPath = URLDecoder.decode(urlPath, StandardCharsets.UTF_8);
                 if ( urlPath.startsWith("file:") ) {
                     urlPath = urlPath.substring(5);
                 }
@@ -105,13 +106,14 @@ public final class ClassFinder {
      * @param packagePath the top level package to start from
      */
     protected void scanJar(final File file, final String packagePath) throws IOException {
-        final ZipFile zip = new ZipFile(file);
-        final Enumeration<? extends ZipEntry> entries = zip.entries();
-        while ( entries.hasMoreElements() ) {
-            final ZipEntry entry = entries.nextElement();
-            final String name = entry.getName();
-            if (name.startsWith(packagePath)) {
-                handleItem(name);
+        try(final ZipFile zip = new ZipFile(file)) {
+            final Enumeration<? extends ZipEntry> entries = zip.entries();
+            while (entries.hasMoreElements()) {
+                final ZipEntry entry = entries.nextElement();
+                final String name = entry.getName();
+                if (name.startsWith(packagePath)) {
+                    handleItem(name);
+                }
             }
         }
     }
