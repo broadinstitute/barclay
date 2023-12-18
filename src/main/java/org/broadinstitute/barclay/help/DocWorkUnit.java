@@ -48,6 +48,7 @@ public class DocWorkUnit implements Comparable<DocWorkUnit> {
      * @param clazz
      * @param documentedFeatureAnnotation
      */
+    @SuppressWarnings("this-escape")
     public DocWorkUnit(
             final DocWorkUnitHandler workUnitHandler,
             final Element docElement,

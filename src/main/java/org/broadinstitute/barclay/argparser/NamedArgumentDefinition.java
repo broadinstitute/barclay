@@ -42,6 +42,7 @@ public class NamedArgumentDefinition extends ArgumentDefinition {
      *                                      {@code CommandLinePluginDescriptor} itself are not contained in a plugin,
      *                                      and will not have a {@code descriptorForControllingPlugin}. can be null.
      */
+    @SuppressWarnings("this-escape")
     public NamedArgumentDefinition(
             final Argument argumentAnnotation,
             final Object containingObject,
