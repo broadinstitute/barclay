@@ -1,16 +1,18 @@
 package org.broadinstitute.barclay.argparser;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.broadinstitute.barclay.utils.JVMUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -185,6 +187,6 @@ public final class ClassFinder {
      * @return true if the class is neither abstract nor an interface, otherwise false
      */
     public static boolean isConcrete( final Class<?> clazz ) {
-        return ! Modifier.isAbstract(clazz.getModifiers()) && ! Modifier.isInterface(clazz.getModifiers());
+       return JVMUtils.isConcrete(clazz);
     }
 }
