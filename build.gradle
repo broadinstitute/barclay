@@ -7,11 +7,13 @@ plugins {
 }
 
 wrapper {
-    gradleVersion = '7.4.2'
+    gradleVersion = '8.5'
 }
 
-sourceCompatibility = 1.17
-targetCompatibility = 1.17
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
 
 group = 'org.broadinstitute'
 
@@ -88,18 +90,19 @@ test {
 
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
+tasks.register('javadocJar', Jar) {
+    dependsOn javadoc
     archiveClassifier = 'javadoc'
     from 'build/docs/javadoc'
 }
 
-task sourcesJar(type: Jar) {
+tasks.register('sourcesJar', Jar) {
     from sourceSets.main.allSource
     archiveClassifier = 'sources'
 }
 
 // This is a hack to disable the default javadoc lint until we fix the html formatting
-tasks.withType(Javadoc) {
+tasks.withType(Javadoc).configureEach {
     options.addStringOption('Xdoclint:none', '-quiet')
 }
 
