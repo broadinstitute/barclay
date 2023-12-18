@@ -10,9 +10,18 @@ import java.util.List;
  */
 public final class SpecialArgumentsCollection {
     public static final String HELP_FULLNAME = "help";
-    public static final String SHOW_HIDDEN_FULLNAME = "showHidden";
+
+    public static final String SHOW_HIDDEN_FULLNAME = "show-hidden";
+    @Deprecated
+    public static final String SHOW_HIDDEN_DEPRECATED = "showHidden";
+
     public static final String VERSION_FULLNAME = "version";
-    public static final String ARGUMENTS_FILE_FULLNAME = "arguments_file";
+
+    public static final String ARGUMENTS_FILE_FULLNAME = "arguments-file";
+    @Deprecated
+    public static final String ARGUMENTS_FILE_DEPRECATED = "arguments_file";
+
+    
     private static final long serialVersionUID = 1L;
 
     @Argument(shortName = "h", fullName = HELP_FULLNAME, doc= "display the help message", special = true)
@@ -21,10 +30,10 @@ public final class SpecialArgumentsCollection {
     @Argument(fullName = VERSION_FULLNAME, doc="display the version number for this tool", special = true)
     public boolean VERSION = false;
 
-    @Argument(fullName = ARGUMENTS_FILE_FULLNAME, doc="read one or more arguments files and add them to the command line", optional = true, special = true)
+    @Argument(fullName = ARGUMENTS_FILE_FULLNAME, shortName = ARGUMENTS_FILE_DEPRECATED, doc="read one or more arguments files and add them to the command line", optional = true, special = true)
     public List<File> ARGUMENTS_FILE = new ArrayList<>();
 
     @Advanced
-    @Argument(fullName = SHOW_HIDDEN_FULLNAME, shortName = SHOW_HIDDEN_FULLNAME, doc = "display hidden arguments", special = true)
+    @Argument(fullName = SHOW_HIDDEN_FULLNAME, shortName = SHOW_HIDDEN_DEPRECATED, doc = "display hidden arguments", special = true)
     public boolean SHOW_HIDDEN = false;
 }
