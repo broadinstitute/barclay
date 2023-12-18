@@ -10,6 +10,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -44,7 +45,7 @@ public final class ClassFinder {
         // but the jarPath is remembered so that the iteration over the classpath skips anything other than
         // the jarPath.
         jarPath = jarFile.getCanonicalPath();
-        final URL[] urls = {new URL("file", "", jarPath)};
+        final URL[] urls = {Paths.get(jarPath).toUri().toURL()};
         loader = new URLClassLoader(urls, Thread.currentThread().getContextClassLoader());
     }
 
