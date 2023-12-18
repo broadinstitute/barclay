@@ -1,8 +1,8 @@
 package org.broadinstitute.barclay.argparser;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.broadinstitute.barclay.utils.Pair;
 import org.broadinstitute.barclay.utils.Utils;
 
 import java.io.PrintStream;

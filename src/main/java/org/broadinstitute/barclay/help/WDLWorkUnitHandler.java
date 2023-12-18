@@ -1,9 +1,8 @@
 package org.broadinstitute.barclay.help;
 
-import org.apache.commons.lang3.tuple.Pair;
-
 import org.broadinstitute.barclay.argparser.*;
 import org.broadinstitute.barclay.argparser.WorkflowProperties;
+import org.broadinstitute.barclay.utils.Pair;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
