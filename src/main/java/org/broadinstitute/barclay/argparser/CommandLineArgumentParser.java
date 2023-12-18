@@ -2,7 +2,7 @@ package org.broadinstitute.barclay.argparser;
 
 import joptsimple.*;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
+import org.broadinstitute.barclay.utils.Pair;
 import org.broadinstitute.barclay.utils.Utils;
 
 import java.io.BufferedReader;

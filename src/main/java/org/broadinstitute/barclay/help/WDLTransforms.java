@@ -1,7 +1,7 @@
 package org.broadinstitute.barclay.help;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
+import org.broadinstitute.barclay.utils.Pair;
 
 import java.io.File;
 import java.net.URI;
@@ -51,53 +51,53 @@ public class WDLTransforms {
     // the type. From a purely string perspective, some of these transforms are no-ops in that no actual
     // conversion is required because the type names are identical in Java and WDL (i.e, File->File or
     // String->String), but they're included here for completeness, and to document the allowed type transitions.
-    private final static Map<Class<?>, ImmutablePair<String, String>> javaToWDLTypeMap =
-            new HashMap<Class<?>, ImmutablePair<String, String>>() {
+    private final static Map<Class<?>, Pair<String, String>> javaToWDLTypeMap =
+            new HashMap<Class<?>, Pair<String, String>>() {
                 private static final long serialVersionUID = 1L;
 
                 {
-                    put(String.class, new ImmutablePair<>("String", "String"));
+                    put(String.class, new Pair<>("String", "String"));
 
                     // primitive (or boxed primitive) types
-                    put(boolean.class, new ImmutablePair<>("boolean", "Boolean"));
-                    put(Boolean.class, new ImmutablePair<>("Boolean", "Boolean"));
+                    put(boolean.class, new Pair<>("boolean", "Boolean"));
+                    put(Boolean.class, new Pair<>("Boolean", "Boolean"));
 
-                    put(byte.class, new ImmutablePair<>("byte", "Int"));
-                    put(Byte.class, new ImmutablePair<>("Byte", "Int"));
+                    put(byte.class, new Pair<>("byte", "Int"));
+                    put(Byte.class, new Pair<>("Byte", "Int"));
 
-                    put(int.class, new ImmutablePair<>("int", "Int"));
-                    put(Integer.class, new ImmutablePair<>("Integer", "Int"));
+                    put(int.class, new Pair<>("int", "Int"));
+                    put(Integer.class, new Pair<>("Integer", "Int"));
 
                     //NOTE: WDL has no long type, map to Int
-                    put(long.class, new ImmutablePair<>("long", "Int"));
-                    put(Long.class, new ImmutablePair<>("Long", "Int"));
+                    put(long.class, new Pair<>("long", "Int"));
+                    put(Long.class, new Pair<>("Long", "Int"));
 
-                    put(float.class, new ImmutablePair<>("float", "Float"));
-                    put(Float.class, new ImmutablePair<>("Float", "Float"));
-                    put(double.class, new ImmutablePair<>("double", "Float"));
-                    put(Double.class, new ImmutablePair<>("Double", "Float"));
+                    put(float.class, new Pair<>("float", "Float"));
+                    put(Float.class, new Pair<>("Float", "Float"));
+                    put(double.class, new Pair<>("double", "Float"));
+                    put(Double.class, new Pair<>("Double", "Float"));
 
                     // File/Path Types
-                    put(File.class, new ImmutablePair<>("File", "File"));
+                    put(File.class, new Pair<>("File", "File"));
 
-                    put(URI.class, new ImmutablePair<>("URI", "String"));
-                    put(URL.class, new ImmutablePair<>("URL", "String"));
+                    put(URI.class, new Pair<>("URI", "String"));
+                    put(URL.class, new Pair<>("URL", "String"));
                 }
             };
 
     // Map of Java collection argument types that the WDL generator knows how to convert to a WDL type, along with the
     // corresponding string substitution that needs to be run on the (Barclay-generated) string that describes
     // the type.
-    private final static Map<Class<?>, ImmutablePair<String, String>> javaCollectionToWDLCollectionTypeMap =
-            new HashMap<Class<?>, ImmutablePair<String, String>>() {
+    private final static Map<Class<?>, Pair<String, String>> javaCollectionToWDLCollectionTypeMap =
+            new HashMap<>() {
                 private static final long serialVersionUID = 1L;
 
                 {
-                    put(List.class, new ImmutablePair<>("List", "Array"));
+                    put(List.class, new Pair<>("List", "Array"));
                     // Note: occasionally there are @Arguments that are typed as "ArrayList"
-                    put(ArrayList.class, new ImmutablePair<>("ArrayList", "Array"));
-                    put(Set.class, new ImmutablePair<>("Set", "Array"));
-                    put(EnumSet.class, new ImmutablePair<>("EnumSet", "Array"));
+                    put(ArrayList.class, new Pair<>("ArrayList", "Array"));
+                    put(Set.class, new Pair<>("Set", "Array"));
+                    put(EnumSet.class, new Pair<>("EnumSet", "Array"));
                 }
             };
 

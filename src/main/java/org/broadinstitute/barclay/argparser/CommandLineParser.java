@@ -1,6 +1,6 @@
 package org.broadinstitute.barclay.argparser;
 
-import org.apache.commons.lang3.tuple.Pair;
+import org.broadinstitute.barclay.utils.Pair;
 
 import java.io.PrintStream;
 import java.util.List;
@@ -91,6 +91,6 @@ public interface CommandLineParser {
      *         is the ArgumentDefinition object itself, and the second element is the actual value of the argument field. The second
      *         element will be null for uninitialized fields.
      */
-     <T> List<Pair<ArgumentDefinition, T>> gatherArgumentValuesOfType( final Class<T> type );
+     <T> List<Pair<ArgumentDefinition, T>> gatherArgumentValuesOfType(final Class<T> type );
 
 }
