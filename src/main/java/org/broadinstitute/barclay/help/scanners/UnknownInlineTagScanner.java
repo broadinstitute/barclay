@@ -41,7 +41,7 @@ public class UnknownInlineTagScanner extends DocTreeScanner<Void, Void> {
 
         // unknown inline tags might be custom tags, so break them down and return the parts
         // for the caller to parse
-        if (t.getKind().equals(DocTree.Kind.UNKNOWN_INLINE_TAG)) {
+        if (t != null && t.getKind().equals(DocTree.Kind.UNKNOWN_INLINE_TAG)) {
             final UnknownInlineTagTree tagTree = (UnknownInlineTagTree) t;
             final List<String> tagParts = tagTree.getContent().stream().map(Object::toString).toList();
             inlineTags.put(tagTree.getTagName(), tagParts);
