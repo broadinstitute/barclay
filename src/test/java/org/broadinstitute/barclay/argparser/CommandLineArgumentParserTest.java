@@ -309,6 +309,37 @@ public final class CommandLineArgumentParserTest {
         validateRequiredOptionalUsage(clp, false, false); // without common args
     }
 
+    class CollectionThatCannotBeAutoInitializedOptions {
+        // the command line parser will instantiate a collection object for a collection argument
+        // if its type is instantiable, or if its type is compatible with List, but not for any other type of
+        // collection (such as a Set)
+        @Argument(optional=false)
+        public Set<File> SET;
+    }
+
+    @Test(expectedExceptions = CommandLineException.CommandLineParserInternalException.class)
+    public void testCollectionThatCANNOTBeAutoInitialized() {
+        final CollectionThatCannotBeAutoInitializedOptions o = new CollectionThatCannotBeAutoInitializedOptions();
+        new CommandLineArgumentParser(o);
+        Assert.fail("Exception should have been thrown");
+    }
+
+    class CollectionThatCanBeAutoInitializedOptions {
+        // the command line parser will instantiate a collection object for a collection argument
+        // if its type is instantiable, or if its type is compatible with List, but not for any other type of
+        // collection (such as a Set)
+        @Argument(optional=false)
+        public List<File> LIST;
+    }
+
+    @Test(expectedExceptions = CommandLineException.MissingArgument.class)
+    public void testListThatCANBeAutoInitialized() {
+        // Although the list will be auto-initialized, the argument is required but not provided, so parseArgs will fail
+        final CollectionThatCanBeAutoInitializedOptions o = new CollectionThatCanBeAutoInitializedOptions();
+        final CommandLineArgumentParser clp = new CommandLineArgumentParser(o);
+        Assert.assertEquals(clp.parseArguments(System.err, new String[]{}), false, "Should fail due to missing Argument");
+    }
+
     @Test
     public void testPositive() {
         final String[] args = {
