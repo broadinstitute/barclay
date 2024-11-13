@@ -5,9 +5,11 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 public class NamedArgumentDefinitionUnitTest {
 
@@ -150,4 +152,123 @@ public class NamedArgumentDefinitionUnitTest {
         throw new IllegalArgumentException("Can't find field");
     }
 
+    public static class ArgumentLists {
+        @Argument
+        List<String> required;
+        @Argument(optional = true)
+        List<String> optional;
+        @Argument
+        List<String> defaultedRequired = new ArrayList<>(List.of("default"));
+        @Argument(optional = true)
+        List<String> defaultedOptional = new ArrayList<>(List.of("default"));
+    }
+
+    @DataProvider
+    public Object[][] setArgumentValuesCollectionsTests() {
+        return new Object[][]{
+                {"required", Set.of(),
+                        List.of("stuff", "more stuff"), List.of("stuff", "more stuff")},
+                {"optional", Set.of(),
+                        List.of("stuff", "more stuff"), List.of("stuff", "more stuff")},
+                {"defaultedRequired", Set.of(),
+                        List.of("stuff", "more stuff"), List.of("stuff", "more stuff")},
+                {"defaultedOptional", Set.of(),
+                        List.of("stuff", "more stuff"), List.of("stuff", "more stuff")},
+                {"required", Set.of(),
+                        List.of("null", "stuff", "more stuff"), List.of("stuff", "more stuff")},
+                {"optional", Set.of(),
+                        List.of("null", "stuff", "more stuff"), List.of("stuff", "more stuff")},
+                {"defaultedRequired", Set.of(),
+                        List.of("null", "stuff", "more stuff"), List.of("stuff", "more stuff")},
+                {"defaultedOptional", Set.of(),
+                        List.of("null", "stuff", "more stuff"), List.of("stuff", "more stuff")},
+                {"required", Set.of(),
+                        List.of("stuff", "null", "more stuff"), List.of("more stuff")},
+                {"optional", Set.of(),
+                        List.of("stuff", "null", "more stuff"), List.of("more stuff")},
+                {"defaultedRequired", Set.of(),
+                        List.of("stuff", "null", "more stuff"), List.of("more stuff")},
+                {"defaultedOptional", Set.of(),
+                        List.of("stuff", "null", "more stuff"), List.of("more stuff")},
+                {"optional", Set.of(),
+                        List.of("stuff", "more stuff", "null"), List.of()},
+                {"defaultedOptional", Set.of(),
+                        List.of("stuff", "more stuff", "null"), List.of()},
+
+                {"required", Set.of(CommandLineParserOptions.APPEND_TO_COLLECTIONS),
+                        List.of("stuff", "more stuff"), List.of("stuff", "more stuff")},
+                {"optional", Set.of(CommandLineParserOptions.APPEND_TO_COLLECTIONS),
+                        List.of("stuff", "more stuff"), List.of("stuff", "more stuff")},
+                {"defaultedRequired", Set.of(CommandLineParserOptions.APPEND_TO_COLLECTIONS),
+                        List.of("stuff", "more stuff"), List.of("default", "stuff", "more stuff")},
+                {"defaultedOptional", Set.of(CommandLineParserOptions.APPEND_TO_COLLECTIONS),
+                        List.of("stuff", "more stuff"), List.of("default", "stuff", "more stuff")},
+                {"required", Set.of(CommandLineParserOptions.APPEND_TO_COLLECTIONS),
+                        List.of("null", "stuff", "more stuff"), List.of("stuff", "more stuff")},
+                {"optional", Set.of(CommandLineParserOptions.APPEND_TO_COLLECTIONS),
+                        List.of("null", "stuff", "more stuff"), List.of("stuff", "more stuff")},
+                {"defaultedRequired", Set.of(CommandLineParserOptions.APPEND_TO_COLLECTIONS),
+                        List.of("null", "stuff", "more stuff"), List.of("stuff", "more stuff")},
+                {"defaultedOptional", Set.of(CommandLineParserOptions.APPEND_TO_COLLECTIONS),
+                        List.of("null", "stuff", "more stuff"), List.of("stuff", "more stuff")},
+                {"required", Set.of(CommandLineParserOptions.APPEND_TO_COLLECTIONS),
+                        List.of("stuff", "null", "more stuff"), List.of("more stuff")},
+                {"optional", Set.of(CommandLineParserOptions.APPEND_TO_COLLECTIONS),
+                        List.of("stuff", "null", "more stuff"), List.of("more stuff")},
+                {"defaultedRequired", Set.of(CommandLineParserOptions.APPEND_TO_COLLECTIONS),
+                        List.of("stuff", "null", "more stuff"), List.of("more stuff")},
+                {"defaultedOptional", Set.of(CommandLineParserOptions.APPEND_TO_COLLECTIONS),
+                        List.of("stuff", "null", "more stuff"), List.of("more stuff")},
+                {"optional", Set.of(CommandLineParserOptions.APPEND_TO_COLLECTIONS),
+                        List.of("stuff", "more stuff", "null"), List.of()},
+                {"defaultedOptional", Set.of(CommandLineParserOptions.APPEND_TO_COLLECTIONS),
+                        List.of("stuff", "more stuff", "null"), List.of()},
+        };
+    }
+
+    @Test(dataProvider = "setArgumentValuesCollectionsTests")
+    public void testSetArgumentValuesCollections(
+            final String fieldName,
+            final Set<CommandLineParserOptions> parserOptions,
+            final List<String> newValues,
+            final List<String> expectedValues
+    ) throws IllegalAccessException {
+        final ArgumentLists argLists = new ArgumentLists();
+        final Field field = getFieldForFieldName(argLists, fieldName);
+        final NamedArgumentDefinition argDef =
+                new NamedArgumentDefinition(field.getAnnotation(Argument.class), argLists, field, null);
+        final CommandLineArgumentParser clp =
+                new CommandLineArgumentParser(argLists, Collections.emptyList(), parserOptions);
+        argDef.setArgumentValues(clp, System.out, newValues);
+        Assert.assertEquals(field.get(argLists), expectedValues);
+    }
+
+    @DataProvider
+    public Object[][] setArgumentValuesCollectionsFailures() {
+        return new Object[][]{
+                {"required", Set.of(),
+                        List.of("stuff", "more stuff", "null")},
+                {"defaultedRequired", Set.of(),
+                        List.of("stuff", "more stuff", "null")},
+                {"required", Set.of(CommandLineParserOptions.APPEND_TO_COLLECTIONS),
+                        List.of("stuff", "more stuff", "null")},
+                {"defaultedRequired", Set.of(CommandLineParserOptions.APPEND_TO_COLLECTIONS),
+                        List.of("stuff", "more stuff", "null")},
+        };
+    }
+
+    @Test(dataProvider = "setArgumentValuesCollectionsFailures", expectedExceptions = CommandLineException.class)
+    public void testSetArgumentValuesCollectionsFailures(
+            final String fieldName,
+            final Set<CommandLineParserOptions> parserOptions,
+            final List<String> newValues
+    ) {
+        final ArgumentLists argLists = new ArgumentLists();
+        final Field field = getFieldForFieldName(argLists, fieldName);
+        final NamedArgumentDefinition argDef =
+                new NamedArgumentDefinition(field.getAnnotation(Argument.class), argLists, field, null);
+        final CommandLineArgumentParser clp =
+                new CommandLineArgumentParser(argLists, Collections.emptyList(), parserOptions);
+        argDef.setArgumentValues(clp, System.out, newValues);
+    }
 }

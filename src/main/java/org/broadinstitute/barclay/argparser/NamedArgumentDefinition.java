@@ -311,7 +311,7 @@ public class NamedArgumentDefinition extends ArgumentDefinition {
                             "A \"null\" value was detected for an option after values for that option were already set. " +
                                     "Clobbering previously set values for this option: %s.", getArgumentAliasDisplayString()));
                 }
-                if (!isOptional()) {
+                if (!argumentAnnotation.optional() && i == preprocessedValues.size() - 1) {
                     throw new CommandLineException(
                             String.format("Non \"null\" value must be provided for '%s'", getArgumentAliasDisplayString()));
                 }
