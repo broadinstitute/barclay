@@ -22,6 +22,7 @@ public class PositionalArgumentDefinition extends ArgumentDefinition {
      * @param containingObject the parent {@code Object} containing this argument. cannot be null.
      * @param argField the {@code Field} for this argument. cannot be null.
      */
+    @SuppressWarnings("this-escape")
     public PositionalArgumentDefinition(
             final PositionalArguments positionalArgumentsAnnotation,
             final Object containingObject,

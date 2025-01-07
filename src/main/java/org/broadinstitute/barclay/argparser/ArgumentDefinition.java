@@ -29,6 +29,7 @@ public abstract class ArgumentDefinition {
      * @param containingObject the parent {@code Object} containing the {@code Field} for this argument. cannot be null.
      * @param underlyingField the {@code Field} object for this argument. cannot be null.
      */
+    @SuppressWarnings("this-escape")
     public ArgumentDefinition(final Object containingObject, final Field underlyingField) {
         Utils.nonNull(underlyingField, "An underlying field must be provided");
         Utils.nonNull(containingObject, "A containing object must be provided");
