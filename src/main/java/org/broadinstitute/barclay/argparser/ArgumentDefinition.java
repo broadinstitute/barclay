@@ -29,6 +29,7 @@ public abstract class ArgumentDefinition {
      * @param containingObject the parent {@code Object} containing the {@code Field} for this argument. cannot be null.
      * @param underlyingField the {@code Field} object for this argument. cannot be null.
      */
+    @SuppressWarnings("this-escape")
     public ArgumentDefinition(final Object containingObject, final Field underlyingField) {
         Utils.nonNull(underlyingField, "An underlying field must be provided");
         Utils.nonNull(containingObject, "A containing object must be provided");
@@ -53,7 +54,7 @@ public abstract class ArgumentDefinition {
      * Get the underlying {@code Field} for this argument
      * @return the {@code Field} for this argument
      */
-    public final Field getUnderlyingField() { return underlyingField; }
+    public Field getUnderlyingField() { return underlyingField; }
 
     /**
      * Get the parent {@code Object} containing the {@code Field} for this argument.
@@ -77,7 +78,7 @@ public abstract class ArgumentDefinition {
      * Get the {@code Object} representing the current value of the field for this object.
      * @return A boxed value even if the underlying field is a primitive. will not be null.
      */
-    public final Object getArgumentValue() {
+    public Object getArgumentValue() {
         try {
             return getUnderlyingField().get(getContainingObject());
         } catch (final IllegalAccessException e) {
@@ -158,7 +159,7 @@ public abstract class ArgumentDefinition {
      * constructors can be found.
      * @return {@code Class<?>} for this field
      */
-    protected final Class<?> getClassForUnderlyingField() {
+    protected Class<?> getClassForUnderlyingField() {
         final Field field = getUnderlyingField();
         if (isCollectionField(field)) {
             final ParameterizedType clazz = (ParameterizedType) (field.getGenericType());
