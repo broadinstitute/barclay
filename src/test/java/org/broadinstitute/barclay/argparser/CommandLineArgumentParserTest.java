@@ -110,7 +110,7 @@ public final class CommandLineArgumentParserTest {
                     new FrobnicateArguments(), Arrays.asList(
                         "--FROBNICATION_FLAVOR <FrobnicationFlavor>",
                         "--SHMIGGLE_TYPE <String>",
-                        "--arguments_file <File>",
+                        "--arguments-file <File>",
                         "--FROBNICATION_THRESHOLD,-T <Integer>",
                         "--TRUTHINESS <Boolean>")
                 },
