@@ -7,7 +7,7 @@ plugins {
 }
 
 wrapper {
-    gradleVersion = '8.5'
+    gradleVersion = '8.12'
 }
 
 java {
@@ -24,7 +24,7 @@ version = (isRelease ? gitVersion() : gitVersion() + "-SNAPSHOT").replaceAll(".d
 repositories {
     mavenCentral()
     maven {
-        url "https://broadinstitute.jfrog.io/broadinstitute/libs-snapshot/" //for Broad snapshots
+        url = "https://broadinstitute.jfrog.io/broadinstitute/libs-snapshot/" //for Broad snapshots
     }
 
     mavenLocal()
@@ -123,7 +123,7 @@ artifacts {
  * Sign non-snapshot releases with our secret key.  This should never need to be invoked directly.
  */
 signing {
-    required { isRelease && gradle.taskGraph.hasTask("publish") }
+    required = (isRelease && gradle.taskGraph.hasTask("publish"))
     sign publishing.publications
 }
 
