@@ -146,7 +146,7 @@ public final class CommandLineArgumentParser implements CommandLineParser {
             // the key when the fields's values are set.
             parsedArguments = parser.parse(tagParser.preprocessTaggedOptions(args));
         } catch (final OptionException e) {
-            throw new CommandLineException(e.getMessage());
+            throw new CommandLineException(e.getMessage(), e);
         }
 
         // Check if special short circuiting arguments were set
