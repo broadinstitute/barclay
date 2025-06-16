@@ -24,7 +24,7 @@ version = (isRelease ? gitVersion() : gitVersion() + "-SNAPSHOT").replaceAll(".d
 repositories {
     mavenCentral()
     maven {
-        url = "https://broadinstitute.jfrog.io/broadinstitute/libs-snapshot/" //for Broad snapshots
+        url = "https://us-central1-maven.pkg.dev/dsp-artifact-registry/libs-snapshot/" //for Broad snapshots
     }
 
     mavenLocal()
