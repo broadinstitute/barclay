@@ -85,6 +85,7 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
     private static final String defaultUsagePreambleWithPositionalArguments =
             "Usage: program [options...] [positional-arguments...]\n";
     private static final String OPTIONS_FILE = "OPTIONS_FILE";
+    private static final String NULL_STRING = "null";
 
     /** name, shortName, description for options built in to framework */
     private static final String[][] FRAMEWORK_OPTION_DOC = {
@@ -437,13 +438,16 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
                 }
                 if (optionDefinition.isCollection) {
                     final Collection<?> c = (Collection<?>) optionDefinition.field.get(optionDefinition.parent);
+                    if (c.isEmpty() && !optionDefinition.optional) {
+                        messageStream.print("ERROR: Option '" + fullName + "' is required");
+                        return false;
+                    }
                     if (c.size() < optionDefinition.minElements) {
                         messageStream.println("ERROR: Option '" + fullName + "' must be specified at least " +
                                 optionDefinition.minElements + " times.");
                         return false;
                     }
-                } else if (!optionDefinition.optional && !optionDefinition.hasBeenSet &&
-                        !optionDefinition.hasBeenSetFromParent && mutextOptionNames.length() == 0) {
+                } else if (!optionDefinition.optional && !optionDefinition.hasBeenSet && mutextOptionNames.length() == 0) {
                     messageStream.print("ERROR: Option '" + fullName + "' is required");
                     if (optionDefinition.mutuallyExclusive.isEmpty()) {
                         messageStream.println(".");
@@ -476,7 +480,7 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
             commandLineString.append("   "); //separator to tell the 2 apart
             //next, append args that weren't explicitly set, but have a default value
             for (final OptionDefinition optionDefinition : optionDefinitions) {
-                if (!optionDefinition.hasBeenSet && !optionDefinition.defaultValue.equals("null")) {
+                if (!optionDefinition.hasBeenSet && !optionDefinition.defaultValue.equals(NULL_STRING)) {
                     commandLineString.append(' ').append(prefixDot).append(optionDefinition.name).append('=').append(
                             optionDefinition.defaultValue);
                 }
@@ -541,7 +545,7 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
         }
         final Object value;
         try {
-            if (stringValue.equals("null")) {
+            if (stringValue.equals(NULL_STRING)) {
                 //"null" is a special value that allows the user to override any default
                 //value set for this arg. It can only be used for optional args. When
                 //used for a list arg, it will clear the list.
@@ -685,7 +689,7 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
             sb.append("Default value: ");
             sb.append(optionDefinition.defaultValue);
             sb.append(". ");
-            if (!optionDefinition.defaultValue.equals("null")) {
+            if (!optionDefinition.defaultValue.equals(NULL_STRING)) {
                 sb.append("This option can be set to 'null' to clear the default value. ");
             }
         } else if (!optionDefinition.isCollection) {
@@ -729,7 +733,7 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
                         " and ").append(optionDefinition.maxElements).append(" times. ");
             }
 
-            if (!optionDefinition.defaultValue.equals("null")) {
+            if (!optionDefinition.defaultValue.equals(NULL_STRING)) {
                 sb.append("This option can be set to 'null' to clear the default list. ");
             }
 
@@ -789,7 +793,7 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
                     parent,
                     field.getName(),
                     optionAnnotation.shortName(),
-                    optionAnnotation.doc(), optionAnnotation.optional() || (field.get(parent) != null),
+                    optionAnnotation.doc(), optionAnnotation.optional(),
                     isCollection, optionAnnotation.minElements(),
                     optionAnnotation.maxElements(), field.get(parent), optionAnnotation.common(),
                     optionAnnotation.mutex());
@@ -982,7 +986,6 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
         final boolean isCommon;
         boolean hasBeenSet = false;
         boolean hasBeenSetFromOptionsFile = false;
-        boolean hasBeenSetFromParent = false;
         final Set<String> mutuallyExclusive;
 
         private OptionDefinition(final Field field, final Object parent,final String name, final String shortName, final String doc,
@@ -994,21 +997,21 @@ public class LegacyCommandLineArgumentParser implements CommandLineParser {
             this.name = name.toUpperCase();
             this.shortName = shortName.toUpperCase();
             this.doc = doc;
-            this.optional = optional;
             isCollection = collection;
             this.minElements = minElements;
             this.maxElements = maxElements;
             if (defaultValue != null) {
                 if (isCollection && ((Collection) defaultValue).isEmpty()) {
                     //treat empty collections the same as uninitialized primitive types
-                    this.defaultValue = "null";
+                    this.defaultValue = NULL_STRING;
                 } else {
                     //this is an intialized primitive type or a non-empty collection
                     this.defaultValue = defaultValue.toString();
                 }
             } else {
-                this.defaultValue = "null";
+                this.defaultValue = NULL_STRING;
             }
+            this.optional = optional || ! this.defaultValue.equals(NULL_STRING);
             this.isCommon = isCommon;
             this.mutuallyExclusive = new HashSet<String>(Arrays.asList(mutuallyExclusive));
             if (this.field.getAnnotation(Hidden.class) != null) {
